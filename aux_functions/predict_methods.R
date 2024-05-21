@@ -153,10 +153,9 @@ time_run2_approx <- list()
 for(i in m){
   time_run2_sample[[as.character(i)]]<-rep(0, samples)
 }    
-D <- dist2matR(dist(loc))
-Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)        
+D <- dist2matR(dist(loc))     
 for(i_m in m){
-        prec_mat <- get.nnQ(Sigma, i_m)
+        prec_mat <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
         I <- Matrix::Diagonal(n = ncol(prec_mat), x = 1)
         Q_xgiveny <- I * 1/sigma_e^2 + prec_mat
         for (j in (1:samples))

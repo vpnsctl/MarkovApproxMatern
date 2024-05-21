@@ -14,7 +14,7 @@ sample_matern <- function(loc, nu, kappa, sigma, nsim = 1){
 s <- seq(0,1,by=0.001)
 nu <- 0.6
 kappa <- 10
-sigma <- 2
+sigma <- 1
 sim <- sample_matern(loc = s, nu = nu, kappa = kappa, sigma = sigma, nsim = 10000)
 library(rSPDE)
 c.true <- matern.covariance(0.5-s, kappa=kappa, nu=nu, sigma=sigma)
@@ -96,7 +96,6 @@ rat_m <- m
 m <- get_m(nu = nu, m = m, method = "kl", type = "prediction")
 count <- 1
 for(i_m in m){
-    print(i_m)
     K <- eigen_cov$vec[,1:i_m]    
     D <- diag(eigen_cov$val[1:i_m])    
     if(method == "woodbury"){
@@ -136,15 +135,13 @@ post_mean_pca <- pred_PCA(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, 
 pred_rat_NN <- function(loc, m, nu, kappa, sigma, sigma_e, samples, print=TRUE){
 N <- length(loc)
 
-D <- dist2matR(dist(loc))
-Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)   
 pred <- list()     
 rat_m <- m
 m <- get_m(nu = nu, m = m, method = "nngp", type = "prediction")
 count <- 1
 for(i_m in m){
         # prec_mat <- get.nnQ(Sigma, i_m)
-        prec_mat <- get.nnQ2(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
+        prec_mat <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
         I <- Matrix::Diagonal(n = ncol(prec_mat), x = 1)
         Q_xgiveny <- I * 1/sigma_e^2 + prec_mat
         post_y <- y/sigma_e^2
@@ -161,3 +158,72 @@ start <- Sys.time()
 post_mean_nn <- pred_rat_NN(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
 end <- Sys.time()
 end-start
+
+
+# Predict Fourier
+# Implemented for sigma = 1
+
+pred_Fourier <- function(y, loc, m, nu, kappa, sigma_e,samples = 100){
+N <- length(loc)
+pred <- list()
+D_loc <- dist2matR(dist(loc))
+rat_m <- m
+m <- get_m(nu = nu, m = m, method = "kl", type = "prediction")
+count <- 1
+for(i_m in m){
+    post_mean <- rep(0, length(y))
+    for(jj in 1:samples){
+        K <-  ff.comp(m = i_m, kappa = kappa, alpha = nu + 0.5, loc = loc)
+        tK <- t(K)
+        I_mat_low <- Matrix::Diagonal(x = 1, n = ncol(K))
+        I_mat_high <- Matrix::Diagonal(x = 1, n = nrow(K))
+        diag_eps_inv <- Matrix::Diagonal(x = sigma_e^(-2), n = nrow(K))
+        tKSig <- tK %*% diag_eps_inv
+        SigK <- t(tKSig)
+        inv_Part <- solve(I_mat_low + tK%*%SigK)
+        nugget_part <- inv_Part %*% tKSig
+        cov_mat_nugget_inv <- SigK %*% nugget_part
+        solve_nugget <- diag_eps_inv - cov_mat_nugget_inv
+        post_mean_tmp <- tK %*% solve_nugget %*% y
+        post_mean <- post_mean + K%*%post_mean_tmp
+    }
+    pred[[as.character(rat_m[count])]] <- post_mean/samples
+    count <- count + 1
+}
+return(pred)
+}
+
+# Example:
+post_mean_fourier <- pred_Fourier(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma_e = 0.1)
+
+
+# Predict SS
+# loc in [0,1]
+
+pred_statespace <- function(y, loc, m, nu, kappa, sigma_e, flim = 2, fact = 100){
+N <- length(loc)
+ind = 1 + fact*(0:(N-1))
+h2 = seq(from=0,to=1,length.out=fact*(N-1)+1)
+pred <- list()     
+rat_m <- m
+m <- get_m(nu = nu, m = m, method = "statespace", type = "prediction")
+count <- 1
+for(i_m in m){
+        coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,i_m)
+        S1 <- ab2spec(coeff$a,coeff$b,h2, flim = flim)
+        r1 <- S2cov(S1,h2,flim = flim)
+        acf <- r1[ind]
+        cov_mat <- toeplitz(acf, symmetric=TRUE)
+        acf2 <- acf
+        acf2[1] <- acf2[1] + sigma_e^2
+        cov_mat_nugget <-  toeplitz(as.vector(acf2), symmetric=TRUE)
+        d <- solve(cov_mat_nugget, y)
+        pred[[as.character(rat_m[count])]] <- cov_mat%*%d
+        count <- count + 1
+    }
+    return(pred)
+}
+
+# Example:
+post_mean_ss <- pred_statespace(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma_e = 0.1)
+

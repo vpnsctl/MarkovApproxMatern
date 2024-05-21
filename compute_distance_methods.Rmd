@@ -118,9 +118,9 @@ dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, si
 
 dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples)
+dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples)
 
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range)
 ```
 
 ## Distance plots based on prediction calibration
@@ -211,9 +211,9 @@ dist_nngp_samp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=rang
 
 dist_pca_samp <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
 
-dist_fourier_samp <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, type = "simulation")
+dist_fourier_samp <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples, type = "simulation")
 
-dist_ss_samp <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
+dist_ss_samp <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, type = "simulation")
 ```
 
 

@@ -42,13 +42,24 @@ get_m <- function(nu, m, method = c("nngp", "statespace", "kl"), type = c("predi
   } 
 }
 
-
-
 ## NN GP - nearest neighbor
+
+get.neighbor <- function(i, n.nbr) {
+    if(i-n.nbr <= 0) {
+        if(i==1) {
+            return(numeric())
+        } else {
+            return(1:(i-1))    
+        }
+        
+    } else {
+        return((i-n.nbr):(i-1))
+    }
+}
 
 get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
     k <- length(loc)
-    Bs <- Fs <- Fsi <- Diagonal(k)
+    Bs <- Fs <- Fsi <- Matrix::Diagonal(k)
     Fs[1,1] <- sigma^2
     Fsi[1,1] <- 1/sigma^2
     for(i in 2:k) {
@@ -65,158 +76,10 @@ get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
     return(list(Bs = Bs, Fs = Fs, Fi = Fsi))
 }
 
-get.nnQ3 <- function(loc,kappa,nu,sigma, n.nbr) {
+get.nnQ <- function(loc,kappa,nu,sigma, n.nbr) {
     tmp <- get.nn(loc,kappa,nu,sigma,n.nbr)
     
     return(t(tmp$Bs) %*% tmp$Fi %*%tmp$Bs)
-}
-
-
-get.neighbor <- function(i, n.nbr) {
-    if(i-n.nbr <= 0) {
-        if(i==1) {
-            return(numeric())
-        } else {
-            return(1:(i-1))    
-        }
-        
-    } else {
-        return((i-n.nbr):(i-1))
-    }
-}
-
-get.Fi <- function(i, Sigma, n.nbr) {
-    nbrs <- get.neighbor(i,n.nbr)
-    if(length(nbrs) == 0) {
-        return(Sigma[i,i])
-    } else  {
-        return(Sigma[i,i] - Sigma[i,nbrs]%*%solve(Sigma[nbrs,nbrs], Sigma[i,nbrs]))
-    }
-    
-}
-
-get.Fs <- function(Sigma, n.nbr) {
-    k <- dim(Sigma)[1]
-    Fs.d <- rep(0,k)
-    for(i in 1:k) {
-        Fs.d[i] <- get.Fi(i, Sigma, n.nbr)
-    }
-    return(Diagonal(k, Fs.d))
-}
-
-
-get.Bi <- function(i, Sigma, n.nbr) {
-    nbrs <- get.neighbor(i,n.nbr)
-    return(t(solve(Sigma[nbrs,nbrs], Sigma[nbrs,i])))
-}
-
-
-get.Bij <- function(i,j, n.nbr, Sigma) {
-    if(i==j) {
-        return(1)
-    } else if (j %in% get.neighbor(i,n.nbr)) {
-        l <- which(j == get.neighbor(i,n.nbr))
-        Bi <- get.Bi(i,Sigma, n.nbr)
-        return(-Bi[l])
-    } else {
-        return(0)
-    }
-}
-
-
-get.Bs <- function(Sigma, n.nbr) {
-    k <- dim(Sigma)[1]
-    Bs <- diag(k)
-    for(i in 2:k) {
-        for(j in max(i-1-n.nbr,1):(i-1)) {
-            Bs[i,j] <- get.Bij(i,j,n.nbr, Sigma)    
-        }
-    }
-    return(as(Bs,"TsparseMatrix"))
-}
-
-get.nnCov <- function(Sigma, n.nbr) {
-    Bs <- solve(get.Bs(Sigma, n.nbr))
-    Fs <- get.Fs(Sigma, n.nbr)
-    return(Bs %*% Fs %*%t(Bs))
-}
-
-get.nnQ <- function(Sigma, n.nbr) {
-    Bs <- get.Bs(Sigma, n.nbr)
-    Fs <- solve(get.Fs(Sigma, n.nbr))
-    return(t(Bs) %*% Fs %*%Bs)
-}
-
-get.Bi2 <- function(loc,kappa,nu,sigma,i, nbrs) {
-    Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
-                                  kappa = kappa, nu = nu, sigma = sigma)
-    Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
-                                  kappa = kappa, nu = nu, sigma = sigma)
-    
-    return(t(solve(Sigma.nn, Sigma.in)))
-}
-
-
-get.Bij2 <- function(loc,kappa,nu,sigma,i,j, n.nbr) {
-    nbrs <- get.neighbor(i,n.nbr)
-    if(i==j) {
-        return(1)
-    } else if (j %in% nbrs) {
-        l <- which(j == nbrs)
-        Bi <- get.Bi2(loc,kappa,nu,sigma,i, nbrs)
-        return(-Bi[l])
-    } else {
-        return(0)
-    }
-}
-
-
-get.Bs2 <- function(loc,kappa,nu,sigma, n.nbr) {
-    k <- length(loc)
-    Bs <- Diagonal(k)
-    for(i in 2:k) {
-        for(j in max(i-1-n.nbr,1):(i-1)) {
-            Bs[i,j] <- get.Bij2(loc,kappa,nu,sigma,i,j,n.nbr)    
-        }
-    }
-    return(Bs)
-}
-
-get.Fi2 <- function(loc,kappa,nu,sigma,i, n.nbr) {
-    nbrs <- get.neighbor(i,n.nbr)
-    
-    if(length(nbrs) == 0) {
-        return(sigma^2)
-    } else  {
-        Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
-                                      kappa = kappa, nu = nu, sigma = sigma)
-        Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
-                                      kappa = kappa, nu = nu, sigma = sigma)
-        return(sigma^2 - t(Sigma.in)%*%solve(Sigma.nn, Sigma.in))
-    }
-    
-}
-
-get.Fs2 <- function(loc,kappa,nu,sigma, n.nbr) {
-    k <- length(loc)
-    Fs.d <- rep(0,k)
-    
-    for(i in 1:k) {
-        Fs.d[i] <- get.Fi2(loc,kappa,nu,sigma, i, n.nbr)
-    }
-    return(Diagonal(k, Fs.d))
-}
-
-get.nnCov2 <- function(loc,kappa,nu,sigma, n.nbr) {
-    Bs <- solve(get.Bs2(loc,kappa,nu,sigma, n.nbr))
-    Fs <- get.Fs2(loc,kappa,nu,sigma, n.nbr)
-    return(Bs %*% Fs %*%t(Bs))
-}
-
-get.nnQ2 <- function(loc,kappa,nu,sigma, n.nbr) {
-    Bs <- get.Bs2(loc,kappa,nu,sigma, n.nbr)
-    Fs <- solve(get.Fs2(loc,kappa,nu,sigma, n.nbr))
-    return(t(Bs) %*% Fs %*%Bs)
 }
 
 ## Fourier 
@@ -259,6 +122,15 @@ ff.approx <- function(m, kappa, alpha, loc) {
     return(t(ZX)%*%ZX)
 }
 
+ff.comp <- function(m, kappa, alpha, loc) {
+    w <- sample.mat(m,kappa,alpha)
+    b <- runif(m,0,2*pi)
+    ZX <- matrix(0, nrow = m, ncol = length(loc))
+    for(i in 1:m){
+        ZX[i,] <- sqrt(2)*cos(w[i]*loc + b[i])/sqrt(m)
+    }
+    return(t(ZX))
+}
 
 
 ## state space 

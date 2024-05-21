@@ -218,10 +218,9 @@ time_run2_approx <- list()
 sim_list <- list()
 
 D <- dist2matR(dist(loc))
-# perm <- comp.reo.fast(N, m = 0, alpha = 0.6)
-Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)        
+# perm <- comp.reo.fast(N, m = 0, alpha = 0.6)    
 for(i_m in m){
-        prec_mat <- get.nnQ(Sigma, i_m)
+        prec_mat <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
         y <- matrix(rnorm(ncol(prec_mat) * nsim), ncol = ncol(prec_mat), nrow = nsim)
         time_run2_approx[[as.character(i_m)]] <- 0
         for(ii in 1:samples){

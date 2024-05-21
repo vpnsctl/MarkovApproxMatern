@@ -37,22 +37,24 @@ compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
 }
 
 # Statespace
+# Only implemented for sigma = 1
 
-compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 2, type = "prediction"){
+compute_distances_statespace <- function(N, m.vec, nu.vec, range, flim = 2, fact = 100, type = "prediction"){
     L2dist <- list()
     Linfdist <- list()
     for(n_loc in N){
         l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
         loc <- seq(0, 1, length.out = n_loc+1)
-        ind = 1 + 100*(0:n_loc)
-        h2 = seq(from=0,to=1,length.out=max(ind))
+        ind = 1 + fact*(0:n_loc)
+        h2 = seq(from=0,to=1,length.out= fact*n_loc+1)
+        print(max(abs(loc-h2[ind])))
         D <- dist2matR(dist(loc))
         for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
-            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=1)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- get_m(nu = nu, m = m, method = "statespace", type = type)
@@ -77,7 +79,7 @@ compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 
 
 # nnGP 
 
-compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "prediction", version = 2){
+compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "prediction"){
     L2dist <- list()
     Linfdist <- list()
     for(n_loc in N){
@@ -93,11 +95,8 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "predi
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- get_m(nu = nu, m = m, method = "nngp", type = type)
-                if(version == 2){
-                    Sigma_nn <- get.nnCov2(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m)
-                } else{
-                    Sigma_nn <- get.nnCov(Sigma.t, m)
-                }
+                Q.nn <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m)
+                Sigma_nn <- solve(Q.nn)
                 l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
                 sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))      
             }
@@ -188,8 +187,8 @@ compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, typ
 
 
 # Fourier
-
-compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, type = "prediction"){
+# Implemented for sigma = 1
+compute_distances_fourier <- function(N, m.vec, nu.vec, range, samples, type = "prediction"){
     L2dist <- list()
     Linfdist <- list()
     for(n_loc in N){
@@ -201,7 +200,7 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, t
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
-            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=1)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- get_m(nu = nu, m = m, method = "kl", type = type)                
