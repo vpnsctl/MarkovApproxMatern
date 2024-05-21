@@ -69,6 +69,8 @@ compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 
     }
     ret <- list(L2 = L2dist, Linf = Linfdist)
     attr(ret, "type") <- "State-Space"
+    attr(ret, "nu.vec") <- nu.vec
+    attr(ret, "m.vec") <- m.vec    
     return(ret)
 }
 
@@ -101,6 +103,8 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "predi
     }
     ret <- list(L2 = L2dist, Linf = Linfdist)
     attr(ret, "type") <- "nnGP"
+    attr(ret, "nu.vec") <- nu.vec
+    attr(ret, "m.vec") <- m.vec    
     return(ret)
 }
 
@@ -133,6 +137,8 @@ compute_distances_pca <- function(N, m.vec, nu.vec, range, sigma, type = "predic
     }
     ret <- list(L2 = L2dist, Linf = Linfdist)
     attr(ret, "type") <- "PCA"
+    attr(ret, "nu.vec") <- nu.vec
+    attr(ret, "m.vec") <- m.vec    
     return(ret)
 }
 
@@ -171,6 +177,8 @@ compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, typ
     }
     ret <- list(L2 = L2dist, Linf = Linfdist)
     attr(ret, "type") <- "KL"
+    attr(ret, "nu.vec") <- nu.vec
+    attr(ret, "m.vec") <- m.vec    
     return(ret)
 }
 
@@ -206,5 +214,7 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, t
     }
     ret <- list(L2 = L2dist, Linf = Linfdist)
     attr(ret, "type") <- "Fourier"
+    attr(ret, "nu.vec") <- nu.vec
+    attr(ret, "m.vec") <- m.vec    
     return(ret)
 }

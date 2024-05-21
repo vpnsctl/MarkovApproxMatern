@@ -18,6 +18,8 @@ process_dist <- function(...){
     if(length(args)>1){
         for(i in 2:length(args)){
             tmp_df <- as.data.frame(args[[i]][["L2"]][[possible_N[1]]])
+            m <- attr(args[[i]], "m.vec")
+            nu <- attr(args[[i]], "nu.vec")            
             colnames(tmp_df) <- m
             tmp_df[["Method"]] <- methods[i]
             tmp_df[["nu"]] <- nu
@@ -31,6 +33,8 @@ process_dist <- function(...){
         for(i in 1:length(args)){
             for(j in 2:length(possible_N)){
                 tmp_df <- as.data.frame(args[[i]][["L2"]][[possible_N[j]]])
+                m <- attr(args[[i]], "m.vec")
+                nu <- attr(args[[i]], "nu.vec")                    
                 colnames(tmp_df) <- m
                 tmp_df[["Method"]] <- methods[i]
                 tmp_df[["nu"]] <- nu
@@ -45,6 +49,8 @@ process_dist <- function(...){
     for(i in 1:length(args)){
         for(j in 1:length(possible_N)){
             tmp_df <- as.data.frame(args[[i]][["Linf"]][[possible_N[j]]])
+            m <- attr(args[[i]], "m.vec")
+            nu <- attr(args[[i]], "nu.vec")                
             colnames(tmp_df) <- m
             tmp_df[["Method"]] <- methods[i]
             tmp_df[["nu"]] <- nu
