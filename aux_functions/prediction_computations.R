@@ -231,7 +231,7 @@ for(i_m in m){
 # Generate complete table
 # sigma = 1
 
-compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, print = TRUE){
+compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, print = FALSE){
     post_mean_true <- list()
     post_mean_rat <- list()
     post_mean_PCA <- list()
@@ -256,7 +256,7 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
-            y <- sample_y(loc = loc,nu = nu,kappa = kappa ,sigma = 1, = sigma_e = sigma_e, seed = seed)
+            y <- sample_y(loc = loc,nu = nu,kappa = kappa ,sigma = 1, sigma_e = sigma_e, seed = seed)
             
             if(print){
                 message("Starting true posterior")
@@ -285,5 +285,130 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
         }
     }
 
-    matrix_pred <- matrix(nrow = length(nu.vec)*length(m.vec)*length(N), ncol = )
+    df_pred <- data.frame(Method = "Rational", nu = nu.vec[1], Norm = "l2", N = N[1], m = m.vec)
+    tmp_true <- post_mean_true[[as.character(N[[1]])]][[as.character(nu[[1]])]]
+    error_l2_tmp <- unlist(lapply(post_mean_rat[[as.character(N[1])]][[as.character(nu.vec[1])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+    error_max_tmp <- unlist(lapply(post_mean_rat[[as.character(N[1])]][[as.character(nu.vec[1])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+    df_pred[["Error"]] <- error_l2_tmp
+    df_tmp <- data.frame(Method = "Rational", nu = nu.vec[1], Norm = "max", N = N[1], m = m.vec)
+    df_tmp[["Error"]] <- error_max_tmp
+    df_pred <- rbind(df_pred, df_tmp)
+    if(length(nu.vec)>1){
+        for(j in 2:length(nu.vec)){
+                df_tmp <- data.frame(Method = "Rational", nu = nu.vec[j], Norm = "l2", N = N[1], m = m.vec)
+                tmp_true <- post_mean_true[[as.character(N[1])]][[as.character(nu.vec[j])]]
+                error_l2_tmp <- unlist(lapply(post_mean_rat[[as.character(N[1])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                error_max_tmp <- unlist(lapply(post_mean_rat[[as.character(N[1])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                df_tmp[["Error"]] <- error_l2_tmp
+                df_pred <- rbind(df_pred, df_tmp)
+                df_tmp <- data.frame(Method = "Rational", nu = nu.vec[j], Norm = "max", N = N[1], m = m.vec)
+                df_tmp[["Error"]] <- error_max_tmp
+                df_pred <- rbind(df_pred, df_tmp)            
+        }
+    }
+    if(length(N)>1){
+        for(i in 2:length(N)){
+            for(j in 1:length(nu.vec)){
+                    df_tmp <- data.frame(Method = "Rational", nu = nu.vec[j], Norm = "l2", N = N[i], m = m.vec)
+                    tmp_true <- post_mean_true[[as.character(N[i])]][[as.character(nu.vec[j])]]
+                    error_l2_tmp <- unlist(lapply(post_mean_rat[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                    error_max_tmp <- unlist(lapply(post_mean_rat[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                    df_tmp[["Error"]] <- error_l2_tmp
+                    df_pred <- rbind(df_pred, df_tmp)
+                    df_tmp <- data.frame(Method = "Rational", nu = nu.vec[j], Norm = "max", N = N[i], m = m.vec)
+                    df_tmp[["Error"]] <- error_max_tmp
+                    df_pred <- rbind(df_pred, df_tmp)            
+            }
+        }
+    }
+
+    ## PCA
+    for(i in 1:length(N)){
+        for(j in 1:length(nu.vec)){
+                df_tmp <- data.frame(Method = "PCA", nu = nu.vec[j], Norm = "l2", N = N[i], m = m.vec)
+                tmp_true <- post_mean_true[[as.character(N[i])]][[as.character(nu.vec[j])]]
+                error_l2_tmp <- unlist(lapply(post_mean_PCA[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                error_max_tmp <- unlist(lapply(post_mean_PCA[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                df_tmp[["Error"]] <- error_l2_tmp
+                df_pred <- rbind(df_pred, df_tmp)
+                df_tmp <- data.frame(Method = "PCA", nu = nu.vec[j], Norm = "max", N = N[i], m = m.vec)
+                df_tmp[["Error"]] <- error_max_tmp
+                df_pred <- rbind(df_pred, df_tmp)            
+        }
+    }
+
+    ## nnGP
+    for(i in 1:length(N)){
+        for(j in 1:length(nu.vec)){
+                df_tmp <- data.frame(Method = "nnGP", nu = nu.vec[j], Norm = "l2", N = N[i], m = m.vec)
+                tmp_true <- post_mean_true[[as.character(N[i])]][[as.character(nu.vec[j])]]
+                error_l2_tmp <- unlist(lapply(post_mean_nnGP[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                error_max_tmp <- unlist(lapply(post_mean_nnGP[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                df_tmp[["Error"]] <- error_l2_tmp
+                df_pred <- rbind(df_pred, df_tmp)
+                df_tmp <- data.frame(Method = "nnGP", nu = nu.vec[j], Norm = "max", N = N[i], m = m.vec)
+                df_tmp[["Error"]] <- error_max_tmp
+                df_pred <- rbind(df_pred, df_tmp)            
+        }
+    }
+
+    ## State-space
+    for(i in 1:length(N)){
+        for(j in 1:length(nu.vec)){
+                df_tmp <- data.frame(Method = "Fourier", nu = nu.vec[j], Norm = "l2", N = N[i], m = m.vec)
+                tmp_true <- post_mean_true[[as.character(N[i])]][[as.character(nu.vec[j])]]
+                error_l2_tmp <- unlist(lapply(post_mean_statespace[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                error_max_tmp <- unlist(lapply(post_mean_statespace[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                df_tmp[["Error"]] <- error_l2_tmp
+                df_pred <- rbind(df_pred, df_tmp)
+                df_tmp <- data.frame(Method = "Fourier", nu = nu.vec[j], Norm = "max", N = N[i], m = m.vec)
+                df_tmp[["Error"]] <- error_max_tmp
+                df_pred <- rbind(df_pred, df_tmp)            
+        }
+    }
+
+    ## Fourier
+    for(i in 1:length(N)){
+        for(j in 1:length(nu.vec)){
+                df_tmp <- data.frame(Method = "State-Space", nu = nu.vec[j], Norm = "l2", N = N[i], m = m.vec)
+                tmp_true <- post_mean_true[[as.character(N[i])]][[as.character(nu.vec[j])]]
+                error_l2_tmp <- unlist(lapply(post_mean_fourier[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                error_max_tmp <- unlist(lapply(post_mean_fourier[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                df_tmp[["Error"]] <- error_l2_tmp
+                df_pred <- rbind(df_pred, df_tmp)
+                df_tmp <- data.frame(Method = "State-Space", nu = nu.vec[j], Norm = "max", N = N[i], m = m.vec)
+                df_tmp[["Error"]] <- error_max_tmp
+                df_pred <- rbind(df_pred, df_tmp)            
+        }
+    }
+    return(df_pred)
+}
+
+
+
+
+# Function to plot the L2 and Linfinity distances between the covariance functions
+# If methods is null, all methods will be considered
+# If n_loc is null, the first value of n_loc will be considered. n_loc must be a character
+# n_loc is the number of locations
+
+library(ggplot2)
+
+plot_pred <- function(df_dist, n_loc = NULL, distance = c("L2", "Linf"), methods = NULL, logscale = TRUE){
+    if(is.null(n_loc)){
+        n_loc <- df_dist[["N"]][1]
+    }
+    n_loc <- as.character(n_loc)
+    df_dist <- df_dist |> dplyr::filter(N == n_loc)
+    if(is.null(methods)){
+        methods <- unique(df_dist[["Method"]])
+    }
+    distance <- distance[[1]]
+    if(logscale){
+        return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
+            geom_line(aes(x = nu, y = Error, col = m,linetype=Method)) + scale_y_log10())
+    } else{
+        return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
+            geom_line(aes(x = nu, y = Error, col = m,linetype=Method)))
+    }
 }

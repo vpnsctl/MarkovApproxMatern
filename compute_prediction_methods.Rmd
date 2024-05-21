@@ -1,10 +1,10 @@
 ---
-title: "Comparison of the Computational Costs of Various Sampling and Prediction Methods for Gaussian Processes with Matérn Covariance Functions"
+title: "Computation of prediction errors for different approximations of the Matérn covariance function"
 author: "David Bolin, Vaibhav Mehandiratta, and Alexandre B. Simas"
 date: "Created: 2024-05-20. Last modified: `r Sys.Date()`."
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Comparison of different methods for sampling and doing prediction for Gaussian processes with Matérn covariance function}
+  %\VignetteIndexEntry{Computation of prediction errors for different approximations of the Matérn covariance function}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 references:
@@ -71,33 +71,30 @@ set.seed(1)
 
 ## Introduction
 
-This vignette contains $L_2$ and $L_\infty$ distance plots of between approximated Matérn covariance function and the true Matérn covariance function:
+This vignette contains $\ell_2$ and $\ell_\infty$ distance plots of between predictions obtained from approximated Matérn covariance function and obtained by the true Matérn covariance function:
 $$r(h) = \frac{\sigma^2}{2^{\nu-1}\Gamma(\nu)}(\kappa h)^\nu K_\nu(\kappa h),$$
 where $\Gamma(\cdot)$ is the Gamma function and $K_\nu$ is the modified Bessel function of the second kind, $\kappa$ is connected to the range of the process, $\nu$ is the smoothness parameter and $\sigma$ is the marginal standard deviation. We will consider some approximations, the reference approximation is the one based on the method introduced in [@BMS2024]. We will compare it against a singular value decomposition method (PCA) and a nearest neighbor approach [@DBFG], a state-space model [@KS] and a Fourier-based low rank method [@RR]. We will use a calibration of the hyperparameter $m$ introduced in [@BMS2024] based on the theoretical costs obtained in Table 1 of [@BMS2024]. 
 
+Our goal is to generate the data as 
+$$Y_i = u(t_i) + \varepsilon_i,\quad i=1,\ldots,N,$$
+where $u(\cdot)$ is a stationary Gaussian process with a Mat\'ern covariance function, $t_1,\ldots,t_N$ are locations on a bounded interval on the real line, and $\varepsilon_1,\ldots,\varepsilon_N$ are measurement errors, such that $\varepsilon_1,\ldots,\varepsilon_N$ are i.i.d., independent of the field $u(\cdot)$ and follow standard normal distribution. Then, we will compute the posterior mean using the exact Matérn covariance function and we will compare to the posterior means obtained by using the different approximations of the covariance function.
+
 ## Preprocessing
 
-We start by installing the newest version of rSPDE to make sure all the functions we will are are available. 
-
-```{r,message=FALSE}
-devtools::install_github("davidbolin/rSPDE")
-```
-
-We will now load all the auxiliary functions:
+Let us load all the auxiliary functions:
 
 ```{r, message=FALSE}
 source("aux_functions/aux_functions_cov.R")
 source("aux_functions/predict_methods.R")
-source("aux_functions/distance_computations.R")
-source("aux_functions/aux_dist.R")
+source("aux_functions/prediction_computations.R")
 ```
 
 We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
 
 ```{r}
-N <- c(1000)
+N <- c(500,1000)
 
-nu_vec=seq(0.1,2.9, by = 0.1)
+nu_vec=seq(0.1,1.4, by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec <- nu_vec[idx]
 range =0.2
@@ -107,29 +104,17 @@ m <- 1:6
 ```
 
 
-## Computing $L_2$ and $L_\infty$ distances based on prediction calibration
+## Computing $l_2$ and Max norms between the true posterior mean and the approximated ones
 
-We will now compute the distances with the help of the auxiliary functions `compute_distances_rational` (our method introduced in [@BMS2024]), `compute_distances_pca` (a PCA low rank approximation), `compute_distances_nngp` (the nearest neighbor method of [@DBFG]), `compute_distances_fourier` (the Fourier method of [@RR]) and `compute_distances_statespace` (the state-space method of [@KS]).
+We will now compute the distances between the posterior means with the help of the auxiliary functions `compute_pred_errors`. It will provide the predictions using our method introduced in [@BMS2024], a PCA low rank approximation, the nearest neighbor method of [@DBFG], the Fourier method of [@RR] and the state-space method of [@KS]. We will set a seed for reproducibility. This function generates the response variables that consist of a stationary Gaussian process with Matérn covariance function at different locations plus independent Gaussian measurement errors.
 
 ```{r, results="hide"}
-dist_rat <- compute_distances_rational(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
-
-dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
-
-dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
-
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples)
-
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range)
+df_pred_error <- compute_pred_errors(N, range, nu.vec, m.vec, sigma_e, seed = 123)
 ```
 
-## Distance plots based on prediction calibration
+## Error plots
 
-Now, we process these tables into a data frame suitable for plotting:
-
-```{r}
-df_dist <- process_dist(dist_rat, dist_nngp, dist_pca, dist_fourier, dist_ss)
-```
+We will now compare the prediction error for the different methods.
 
 ### Nearest neighbor
 
@@ -201,84 +186,3 @@ plot_dist(df_dist, distance = "Linf", methods = c("Rational", "State-Space"))
 ```
 
 We can see a similar behavior with respect to the $L_\infty$ norm.
-
-## Computing $L_2$ and $L_\infty$ distances based on sampling calibration
-
-We will now recompute all the distances by using the calibration for sampling, that is, choosing the hyperparameters so that the cost for the Markov-based rational approximation is equivalent to the computational costs of the other methods.
-
-```{r, results="hide"}
-dist_nngp_samp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
-
-dist_pca_samp <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
-
-dist_fourier_samp <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples, type = "simulation")
-
-dist_ss_samp <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, type = "simulation")
-```
-
-
-## Distance plots based on sampling calibration
-
-As in the prediction case, we first process these tables into a data frame suitable for plotting:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-df_dist_samp <- process_dist(dist_rat, dist_nngp_samp, dist_pca_samp, dist_fourier_samp, dist_ss_samp)
-```
-
-### Nearest neighbor
-
-Let us first compare the $L_2$ distances of the rational-based approximation versus nearest neighbor method, for $N=1000$:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "nnGP"))
-```
-
-Now, the $L_\infty$ distance:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "nnGP"))
-```
-
-
-### PCA 
-
-Now, let us compare with the PCA approximation:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "PCA"))
-```
-
-Now, the $L_\infty$ distance:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "PCA"))
-```
-
-### Fourier
-
-Let us now compare with the Fourier-based approximation:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "Fourier"))
-```
-
-Now, the $L_\infty$ distance:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "Fourier"))
-```
-
-### State-space
-
-Finally, let us compare with state-space:
-
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "State-Space"))
-```
-
-Now, the $L_\infty$ distance:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "State-Space"))
-```
