@@ -37,11 +37,9 @@ time_run2_approx <- list()
 for(i_m in m){
     if(nu < 0.5){
         r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
-    } else if ( 0.5 < nu && nu < 1.5){
+    } else if ( 0.5 < nu ){
         r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
-    } else{
-        stop("nu must be between 0 and 1.5")
-    }
+    } 
         r$Q <- (r$Q + t(r$Q))/2
         A_mat = t(r$A)
         Q_xgiveny <-(A_mat%*% (r$A))/sigma_e^2 + r$Q
@@ -156,7 +154,6 @@ for(i in m){
   time_run2_sample[[as.character(i)]]<-rep(0, samples)
 }    
 D <- dist2matR(dist(loc))
-# perm <- comp.reo.fast(N, m = 0, alpha = 0.6)
 Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)        
 for(i_m in m){
         prec_mat <- get.nnQ(Sigma, i_m)
@@ -308,4 +305,5 @@ compare_times_pca <- function(N, m, range, sigma, samples){
     res_df <- rbind(res_df, res_df_tmp)
     return(res_df)
 }
+
 

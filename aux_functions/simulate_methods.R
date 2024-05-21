@@ -33,7 +33,7 @@ samp_mat <- matrix(nrow = nsim, ncol = N)
 # sigma <- 2
 # sim <- simulate_Toeplitz(loc = s, nu = nu, kappa = kappa, sigma = sigma, nsim = 10000)
 # library(rSPDE)
-# c.true <- matern.covariance(rep(0.5, length(s)), abs(s), kappa=kappa, nu=nu, sigma=sigma)
+# c.true <- matern.covariance(0.5-s, kappa=kappa, nu=nu, sigma=sigma)
 # plot(s, c.true,
 #      type = "l", ylab = "C(|s-0.5|)", xlab = "s", ylim = c(0, 5),
 #      cex.main = 0.8, cex.axis = 0.8, cex.lab = 0.8
