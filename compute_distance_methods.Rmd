@@ -1,0 +1,284 @@
+---
+title: "Comparison of the Computational Costs of Various Sampling and Prediction Methods for Gaussian Processes with Matérn Covariance Functions"
+author: "David Bolin, Vaibhav Mehandiratta, and Alexandre B. Simas"
+date: "Created: 2024-05-20. Last modified: `r Sys.Date()`."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparison of different methods for sampling and doing prediction for Gaussian processes with Matérn covariance function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+references:
+- id: BMS2024
+  title: "Linear cost and exponentially convergent approximation of Gaussian Matérn stochastic processes"
+  author:
+  - family: Bolin
+    given: David
+  - family: Mehandiratta
+    given: Vaibhav
+  - family: Simas
+    given: Alexandre B.
+  container-title: Preprint
+- id: DBFG
+  title: "Hierarchical nearest-neighbor Gaussian process models for large geostatistical datasets"
+  author:
+  - family: Datta
+    given: A.
+  - family: Benerjee
+    given: S. 
+  - family: Finley
+    given: A. O.
+  - family: Gelfand
+    given: A. E.
+  container-title: J. Amer. Statist. Assoc.
+  type: article
+  issue: 111
+  pages: 800-812
+  issued:
+    year: 2016
+- id: KS
+  title: "Approximate state-space Gaussian processes via spectral transformation"
+  author:
+  - family: Karvonen
+    given: T.
+  - family: Sarkkä
+    given: S. 
+  container-title: 2016 IEEE 26th International Workshop on Machine Learning for Signal Processing (MLSP)
+  type: article
+  pages: 1-6
+  issued:
+    year: 2016
+- id: RR
+  title: "Random features for large-scale kernel machines"
+  author:
+  - family: Rahimi
+    given: A.
+  - family: Recht
+    given: B.
+  container-title:  Advances in neural information processing systems
+  type: article
+  issue: 20
+  issued:
+    year: 2007
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed(1)
+```
+
+## Introduction
+
+This vignette contains $L_2$ and $L_\infty$ distance plots of between approximated Matérn covariance function and the true Matérn covariance function:
+$$r(h) = \frac{\sigma^2}{2^{\nu-1}\Gamma(\nu)}(\kappa h)^\nu K_\nu(\kappa h),$$
+where $\Gamma(\cdot)$ is the Gamma function and $K_\nu$ is the modified Bessel function of the second kind, $\kappa$ is connected to the range of the process, $\nu$ is the smoothness parameter and $\sigma$ is the marginal standard deviation. We will consider some approximations, the reference approximation is the one based on the method introduced in [@BMS2024]. We will compare it against a singular value decomposition method (PCA) and a nearest neighbor approach [@DBFG], a state-space model [@KS] and a Fourier-based low rank method [@RR]. We will use a calibration of the hyperparameter $m$ introduced in [@BMS2024] based on the theoretical costs obtained in Table 1 of [@BMS2024]. 
+
+## Preprocessing
+
+We start by installing the newest version of rSPDE to make sure all the functions we will are are available. 
+
+```{r,message=FALSE}
+devtools::install_github("davidbolin/rSPDE")
+```
+
+We will now load all the auxiliary functions:
+
+```{r, message=FALSE}
+source("aux_functions/aux_functions_cov.R")
+source("aux_functions/predict_methods.R")
+source("aux_functions/distance_computations.R")
+source("aux_functions/aux_dist.R")
+```
+
+We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
+
+```{r}
+N <- c(1000)
+
+nu_vec=seq(0.1,2.9, by = 0.1)
+idx <- (nu_vec + 0.5)%%1 > 1e-10
+nu_vec <- nu_vec[idx]
+range =0.2
+sigma = 1
+samples = 10
+m <- 1:6
+```
+
+
+## Computing $L_2$ and $L_\infty$ distances based on prediction calibration
+
+We will now compute the distances with the help of the auxiliary functions `compute_distances_rational` (our method introduced in [@BMS2024]), `compute_distances_pca` (a PCA low rank approximation), `compute_distances_nngp` (the nearest neighbor method of [@DBFG]), `compute_distances_fourier` (the Fourier method of [@RR]) and `compute_distances_statespace` (the state-space method of [@KS]).
+
+```{r, results="hide"}
+dist_rat <- compute_distances_rational(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+
+dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+
+dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+
+dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples)
+
+dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+```
+
+## Distance plots based on prediction calibration
+
+Now, we process these tables into a data frame suitable for plotting:
+
+```{r}
+df_dist <- process_dist(dist_rat, dist_nngp, dist_pca, dist_fourier, dist_ss)
+```
+
+### Nearest neighbor
+
+Let us first compare the $L_2$ distances of the rational-based approximation versus nearest neighbor method, for $N=1000$:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "L2", methods = c("Rational", "nnGP"))
+```
+
+Here, we can see that with respect to the $L_2$ norm, the Markov-based rational approximation provides a better approximation for all values of nu.
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "Linf", methods = c("Rational", "nnGP"))
+```
+
+With respect to the $L_\infty$ norm, we can see that the distances are very similar, with nnGP having a slightly better approximation for very small values of nu. For values of nu larger than 0.3, the Markov-based rational approximation outperforms the nearest neighbor approximation.
+
+### PCA 
+
+Now, let us compare with the PCA approximation:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "L2", methods = c("Rational", "PCA"))
+```
+
+We can see that the Markov-based rational approximation outperforms the PCA approximation with respect to the $L_2$ norm for values of nu less than 0.5. Also, observe that the PCA approximation is not feasible in the real world and here is working as a proxy of the best possible low rank approximation.
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "Linf", methods = c("Rational", "PCA"))
+```
+
+With respect to the $L_\infty$ norm, we can see that the Markov-based rational approximation outperforms the PCA approximation for nu less than 1.
+
+### Fourier
+
+Let us now compare with the Fourier-based approximation:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "L2", methods = c("Rational", "Fourier"))
+```
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "Linf", methods = c("Rational", "Fourier"))
+```
+
+By looking at both plots, we can see that the Fourier-based approximation is very poor compared to the other methods.
+
+### State-space
+
+Finally, let us compare with state-space:
+
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "L2", methods = c("Rational", "State-Space"))
+```
+
+For $m\geq 2$, we have that the Markov-based rational approximation considerably outperforms the state-space approximation with respect to the $L_2$ norm. For nu greater than 2.5, the Markov-based rational approximation outperforms the state-space approximation for $m\geq 3$.
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist, distance = "Linf", methods = c("Rational", "State-Space"))
+```
+
+We can see a similar behavior with respect to the $L_\infty$ norm.
+
+## Computing $L_2$ and $L_\infty$ distances based on sampling calibration
+
+We will now recompute all the distances by using the calibration for sampling, that is, choosing the hyperparameters so that the cost for the Markov-based rational approximation is equivalent to the computational costs of the other methods.
+
+```{r, results="hide"}
+dist_nngp_samp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
+
+dist_pca_samp <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
+
+dist_fourier_samp <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, type = "simulation")
+
+dist_ss_samp <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
+```
+
+
+## Distance plots based on sampling calibration
+
+As in the prediction case, we first process these tables into a data frame suitable for plotting:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+df_dist_samp <- process_dist(dist_rat, dist_nngp_samp, dist_pca_samp, dist_fourier_samp, dist_ss_samp)
+```
+
+### Nearest neighbor
+
+Let us first compare the $L_2$ distances of the rational-based approximation versus nearest neighbor method, for $N=1000$:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "nnGP"))
+```
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "nnGP"))
+```
+
+
+### PCA 
+
+Now, let us compare with the PCA approximation:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "PCA"))
+```
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "PCA"))
+```
+
+### Fourier
+
+Let us now compare with the Fourier-based approximation:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "Fourier"))
+```
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "Fourier"))
+```
+
+### State-space
+
+Finally, let us compare with state-space:
+
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "L2", methods = c("Rational", "State-Space"))
+```
+
+Now, the $L_\infty$ distance:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+plot_dist(df_dist_samp, distance = "Linf", methods = c("Rational", "State-Space"))
+```

@@ -1,0 +1,110 @@
+---
+title: "Comparison of the Computational Costs of Various Sampling and Prediction Methods for Gaussian Processes with Matérn Covariance Functions"
+author: "David Bolin, Vaibhav Mehandiratta, and Alexandre B. Simas"
+date: "Created: 2024-05-20. Last modified: `r Sys.Date()`."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparison of different methods for sampling and doing prediction for Gaussian processes with Matérn covariance function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+references:
+- id: BMS2024
+  title: "Linear cost and exponentially convergent approximation of Gaussian Matérn stochastic processes"
+  author:
+  - family: Bolin
+    given: David
+  - family: Mehandiratta
+    given: Vaibhav
+  - family: Simas
+    given: Alexandre B.
+  container-title: Preprint
+- id: DBFG
+  title: "Hierarchical nearest-neighbor Gaussian process models for large geostatistical datasets"
+  author:
+  - family: Datta
+    given: A.
+  - family: Benerjee
+    given: S. 
+  - family: Finley
+    given: A. O.
+  - family: Gelfand
+    given: A. E.
+  container-title: J. Amer. Statist. Assoc.
+  type: article
+  issue: 111
+  pages: 800-812
+  issued:
+    year: 2016
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed(1)
+```
+
+## Introduction
+
+This vignette contains some time comparisons for sampling and doing prediction of stationary Gaussian processes with the Matérn covariance function
+$$r(h) = \frac{\sigma^2}{2^{\nu-1}\Gamma(\nu)}(\kappa h)^\nu K_\nu(\kappa h),$$
+where $\Gamma(\cdot)$ is the Gamma function and $K_\nu$ is the modified Bessel function of the second kind, $\kappa$ is connected to the range of the process, $\nu$ is the smoothness parameter and $\sigma$ is the marginal standard deviation. We will consider some approximations, the reference approximation is the one based on the method introduced in [@BMS2024]. We will compare it against a singular value decomposition method (PCA) and a nearest neighbor approach [@DBFG]. We will use a calibration of the hyperparameter $m$ introduced in [@BMS2024] based on the theoretical costs obtained in Table 1 of [@BMS2024]. 
+
+## Preprocessing
+
+We start by installing the newest version of rSPDE to make sure all the functions we will are are available. 
+
+```{r,message=FALSE}
+devtools::install_github("davidbolin/rSPDE")
+```
+
+We will now load all the auxiliary functions:
+
+```{r, message=FALSE}
+source("aux_functions/aux_functions_cov.R")
+source("aux_functions/predict_methods.R")
+source("aux_functions/simulate_methods.R")
+```
+
+## Cost comparison based on predictions
+
+For this case we will consider that we have $N=1000$ observations, the range parameter will be $0.2$, the standard deviation will be $1$. The cost will be measured for the smoothness parameter $\nu$ between $0$ and $0.5$, and between $0.5$ and $1.5$. The hyperparameter of the model will be $m$ taken from 1 to 6 for the reference method, and calibrated following Table 1 of [@BMS2024] for the PCA method and nearest neighbor methods. 
+
+We start by defining the parameters:
+```{r}
+N <- 1000
+range =0.2
+sigma = 1
+samples = 10
+m <- 1:6
+```
+
+We will now compute the times based on prediction by using the `compare_times()` function:
+
+```{r, results="hide"}
+times <- compare_times(N = N, m = m, range = range, sigma = sigma, samples = 100)
+```
+
+Let us now plot the results to observe that the costs are, in fact, similar:
+
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+library(dplyr)
+library(ggplot2)
+
+times |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha)
+```
+
+
+## Cost comparison based on sampling
+
+We will now compare the times for the same choices of parameters by using the `compare_times_simulation()` function:
+
+```{r, results="hide"}
+times <- compare_times_simulation(N = N, m = m, range = range, sigma = sigma, nsim = 1, samples = 100)
+```
+
+Let us now plot the results:
+```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
+times |> filter(N == 1000) |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha)
+```
