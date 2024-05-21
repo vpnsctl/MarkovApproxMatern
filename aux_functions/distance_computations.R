@@ -77,7 +77,7 @@ compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 
 
 # nnGP 
 
-compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "prediction"){
+compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "prediction", version = 2){
     L2dist <- list()
     Linfdist <- list()
     for(n_loc in N){
@@ -93,7 +93,11 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "predi
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- get_m(nu = nu, m = m, method = "nngp", type = type)
-                Sigma_nn <- get.nnCov(Sigma.t, m)
+                if(version == 2){
+                    Sigma_nn <- get.nnCov2(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m)
+                } else{
+                    Sigma_nn <- get.nnCov(Sigma.t, m)
+                }
                 l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
                 sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))      
             }

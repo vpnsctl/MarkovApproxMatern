@@ -121,6 +121,78 @@ get.nnQ <- function(Sigma, n.nbr) {
     return(t(Bs) %*% Fs %*%Bs)
 }
 
+get.Bi2 <- function(loc,kappa,nu,sigma,i, nbrs) {
+    Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
+                                  kappa = kappa, nu = nu, sigma = sigma)
+    Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
+                                  kappa = kappa, nu = nu, sigma = sigma)
+    
+    return(t(solve(Sigma.nn, Sigma.in)))
+}
+
+
+get.Bij2 <- function(loc,kappa,nu,sigma,i,j, n.nbr) {
+    nbrs <- get.neighbor(i,n.nbr)
+    if(i==j) {
+        return(1)
+    } else if (j %in% nbrs) {
+        l <- which(j == nbrs)
+        Bi <- get.Bi2(loc,kappa,nu,sigma,i, nbrs)
+        return(-Bi[l])
+    } else {
+        return(0)
+    }
+}
+
+
+get.Bs2 <- function(loc,kappa,nu,sigma, n.nbr) {
+    k <- length(loc)
+    Bs <- Diagonal(k)
+    for(i in 2:k) {
+        for(j in max(i-1-n.nbr,1):(i-1)) {
+            Bs[i,j] <- get.Bij2(loc,kappa,nu,sigma,i,j,n.nbr)    
+        }
+    }
+    return(Bs)
+}
+
+get.Fi2 <- function(loc,kappa,nu,sigma,i, n.nbr) {
+    nbrs <- get.neighbor(i,n.nbr)
+    
+    if(length(nbrs) == 0) {
+        return(sigma^2)
+    } else  {
+        Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
+                                      kappa = kappa, nu = nu, sigma = sigma)
+        Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
+                                      kappa = kappa, nu = nu, sigma = sigma)
+        return(sigma^2 - t(Sigma.in)%*%solve(Sigma.nn, Sigma.in))
+    }
+    
+}
+
+get.Fs2 <- function(loc,kappa,nu,sigma, n.nbr) {
+    k <- length(loc)
+    Fs.d <- rep(0,k)
+    
+    for(i in 1:k) {
+        Fs.d[i] <- get.Fi2(loc,kappa,nu,sigma, i, n.nbr)
+    }
+    return(Diagonal(k, Fs.d))
+}
+
+get.nnCov2 <- function(loc,kappa,nu,sigma, n.nbr) {
+    Bs <- solve(get.Bs2(loc,kappa,nu,sigma, n.nbr))
+    Fs <- get.Fs2(loc,kappa,nu,sigma, n.nbr)
+    return(Bs %*% Fs %*%t(Bs))
+}
+
+get.nnQ2 <- function(loc,kappa,nu,sigma, n.nbr) {
+    Bs <- get.Bs2(loc,kappa,nu,sigma, n.nbr)
+    Fs <- solve(get.Fs2(loc,kappa,nu,sigma, n.nbr))
+    return(t(Bs) %*% Fs %*%Bs)
+}
+
 ## Fourier 
 
 
