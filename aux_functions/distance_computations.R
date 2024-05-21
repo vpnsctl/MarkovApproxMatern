@@ -95,10 +95,20 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, type = "predi
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- get_m(nu = nu, m = m, method = "nngp", type = type)
-                Q.nn <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m)
-                Sigma_nn <- solve(Q.nn)
-                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
-                sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))      
+                Q.nn <- tryCatch(get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m), error=function(e){NULL})
+                if(!is.null(Q.nn)){
+                    Sigma_nn <- tryCatch(solve(Q.nn), error=function(e){NULL})
+                    if(!is.null(Sigma_nn)){
+                        l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
+                        sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))      
+                    } else{
+                        l2.err[i,j] <- NaN
+                        sup.err[i,j] <- NaN
+                    }
+                } else{
+                    l2.err[i,j] <- NaN
+                    sup.err[i,j] <- NaN                    
+                }
             }
         }
         L2dist[[as.character(n_loc)]] <- l2.err

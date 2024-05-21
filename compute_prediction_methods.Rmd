@@ -1,10 +1,10 @@
 ---
-title: "Computation of covariance errors for different approximations of the Matérn covariance function"
+title: "Comparison of the Computational Costs of Various Sampling and Prediction Methods for Gaussian Processes with Matérn Covariance Functions"
 author: "David Bolin, Vaibhav Mehandiratta, and Alexandre B. Simas"
 date: "Created: 2024-05-20. Last modified: `r Sys.Date()`."
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Computation of covariance errors for different approximations of the Matérn covariance function}
+  %\VignetteIndexEntry{Comparison of different methods for sampling and doing prediction for Gaussian processes with Matérn covariance function}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 references:
@@ -71,22 +71,25 @@ set.seed(1)
 
 ## Introduction
 
-This vignette contains $\ell_2$ and $\ell_\infty$ distance plots of between predictions obtained from approximated Matérn covariance function and obtained by the true Matérn covariance function:
+This vignette contains $L_2$ and $L_\infty$ distance plots of between approximated Matérn covariance function and the true Matérn covariance function:
 $$r(h) = \frac{\sigma^2}{2^{\nu-1}\Gamma(\nu)}(\kappa h)^\nu K_\nu(\kappa h),$$
 where $\Gamma(\cdot)$ is the Gamma function and $K_\nu$ is the modified Bessel function of the second kind, $\kappa$ is connected to the range of the process, $\nu$ is the smoothness parameter and $\sigma$ is the marginal standard deviation. We will consider some approximations, the reference approximation is the one based on the method introduced in [@BMS2024]. We will compare it against a singular value decomposition method (PCA) and a nearest neighbor approach [@DBFG], a state-space model [@KS] and a Fourier-based low rank method [@RR]. We will use a calibration of the hyperparameter $m$ introduced in [@BMS2024] based on the theoretical costs obtained in Table 1 of [@BMS2024]. 
 
-Our goal is to generate the data as 
-$$Y_i = u(t_i) + \varepsilon_i,\quad i=1,\ldots,N,$$
-where $u(\cdot)$ is a stationary Gaussian process with a Mat\'ern covariance function, $t_1,\ldots,t_N$ are locations on a bounded interval on the real line, and $\varepsilon_1,\ldots,\varepsilon_N$ are measurement errors, such that $\varepsilon_1,\ldots,\varepsilon_N$ are i.i.d., independent of the field $u(\cdot)$ and follow standard normal distribution.
-
 ## Preprocessing
 
-Let us load all the auxiliary functions:
+We start by installing the newest version of rSPDE to make sure all the functions we will are are available. 
+
+```{r,message=FALSE}
+devtools::install_github("davidbolin/rSPDE")
+```
+
+We will now load all the auxiliary functions:
 
 ```{r, message=FALSE}
 source("aux_functions/aux_functions_cov.R")
 source("aux_functions/predict_methods.R")
-source("aux_functions/predict_computations.R")
+source("aux_functions/distance_computations.R")
+source("aux_functions/aux_dist.R")
 ```
 
 We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).

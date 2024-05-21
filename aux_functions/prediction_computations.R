@@ -10,19 +10,19 @@ sample_matern <- function(loc, nu, kappa, sigma, nsim = 1){
     return(t(L)%*%t(z))
 }
 
-# Example:
-s <- seq(0,1,by=0.001)
-nu <- 0.6
-kappa <- 10
-sigma <- 1
-sim <- sample_matern(loc = s, nu = nu, kappa = kappa, sigma = sigma, nsim = 10000)
-library(rSPDE)
-c.true <- matern.covariance(0.5-s, kappa=kappa, nu=nu, sigma=sigma)
-plot(s, c.true,
-     type = "l", ylab = "C(|s-0.5|)", xlab = "s", ylim = c(0, 5),
-     cex.main = 0.8, cex.axis = 0.8, cex.lab = 0.8
-   )
-lines(s, cov(t(sim))[(length(s)-1)/2+1,], col = 2)
+# # Example:
+# s <- seq(0,1,by = 0.001)
+# nu <- 0.6
+# kappa <- 10
+# sigma <- 1
+# sim <- sample_matern(loc = s, nu = nu, kappa = kappa, sigma = sigma, nsim = 10000)
+# library(rSPDE)
+# c.true <- matern.covariance(0.5-s, kappa=kappa, nu=nu, sigma=sigma)
+# plot(s, c.true,
+#      type = "l", ylab = "C(|s-0.5|)", xlab = "s", ylim = c(0, 5),
+#      cex.main = 0.8, cex.axis = 0.8, cex.lab = 0.8
+#    )
+# lines(s, cov(t(sim))[(length(s)-1)/2+1,], col = 2)
 
 
 sample_y <- function(loc, nu, kappa, sigma, sigma_e, seed=123){
@@ -31,8 +31,8 @@ sample_y <- function(loc, nu, kappa, sigma, sigma_e, seed=123){
     return(z + sigma_e * rnorm(length(z)))
 }
 
-# Example:
-y <- sample_y(s,nu,kappa,sigma,0.1, 1)
+# # Example:
+# y <- sample_y(s,nu,kappa,sigma,0.1, 1)
 
 
 true_pred <- function(y, loc, nu, kappa, sigma, sigma_e){
@@ -48,8 +48,8 @@ true_pred <- function(y, loc, nu, kappa, sigma, sigma_e){
     return(cov_mat%*%d)
 }
 
-# Example:
-post_mean_true <- true_pred(y, loc=s, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+# # Example:
+# post_mean_true <- true_pred(y, loc=s, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
 
 #### Predict error computation
 
@@ -77,11 +77,11 @@ pred <- list()
     return(pred)
 }
 
-# Example:
-start <- Sys.time()
-post_mean_rat <- pred_rat_markov(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1, equally_spaced = TRUE)
-end <- Sys.time()
-end - start
+# # Example:
+# start <- Sys.time()
+# post_mean_rat <- pred_rat_markov(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1, equally_spaced = TRUE)
+# end <- Sys.time()
+# end - start
 
 ## Predict PCA
 
@@ -126,13 +126,13 @@ for(i_m in m){
 return(pred)
 }
 
-# Example:
-post_mean_pca <- pred_PCA(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+# # Example:
+# post_mean_pca <- pred_PCA(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
 
 
 # predict NN 
 
-pred_rat_NN <- function(loc, m, nu, kappa, sigma, sigma_e, samples, print=TRUE){
+pred_rat_NN <- function(loc, m, nu, kappa, sigma, sigma_e){
 N <- length(loc)
 
 pred <- list()     
@@ -153,11 +153,11 @@ for(i_m in m){
     return(pred)
 }
 
-# Example:
-start <- Sys.time()
-post_mean_nn <- pred_rat_NN(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
-end <- Sys.time()
-end-start
+# # Example:
+# start <- Sys.time()
+# post_mean_nn <- pred_rat_NN(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+# end <- Sys.time()
+# end-start
 
 
 # Predict Fourier
@@ -193,8 +193,8 @@ for(i_m in m){
 return(pred)
 }
 
-# Example:
-post_mean_fourier <- pred_Fourier(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma_e = 0.1)
+# # Example:
+# post_mean_fourier <- pred_Fourier(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma_e = 0.1)
 
 
 # Predict SS
@@ -224,6 +224,66 @@ for(i_m in m){
     return(pred)
 }
 
-# Example:
-post_mean_ss <- pred_statespace(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma_e = 0.1)
+# # Example:
+# post_mean_ss <- pred_statespace(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma_e = 0.1)
 
+
+# Generate complete table
+# sigma = 1
+
+compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, print = TRUE){
+    post_mean_true <- list()
+    post_mean_rat <- list()
+    post_mean_PCA <- list()
+    post_mean_nnGP <- list()
+    post_mean_fourier <- list()
+    post_mean_statespace <- list()
+
+    #Rational
+
+    for(n_loc in N){
+        loc <- seq(0,1,length.out = n_loc)
+
+        post_mean_true[[as.character(n_loc)]] <- list()
+        post_mean_rat[[as.character(n_loc)]] <- list()
+        post_mean_PCA[[as.character(n_loc)]] <- list()
+        post_mean_nnGP[[as.character(n_loc)]] <- list()
+        post_mean_fourier[[as.character(n_loc)]] <- list()
+        post_mean_statespace[[as.character(n_loc)]] <- list()
+
+        for(i in 1:length(nu.vec)) {
+            cat(i/length(nu.vec)," ")
+            nu <- nu.vec[i]
+            alpha <- nu + 0.5  
+            kappa <- sqrt(8*nu)/range
+            y <- sample_y(loc = loc,nu = nu,kappa = kappa ,sigma = 1, = sigma_e = sigma_e, seed = seed)
+            
+            if(print){
+                message("Starting true posterior")
+            }
+            post_mean_true[[as.character(n_loc)]][[as.character(nu)]] <- true_pred(y=y, loc=loc, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e)
+            if(print){
+                message("Starting rational posterior")
+            }            
+            post_mean_rat[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e, equally_spaced = TRUE)
+            if(print){
+                message("Starting PCA posterior")
+            }
+            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e = sigma_e)  
+            if(print){
+                message("Starting nnGP posterior")
+            }
+            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_NN(loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e)
+            if(print){
+                message("Starting Fourier posterior")
+            }
+            post_mean_fourier[[as.character(n_loc)]][[as.character(nu)]] <- pred_Fourier(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma_e=sigma_e,samples = 100)
+            if(print){
+                message("Starting state-space posterior")
+            }
+            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma_e=sigma_e, flim = 2, fact = 100)
+        }
+    }
+
+    matrix_pred <- matrix(nrow = length(nu.vec)*length(m.vec)*length(N), ncol = )
+}
