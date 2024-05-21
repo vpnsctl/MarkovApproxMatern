@@ -46,6 +46,32 @@ get_m <- function(nu, m, method = c("nngp", "statespace", "kl"), type = c("predi
 
 ## NN GP - nearest neighbor
 
+get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
+    k <- length(loc)
+    Bs <- Fs <- Fsi <- Diagonal(k)
+    Fs[1,1] <- sigma^2
+    Fsi[1,1] <- 1/sigma^2
+    for(i in 2:k) {
+        nbrs <- get.neighbor(i,n.nbr)
+        Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
+                                      kappa = kappa, nu = nu, sigma = sigma)
+        Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
+                                      kappa = kappa, nu = nu, sigma = sigma)
+        tmp <- solve(Sigma.nn, Sigma.in)
+        Bs[i,nbrs] <- -t(tmp)
+        Fs[i,i] <- sigma^2 - t(Sigma.in)%*%tmp
+        Fsi[i,i] <- 1/Fs[i,i]
+    }
+    return(list(Bs = Bs, Fs = Fs, Fi = Fsi))
+}
+
+get.nnQ3 <- function(loc,kappa,nu,sigma, n.nbr) {
+    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr)
+    
+    return(t(tmp$Bs) %*% tmp$Fi %*%tmp$Bs)
+}
+
+
 get.neighbor <- function(i, n.nbr) {
     if(i-n.nbr <= 0) {
         if(i==1) {
