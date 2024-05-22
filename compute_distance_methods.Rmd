@@ -95,7 +95,7 @@ source("aux_functions/aux_dist.R")
 We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
 
 ```{r}
-N <- c(1000)
+N <- 1000
 
 nu_vec=seq(0.1,2.9, by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10

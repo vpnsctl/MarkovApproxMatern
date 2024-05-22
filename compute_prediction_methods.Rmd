@@ -93,14 +93,19 @@ We will now provide the settings we will be computing the $L_2$ and $L_\infty$ d
 
 ```{r}
 N <- c(500,1000)
+# L - length of the interval, [0,L]
+L <- 20
 
-nu_vec=seq(0.1,1.4, by = 0.1)
+# nu_vec=seq(0.01, 2.99, by = 0.01)
+nu_vec=seq(0.1, 2.9, by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec <- nu_vec[idx]
-range =0.2
+range =0.2 * L
 sigma = 1
 samples = 10
 m <- 1:6
+# Std. dev. of the measurement error
+sigma_e <- 0.01
 ```
 
 
@@ -109,7 +114,7 @@ m <- 1:6
 We will now compute the distances between the posterior means with the help of the auxiliary functions `compute_pred_errors`. It will provide the predictions using our method introduced in [@BMS2024], a PCA low rank approximation, the nearest neighbor method of [@DBFG], the Fourier method of [@RR] and the state-space method of [@KS]. We will set a seed for reproducibility. This function generates the response variables that consist of a stationary Gaussian process with Matérn covariance function at different locations plus independent Gaussian measurement errors.
 
 ```{r, results="hide"}
-df_pred_error <- compute_pred_errors(N, range, nu.vec, m.vec, sigma_e, seed = 123)
+df_pred_error <- compute_pred_errors(N = N, range = range, nu.vec = nu_vec, m.vec = m, sigma_e = sigma_e, L = L, seed = 123, print=TRUE)
 ```
 
 ## Error plots
@@ -121,7 +126,7 @@ We will now compare the prediction error for the different methods.
 Let us first compare the $L_2$ distances of the rational-based approximation versus nearest neighbor method, for $N=1000$:
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "L2", methods = c("Rational", "nnGP"))
+plot_pred(df_pred_error, norm = "l2", methods = c("Rational", "nnGP"))
 ```
 
 Here, we can see that with respect to the $L_2$ norm, the Markov-based rational approximation provides a better approximation for all values of nu.
@@ -129,7 +134,7 @@ Here, we can see that with respect to the $L_2$ norm, the Markov-based rational 
 Now, the $L_\infty$ distance:
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "Linf", methods = c("Rational", "nnGP"))
+plot_pred(df_pred_error, norm = "max", methods = c("Rational", "nnGP"))
 ```
 
 With respect to the $L_\infty$ norm, we can see that the distances are very similar, with nnGP having a slightly better approximation for very small values of nu. For values of nu larger than 0.3, the Markov-based rational approximation outperforms the nearest neighbor approximation.
@@ -139,15 +144,15 @@ With respect to the $L_\infty$ norm, we can see that the distances are very simi
 Now, let us compare with the PCA approximation:
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "L2", methods = c("Rational", "PCA"))
+plot_pred(df_pred_error, norm = "l2", methods = c("Rational", "PCA"))
 ```
 
 We can see that the Markov-based rational approximation outperforms the PCA approximation with respect to the $L_2$ norm for values of nu less than 0.5. Also, observe that the PCA approximation is not feasible in the real world and here is working as a proxy of the best possible low rank approximation.
 
-Now, the $L_\infty$ distance:
+Now, the $Max$ norm:
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "Linf", methods = c("Rational", "PCA"))
+plot_pred(df_pred_error, norm = "max", methods = c("Rational", "PCA"))
 ```
 
 With respect to the $L_\infty$ norm, we can see that the Markov-based rational approximation outperforms the PCA approximation for nu less than 1.
@@ -157,13 +162,13 @@ With respect to the $L_\infty$ norm, we can see that the Markov-based rational a
 Let us now compare with the Fourier-based approximation:
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "L2", methods = c("Rational", "Fourier"))
+plot_pred(df_pred_error, norm = "l2", methods = c("Rational", "Fourier"))
 ```
 
 Now, the $L_\infty$ distance:
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "Linf", methods = c("Rational", "Fourier"))
+plot_pred(df_pred_error, norm = "max", methods = c("Rational", "Fourier"))
 ```
 
 By looking at both plots, we can see that the Fourier-based approximation is very poor compared to the other methods.
@@ -174,7 +179,7 @@ Finally, let us compare with state-space:
 
 
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "L2", methods = c("Rational", "State-Space"))
+plot_pred(df_pred_error, norm = "l2", methods = c("Rational", "State-Space"))
 ```
 
 For $m\geq 2$, we have that the Markov-based rational approximation considerably outperforms the state-space approximation with respect to the $L_2$ norm. For nu greater than 2.5, the Markov-based rational approximation outperforms the state-space approximation for $m\geq 3$.

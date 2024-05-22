@@ -61,10 +61,45 @@ N <- length(loc)
 pred <- list()
     for(i_m in m){
         if(nu < 0.5){
-            r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
+            # r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
+            r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
         } else {
-            r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
+            # r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
+            r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
         } 
+            r$Q <- (r$Q + t(r$Q))/2
+            A_mat = t(r$A)
+            Q_xgiveny <-(A_mat%*% (r$A))/sigma_e^2 + r$Q
+            post_y <- (A_mat%*% y)/sigma_e^2
+            # R <- Matrix::Cholesky(Q_xgiveny, perm=FALSE)
+            R <- Matrix::Cholesky(Q_xgiveny)            
+            mu_xgiveny <- solve(R, post_y, system = "A")
+            approx_mean1 <-  r$A %*% mu_xgiveny
+            pred[[as.character(i_m)]] <- approx_mean1
+        }
+    return(pred)
+}
+
+# # Example:
+# start <- Sys.time()
+# post_mean_rat <- pred_rat_markov(y, loc=s, m = 1:6, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1, equally_spaced = TRUE)
+# end <- Sys.time()
+# end - start
+
+
+
+## Predict rational markov (our method) - LDL version
+
+pred_rat_markov_ldl <- function(y, loc, m, nu, kappa, sigma, sigma_e, equally_spaced = FALSE){
+N <- length(loc)
+pred <- list()
+    for(i_m in m){
+        if(nu < 0.5){
+            r <- rSPDE::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
+        } else {
+            r <- rSPDE::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
+        } 
+            r$Q <- t(r$L) %*% t(r$D) %*% r$L
             r$Q <- (r$Q + t(r$Q))/2
             A_mat = t(r$A)
             Q_xgiveny <-(A_mat%*% (r$A))/sigma_e^2 + r$Q
@@ -96,6 +131,7 @@ rat_m <- m
 m <- get_m(nu = nu, m = m, method = "kl", type = "prediction")
 count <- 1
 for(i_m in m){
+    i_m <- min(i_m, N/2)
     K <- eigen_cov$vec[,1:i_m]    
     D <- diag(eigen_cov$val[1:i_m])    
     if(method == "woodbury"){
@@ -132,7 +168,7 @@ return(pred)
 
 # predict NN 
 
-pred_rat_NN <- function(loc, m, nu, kappa, sigma, sigma_e){
+pred_rat_NN <- function(y, loc, m, nu, kappa, sigma, sigma_e){
 N <- length(loc)
 
 pred <- list()     
@@ -200,10 +236,10 @@ return(pred)
 # Predict SS
 # loc in [0,1]
 
-pred_statespace <- function(y, loc, m, nu, kappa, sigma_e, flim = 2, fact = 100){
+pred_statespace <- function(y, loc, m, nu, kappa, sigma_e, L=1, flim = 2, fact = 100){
 N <- length(loc)
 ind = 1 + fact*(0:(N-1))
-h2 = seq(from=0,to=1,length.out=fact*(N-1)+1)
+h2 = seq(from=0,to=L,length.out=fact*(N-1)+1)
 pred <- list()     
 rat_m <- m
 m <- get_m(nu = nu, m = m, method = "statespace", type = "prediction")
@@ -230,10 +266,12 @@ for(i_m in m){
 
 # Generate complete table
 # sigma = 1
+# L is the length of the interval
 
-compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, print = FALSE){
+compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, L = 1, seed = 123, print = FALSE){
     post_mean_true <- list()
     post_mean_rat <- list()
+    post_mean_rat_ldl <- list()    
     post_mean_PCA <- list()
     post_mean_nnGP <- list()
     post_mean_fourier <- list()
@@ -242,10 +280,11 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
     #Rational
 
     for(n_loc in N){
-        loc <- seq(0,1,length.out = n_loc)
+        loc <- seq(0,L,length.out = n_loc)
 
         post_mean_true[[as.character(n_loc)]] <- list()
         post_mean_rat[[as.character(n_loc)]] <- list()
+        post_mean_rat_ldl[[as.character(n_loc)]] <- list()        
         post_mean_PCA[[as.character(n_loc)]] <- list()
         post_mean_nnGP[[as.character(n_loc)]] <- list()
         post_mean_fourier[[as.character(n_loc)]] <- list()
@@ -267,13 +306,17 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
             }            
             post_mean_rat[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e, equally_spaced = TRUE)
             if(print){
+                message("Starting rational ldl posterior")
+            }            
+            post_mean_rat_ldl[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e, equally_spaced = TRUE)            
+            if(print){
                 message("Starting PCA posterior")
             }
             post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e = sigma_e)  
             if(print){
                 message("Starting nnGP posterior")
             }
-            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_NN(loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e)
+            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_NN(y = y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e)
             if(print){
                 message("Starting Fourier posterior")
             }
@@ -321,6 +364,21 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
             }
         }
     }
+
+    ## LDL
+    for(i in 1:length(N)){
+        for(j in 1:length(nu.vec)){
+                df_tmp <- data.frame(Method = "Rational_LDL", nu = nu.vec[j], Norm = "l2", N = N[i], m = m.vec)
+                tmp_true <- post_mean_true[[as.character(N[i])]][[as.character(nu.vec[j])]]
+                error_l2_tmp <- unlist(lapply(post_mean_rat_ldl[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){norm(as.vector(y_hat)-tmp_true)}))
+                error_max_tmp <- unlist(lapply(post_mean_rat_ldl[[as.character(N[i])]][[as.character(nu.vec[j])]], function(y_hat){max(abs(as.vector(y_hat)-tmp_true))}))    
+                df_tmp[["Error"]] <- error_l2_tmp
+                df_pred <- rbind(df_pred, df_tmp)
+                df_tmp <- data.frame(Method = "Rational_LDL", nu = nu.vec[j], Norm = "max", N = N[i], m = m.vec)
+                df_tmp[["Error"]] <- error_max_tmp
+                df_pred <- rbind(df_pred, df_tmp)            
+        }
+    }    
 
     ## PCA
     for(i in 1:length(N)){
@@ -381,6 +439,7 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
                 df_pred <- rbind(df_pred, df_tmp)            
         }
     }
+    df_pred[["m"]] <- as.character(df_pred[["m"]])
     return(df_pred)
 }
 
@@ -394,21 +453,21 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, seed = 123, pr
 
 library(ggplot2)
 
-plot_pred <- function(df_dist, n_loc = NULL, distance = c("L2", "Linf"), methods = NULL, logscale = TRUE){
+plot_pred <- function(df_pred, n_loc = NULL, norm = c("l2", "max"), methods = NULL, logscale = TRUE){
     if(is.null(n_loc)){
-        n_loc <- df_dist[["N"]][1]
+        n_loc <- df_pred[["N"]][1]
     }
     n_loc <- as.character(n_loc)
-    df_dist <- df_dist |> dplyr::filter(N == n_loc)
+    df_pred <- df_pred |> dplyr::filter(N == n_loc)
     if(is.null(methods)){
-        methods <- unique(df_dist[["Method"]])
+        methods <- unique(df_pred[["Method"]])
     }
-    distance <- distance[[1]]
+    norm <- norm[[1]]
     if(logscale){
-        return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
+        return(df_pred |> dplyr::filter(Norm == norm, Method %in% methods) |> ggplot2::ggplot() + 
             geom_line(aes(x = nu, y = Error, col = m,linetype=Method)) + scale_y_log10())
     } else{
-        return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
+        return(df_pred |> dplyr::filter(Norm == norm, Method %in% methods) |> ggplot2::ggplot() + 
             geom_line(aes(x = nu, y = Error, col = m,linetype=Method)))
     }
 }

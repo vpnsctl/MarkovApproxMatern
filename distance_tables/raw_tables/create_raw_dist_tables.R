@@ -14,8 +14,6 @@ sigma = 1
 m <- 1:6
 samples = 10
 
-nu <- 0.6
-m <- 1
 
 
 dist_rat <- compute_distances_rational(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
