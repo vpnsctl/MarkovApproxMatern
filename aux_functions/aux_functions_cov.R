@@ -17,25 +17,25 @@ get_m <- function(nu, m, method = c("nngp", "statespace", "kl"), type = c("predi
   alpha <- nu + 0.5
   if(type == "prediction"){
     if(method == "statespace"){
-      return((m-1)*ceil(alpha) + 1)
+      return(max((m-1)*ceil(alpha) + 1,1))
     } else if(method == "nngp"){
-      return(2*round((m+3)*sqrt(m) * ceil(alpha)^(3/2)))
+      return(max(2*round((m+3)*sqrt(m) * ceil(alpha)^(3/2)),1))
     } else if(method == "kl"){
-      return(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)))
+      return(max(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
     } else{
       stop("method not implemented.")
     }
   } else{
     if(method == "statespace"){
-      return(round(ceil(alpha) * (m^(1/3)-1)) + 1)
+      return(max(round(ceil(alpha) * (m^(1/3)-1)) + 1,1))
     } else if(method == "nngp"){
       m_nngp <- round(sqrt(9*m) * ceil(alpha+2)^(3/2))
       d_m <- diff(m_nngp)
       d_m <- ifelse(d_m == 0, 1, d_m)
       m_nngp <- c(m_nngp[1], m_nngp[1]+cumsum(d_m))
-      return(m_nngp)
+      return(max(m_nngp,1))
     } else if(method == "kl"){
-      return(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)))
+      return(max(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
     } else{
       stop("method not implemented.")
     }
@@ -304,4 +304,56 @@ taper_matern <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigm
         Sigma_tap <- wendland_K2(D, gamma = gamma)
         return(Sigma*Sigma_tap)
     }
+}
+
+
+## Parsimonious rational approximation
+
+library(gsignal)
+
+kappa_integral <- function(n, beta, kappa) {
+    y <- 0
+    for (k in 0:n) {
+        y <- y + (-1)^(k + 1) * choose(n, k) / (n - k - beta + 1)
+    }
+    return(kappa^(2 * (n - beta + 1)) * y)
+}
+
+lapprox <- function(beta, kappa) {
+    nu <- 2 * beta - 1 / 2
+    alpha <- nu + 1 / 2
+    L <- alpha - floor(alpha)
+    const <- gamma(nu)/(gamma(alpha)*(4*pi)^(1/2)*kappa^(2*nu))
+    p <- ceiling(alpha)
+    B <- matrix(0, nrow = p + 1, ncol = p + 1)
+    c <- numeric(p + 1)
+    for (i in 0:p) {
+        c[i + 1] <- 2 * kappa_integral(i, -alpha + 2 * p + 1 + L, kappa)
+        for (j in 0:p) {
+            B[j + 1, i + 1] <- 2 * kappa_integral(i + j, 2 * p + 1 + L, kappa)
+        }
+    }
+    b <- solve(solve(diag(sqrt(diag(B))), B), solve(diag(sqrt(diag(B))), c))
+    return (const*b)
+}
+
+lindgren_cov <- function(x, kappa, beta) {
+    b <- lapprox(beta, kappa)
+    b <- rev(b)
+    rpk <- residue(1, b)
+    r = rev(rpk$r)
+    p = rev(rpk$p)
+    length_r <- length(r)
+    nu <- 2 * beta - 1 / 2
+    C <- 0
+    for (i in 1:length_r) {
+        a <- sqrt(-p[i])
+        Ci <- r[i]  * exp(-a * x) /(2 * a) 
+        C <- C + Ci
+    }
+    C <- Re(C)
+    if (is.nan(C[1])) {
+        C[1] <- C[2]
+    }
+    return(C)
 }

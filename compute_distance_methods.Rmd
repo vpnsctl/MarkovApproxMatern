@@ -103,7 +103,8 @@ nu_vec <- nu_vec[idx]
 range =0.2
 sigma = 1
 samples = 10
-m <- 1:6
+# m = 0 is the parsimonious method
+m <- 0:6
 ```
 
 
@@ -118,9 +119,9 @@ dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, si
 
 dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples)
+dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples)
 
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range)
+dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 ```
 
 ## Distance plots based on prediction calibration

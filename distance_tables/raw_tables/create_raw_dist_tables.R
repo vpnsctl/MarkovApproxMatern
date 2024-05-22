@@ -25,10 +25,10 @@ saveRDS(dist_nngp, "distance_tables/dist_nngp_range1v2.RDS")
 dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 saveRDS(dist_pca, "distance_tables/dist_pca_range1.RDS")
 
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples)
+dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples, sigma=sigma)
 saveRDS(dist_fourier, "distance_tables/dist_fourier_range1.RDS")
 
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range)
+dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 saveRDS(dist_ss, "distance_tables/dist_ss_range1.RDS")
 
 
@@ -43,8 +43,8 @@ saveRDS(dist_nngp, "distance_tables/dist_nngp_samp_range05.RDS")
 dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
 saveRDS(dist_pca, "distance_tables/dist_pca_samp_range1.RDS")
 
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, samples=samples, type = "simulation")
+dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma = sigma, samples=samples, type = "simulation")
 saveRDS(dist_fourier, "distance_tables/dist_fourier_samp_range1.RDS")
 
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, type = "simulation")
+dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, type = "simulation")
 saveRDS(dist_ss, "distance_tables/dist_ss_samp_range1.RDS")

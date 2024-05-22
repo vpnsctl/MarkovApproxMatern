@@ -197,9 +197,8 @@ for(i_m in m){
 
 
 # Predict Fourier
-# Implemented for sigma = 1
 
-pred_Fourier <- function(y, loc, m, nu, kappa, sigma_e,samples = 100){
+pred_Fourier <- function(y, loc, m, nu, kappa, sigma, sigma_e,samples = 100){
 N <- length(loc)
 pred <- list()
 D_loc <- dist2matR(dist(loc))
@@ -209,7 +208,7 @@ count <- 1
 for(i_m in m){
     post_mean <- rep(0, length(y))
     for(jj in 1:samples){
-        K <-  ff.comp(m = i_m, kappa = kappa, alpha = nu + 0.5, loc = loc)
+        K <-  ff.comp(m = i_m, kappa = kappa, alpha = nu + 0.5, loc = loc) * sigma^2
         tK <- t(K)
         I_mat_low <- Matrix::Diagonal(x = 1, n = ncol(K))
         I_mat_high <- Matrix::Diagonal(x = 1, n = nrow(K))
@@ -236,7 +235,7 @@ return(pred)
 # Predict SS
 # loc in [0,1]
 
-pred_statespace <- function(y, loc, m, nu, kappa, sigma_e, L=1, flim = 2, fact = 100){
+pred_statespace <- function(y, loc, m, nu, kappa, sigma, sigma_e, L=1, flim = 2, fact = 100){
 N <- length(loc)
 ind = 1 + fact*(0:(N-1))
 h2 = seq(from=0,to=L,length.out=fact*(N-1)+1)
@@ -249,6 +248,7 @@ for(i_m in m){
         S1 <- ab2spec(coeff$a,coeff$b,h2, flim = flim)
         r1 <- S2cov(S1,h2,flim = flim)
         acf <- r1[ind]
+        acf <- acf * sigma^2
         cov_mat <- toeplitz(acf, symmetric=TRUE)
         acf2 <- acf
         acf2[1] <- acf2[1] + sigma_e^2
@@ -265,10 +265,9 @@ for(i_m in m){
 
 
 # Generate complete table
-# sigma = 1
 # L is the length of the interval
 
-compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, L = 1, seed = 123, print = FALSE){
+compute_pred_errors <- function(N, range, sigma, nu.vec, m.vec, sigma_e, L = 1, seed = 123, print = FALSE){
     post_mean_true <- list()
     post_mean_rat <- list()
     post_mean_rat_ldl <- list()    
@@ -295,36 +294,36 @@ compute_pred_errors <- function(N, range, nu.vec, m.vec, sigma_e, L = 1, seed = 
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
-            y <- sample_y(loc = loc,nu = nu,kappa = kappa ,sigma = 1, sigma_e = sigma_e, seed = seed)
+            y <- sample_y(loc = loc,nu = nu,kappa = kappa ,sigma = sigma, sigma_e = sigma_e, seed = seed)
             
             if(print){
                 message("Starting true posterior")
             }
-            post_mean_true[[as.character(n_loc)]][[as.character(nu)]] <- true_pred(y=y, loc=loc, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e)
+            post_mean_true[[as.character(n_loc)]][[as.character(nu)]] <- true_pred(y=y, loc=loc, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e)
             if(print){
                 message("Starting rational posterior")
             }            
-            post_mean_rat[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e, equally_spaced = TRUE)
+            post_mean_rat[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e, equally_spaced = TRUE)
             if(print){
                 message("Starting rational ldl posterior")
             }            
-            post_mean_rat_ldl[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e, equally_spaced = TRUE)            
+            post_mean_rat_ldl[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e, equally_spaced = TRUE)            
             if(print){
                 message("Starting PCA posterior")
             }
-            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e = sigma_e)  
+            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)  
             if(print){
                 message("Starting nnGP posterior")
             }
-            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_NN(y = y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=1, sigma_e=sigma_e)
+            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_NN(y = y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e)
             if(print){
                 message("Starting Fourier posterior")
             }
-            post_mean_fourier[[as.character(n_loc)]][[as.character(nu)]] <- pred_Fourier(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma_e=sigma_e,samples = 100)
+            post_mean_fourier[[as.character(n_loc)]][[as.character(nu)]] <- pred_Fourier(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e,samples = 100)
             if(print){
                 message("Starting state-space posterior")
             }
-            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma_e=sigma_e, flim = 2, fact = 100)
+            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace(y=y, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e, flim = 2, fact = 100)
         }
     }
 

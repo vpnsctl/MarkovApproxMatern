@@ -15,12 +15,17 @@ compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
-                if(nu < 0.5) {
-                    col_tmp <- rSPDE::matern.rational(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "brasil", type_interp = "spline")    
+                if(m == 0){
+                    col_tmp <- lindgren_cov(loc, kappa = kappa, beta = (nu + 1/2)/2) * sigma^2
                     Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
-                } else {
-                    col_tmp <- rSPDE::matern.rational(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "chebfun", type_interp = "spline")
-                    Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
+                } else{
+                    if(nu < 0.5) {
+                        col_tmp <- rSPDE::matern.rational(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "brasil", type_interp = "spline")    
+                        Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
+                    } else {
+                        col_tmp <- rSPDE::matern.rational(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "chebfun", type_interp = "spline")
+                        Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
+                    }
                 }
                 l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_rat)^2))*(loc[2]-loc[1])
                 sup.err[i,j] <- max(abs(Sigma.t-Sigma_rat))
@@ -37,9 +42,8 @@ compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
 }
 
 # Statespace
-# Only implemented for sigma = 1
 
-compute_distances_statespace <- function(N, m.vec, nu.vec, range, flim = 2, fact = 100, type = "prediction"){
+compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 2, fact = 100, type = "prediction"){
     L2dist <- list()
     Linfdist <- list()
     for(n_loc in N){
@@ -47,7 +51,6 @@ compute_distances_statespace <- function(N, m.vec, nu.vec, range, flim = 2, fact
         loc <- seq(0, 1, length.out = n_loc+1)
         ind = 1 + fact*(0:n_loc)
         h2 = seq(from=0,to=1,length.out= fact*n_loc+1)
-        print(max(abs(loc-h2[ind])))
         D <- dist2matR(dist(loc))
         for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
@@ -61,7 +64,7 @@ compute_distances_statespace <- function(N, m.vec, nu.vec, range, flim = 2, fact
                 coeff <- spec.coeff(kappa,alpha,m)
                 S1 <- ab2spec(coeff$a,coeff$b,h2, flim = flim)
                 r1 <- S2cov(S1,h2,flim = flim)
-                Sigma_nn <- toeplitz(r1[ind])
+                Sigma_nn <- toeplitz(r1[ind] * sigma^2)
                 l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
                 sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))
             }
@@ -197,8 +200,7 @@ compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, typ
 
 
 # Fourier
-# Implemented for sigma = 1
-compute_distances_fourier <- function(N, m.vec, nu.vec, range, samples, type = "prediction"){
+compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, type = "prediction"){
     L2dist <- list()
     Linfdist <- list()
     for(n_loc in N){
@@ -215,7 +217,7 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, samples, type = "
                 m = m.vec[j]
                 m <- get_m(nu = nu, m = m, method = "kl", type = type)                
                 for(k in 1:samples){
-                    Sigma_fou <- ff.approx(m=m, kappa=kappa, alpha = alpha, loc = loc)      
+                    Sigma_fou <- ff.approx(m=m, kappa=kappa, alpha = alpha, loc = loc) * sigma^2      
                     l2.err[i,j] <- l2.err[i,j] + sqrt(sum((Sigma.t-Sigma_fou)^2))*(loc[2]-loc[1])/samples
                     sup.err[i,j] <- sup.err[i,j] + max(abs(Sigma.t-Sigma_fou))/samples
                 }
