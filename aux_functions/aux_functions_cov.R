@@ -59,20 +59,42 @@ get.neighbor <- function(i, n.nbr) {
 
 get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
     k <- length(loc)
-    Bs <- Fs <- Fsi <- Matrix::Diagonal(k)
-    Fs[1,1] <- sigma^2
-    Fsi[1,1] <- 1/sigma^2
+    ii <- numeric((2*k-n.nbr)*(n.nbr+1)/2)
+    jj <- numeric((2*k-n.nbr)*(n.nbr+1)/2)
+    val <- numeric((2*k-n.nbr)*(n.nbr+1)/2)
+    
+    Fs.d <- Fsi.d <- numeric(k)
+    
+    Fs.d[1] <- sigma^2
+    Fsi.d[1] <- 1/sigma^2
+    val[1] <- 1
+    ii[1] <- 1
+    jj[1] <- 1
+    counter <- 1
     for(i in 2:k) {
         nbrs <- get.neighbor(i,n.nbr)
         Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
                                       kappa = kappa, nu = nu, sigma = sigma)
         Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
                                       kappa = kappa, nu = nu, sigma = sigma)
+        N <- length(nbrs) + 1
         tmp <- solve(Sigma.nn, Sigma.in)
-        Bs[i,nbrs] <- -t(tmp)
-        Fs[i,i] <- sigma^2 - t(Sigma.in)%*%tmp
-        Fsi[i,i] <- 1/Fs[i,i]
+        val[counter + (1:N)] <- c(-t(tmp),1)
+        ii[counter + (1:N)] <- rep(i,N)
+        jj[counter + (1:N)] <- (i-N+1):i
+        Fs.d[i] <- sigma^2 - t(Sigma.in)%*%tmp
+        Fsi.d[i] <- 1/Fs.d[i]
+        
+        counter <- counter + N
+        
     }
+    
+    Bs <-  Matrix::sparseMatrix(i   = ii,
+                                j    = jj,
+                                x    = val,
+                                dims = c(k, k))
+    Fs <-  Matrix::Diagonal(k,Fs.d)
+    Fsi <-  Matrix::Diagonal(k,Fsi.d)
     return(list(Bs = Bs, Fs = Fs, Fi = Fsi))
 }
 
