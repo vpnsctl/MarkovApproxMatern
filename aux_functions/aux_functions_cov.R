@@ -2,6 +2,74 @@
 
 library(rSPDE)
 
+nn.like <- function(theta, loc, n.nbr, Y,nu = NULL) {
+    kappa = exp(theta[1])
+    sigma = exp(theta[2])
+    if(length(theta)==4) { 
+        nu = exp(theta[3])
+        sigma.e = exp(theta[4])
+    } else {
+        sigma.e = exp(theta[3])    
+    }
+
+    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr)
+    
+    n <- length(Y)
+    
+    prior.ld <- 0.5 * sum(log(diag(tmp$Fi)))
+    
+    Q.post <- t(tmp$Bs)%*%tmp$Fi%*%tmp$Bs + Diagonal(n) / sigma.e^2
+    
+    
+    R.post <- Matrix::Cholesky(Q.post)
+    
+    posterior.ld <-  c(determinant(R.post, logarithm = TRUE, sqrt = TRUE)$modulus)
+    
+    AtY <- Y / sigma.e^2
+    
+    mu.post <- solve(R.post, AtY, system = "A")
+    
+    lik <- prior.ld - posterior.ld - n * log(sigma.e)
+    v <- tmp$Bs %*% mu.post
+    lik <- lik - 0.5 * (t(v) %*% tmp$Fi %*% v +
+                            t(Y - mu.post) %*% (Y - mu.post) / sigma.e^2)
+    
+    return(-as.double(lik))
+}
+
+rat.like <- function(theta, loc, m, Y,nu = NULL) {
+    
+    kappa = exp(theta[1])
+    sigma = exp(theta[2])
+    if(length(theta)==4) { 
+        nu = exp(theta[3])
+        sigma.e = exp(theta[4])
+    } else {
+        sigma.e = exp(theta[3])    
+    }
+    tmp <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
+                               type_rational = "brasil", type_interp =  "spline")    
+    n <- length(Y)
+    
+    prior.ld <- 0.5 * sum(log(diag(tmp$D)))
+    
+    Q.post <- t(tmp$L)%*%tmp$D%*%tmp$L + t(tmp$A) %*% tmp$A / sigma.e^2
+    
+    R.post <- Matrix::Cholesky(Q.post)
+    
+    posterior.ld <- c(determinant(R.post, logarithm = TRUE, sqrt = TRUE)$modulus)
+    
+    AtY <- t(tmp$A) %*% Y / sigma.e^2
+    
+    mu.post <- solve(R.post, AtY, system = "A")
+    
+    lik <- prior.ld - posterior.ld - n * log(sigma.e)
+    v <- tmp$L %*% mu.post
+    lik <- lik -  0.5 * (t(v) %*% tmp$D %*% v +
+                             t(Y - tmp$A %*% mu.post) %*% (Y - tmp$A %*% mu.post) / sigma.e^2)
+    
+    return(-as.double(lik))
+}
 # Sparse matrices
 
 library(Matrix)
@@ -44,20 +112,33 @@ get_m <- function(nu, m, method = c("nngp", "statespace", "kl"), type = c("predi
 
 ## NN GP - nearest neighbor
 
-get.neighbor <- function(i, n.nbr) {
-    if(i-n.nbr <= 0) {
-        if(i==1) {
-            return(numeric())
+get.neighbor <- function(i, n.nbr, S = NULL) {
+    if(is.null(S)) {
+        S = 1:i
+        S.i <- sort(S[S<i], decreasing = TRUE)
+        if(length(S.i) < n.nbr) {
+            return(sort(S.i))
         } else {
-            return(1:(i-1))    
-        }
-        
+            return(sort(S.i[1:n.nbr]))
+        }    
     } else {
-        return((i-n.nbr):(i-1))
+        if(i %in% S) { 
+            S.i <- sort(S[S<i], decreasing = TRUE)
+            if(length(S.i) < n.nbr) {
+                return(sort(S.i))
+            } else {
+                return(sort(S.i[1:n.nbr]))
+            }    
+        } else {
+             dists <- abs(i - S)
+             return(sort(sort(dists, index.return = TRUE)$ix[1:n.nbr]))
+        }
     }
+    
+    
 }
 
-get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
+get.nn <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
     k <- length(loc)
     ii <- numeric((2*k-n.nbr)*(n.nbr+1)/2)
     jj <- numeric((2*k-n.nbr)*(n.nbr+1)/2)
@@ -72,23 +153,36 @@ get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
     jj[1] <- 1
     counter <- 1
     for(i in 2:k) {
-        nbrs <- get.neighbor(i,n.nbr)
-        Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
-                                      kappa = kappa, nu = nu, sigma = sigma)
-        Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
-                                      kappa = kappa, nu = nu, sigma = sigma)
-        N <- length(nbrs) + 1
-        tmp <- solve(Sigma.nn, Sigma.in)
-        val[counter + (1:N)] <- c(-t(tmp),1)
-        ii[counter + (1:N)] <- rep(i,N)
-        jj[counter + (1:N)] <- (i-N+1):i
-        Fs.d[i] <- sigma^2 - t(Sigma.in)%*%tmp
-        Fsi.d[i] <- 1/Fs.d[i]
+        nbrs <- get.neighbor(i,n.nbr, S)
+        if(isempty(nbrs)) {
+            Fs.d[i] <- sigma^2
+            Fsi.d[i] <- 1/sigma^2
+            val[counter +1] <- 1
+            ii[counter+1] <- i
+            jj[counter+1] <- i
+            counter = counter + 1
+        } else {
+            Sigma.in <- matern.covariance(h = abs(loc[nbrs]-loc[i]),
+                                          kappa = kappa, nu = nu, sigma = sigma)
+            Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[nbrs])),
+                                          kappa = kappa, nu = nu, sigma = sigma)
+            N <- length(nbrs) + 1
+            tmp <- solve(Sigma.nn, Sigma.in)
+            val[counter + (1:N)] <- c(-t(tmp),1)
+            ii[counter + (1:N)] <- rep(i,N)
+            jj[counter + (1:N)] <- c(nbrs,i)
+            Fs.d[i] <- sigma^2 - t(Sigma.in)%*%tmp
+            Fsi.d[i] <- 1/Fs.d[i]    
+            counter <- counter + N
+        }
         
-        counter <- counter + N
+        
+        
         
     }
-    
+    ii <- ii[1:counter]
+    jj <- jj[1:counter]
+    val <- val[1:counter]
     Bs <-  Matrix::sparseMatrix(i   = ii,
                                 j    = jj,
                                 x    = val,
@@ -98,12 +192,39 @@ get.nn <- function(loc,kappa,nu,sigma, n.nbr) {
     return(list(Bs = Bs, Fs = Fs, Fi = Fsi))
 }
 
-get.nnQ <- function(loc,kappa,nu,sigma, n.nbr) {
-    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr)
+get.nnQ <- function(loc,kappa,nu,sigma, n.nbr,S=NULL) {
+    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr,S)
     
     return(t(tmp$Bs) %*% tmp$Fi %*%tmp$Bs)
 }
 
+
+get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
+    k <- length(loc)
+    N <- k*n.nbr
+    ii <- numeric(N)
+    jj <- numeric(N)
+    val <- numeric(N)
+    counter <- 0
+    for(i in 1:k) {
+        dists <- abs(loc[i] - loc[S])
+        nbrs <- sort(sort(dists, index.return = TRUE)$ix[1:n.nbr])
+        Sigma.in <- matern.covariance(h = abs(loc[S[nbrs]]-loc[i]),
+                                      kappa = kappa, nu = nu, sigma = sigma)
+        Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[S[nbrs]])),
+                                      kappa = kappa, nu = nu, sigma = sigma)
+
+        val[counter + (1:n.nbr)] <- t(solve(Sigma.nn,Sigma.in))
+        ii[counter + (1:n.nbr)] <- rep(i,n.nbr)
+        jj[counter + (1:n.nbr)] <- nbrs
+        counter <- counter + n.nbr
+    }
+    Bs <-  Matrix::sparseMatrix(i   = ii,
+                                j    = jj,
+                                x    = val,
+                                dims = c(k, length(S)))
+    return(Bs)
+}
 ## Fourier 
 
 
