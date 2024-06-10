@@ -3,8 +3,8 @@ source("aux_functions/aux_functions_cov.R")
 range = 2
 sigma = 2
 sigma.e <- 0.2
-n <- 2000
-n.obs <- 1000
+n <- 3000
+n.obs <- 2500
 n.rep <- 1
 loc <- seq(0,n/100,length.out=n)
 
@@ -30,7 +30,14 @@ for(kk in 1:n.rep) {
             m <- m.vec[j]
             
             #mn <- round(sqrt((m+1)^3*(ceil(alpha)+1)^2))
-            mn <- round(((m-1)*(ceil(alpha)+1)^(1.5)))
+            if(alpha<1) {
+                mn <- m
+            } else if (alpha < 2) {
+                mn <- round(m*(ceil(alpha)+1)^1.5)    
+            } else {
+                mn <- round(m*(ceil(alpha)+1)^1.5)
+            }
+            
             
             t1 <- Sys.time()
             Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn)
