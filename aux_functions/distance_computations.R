@@ -215,13 +215,14 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, t
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=1)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
-                m <- get_m(nu = nu, m = m, method = "kl", type = type)                
+                m <- get_m(nu = nu, m = m, method = "kl", type = type)    
+                Sigma_fou <- matrix(0, ncol=ncol(Sigma.t), nrow=nrow(Sigma.t))            
                 for(k in 1:samples){
-                    Sigma_fou <- ff.approx(m=m, kappa=kappa, alpha = alpha, loc = loc) * sigma^2      
-                    l2.err[i,j] <- l2.err[i,j] + sqrt(sum((Sigma.t-Sigma_fou)^2))*(loc[2]-loc[1])/samples
-                    sup.err[i,j] <- sup.err[i,j] + max(abs(Sigma.t-Sigma_fou))/samples
+                    Sigma_fou <- Sigma_fou + ff.approx(m=m, kappa=kappa, alpha = alpha, loc = loc) * sigma^2      
                 }
-          
+                Sigma_fou <- Sigma_fou/samples
+                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_fou)^2))*(loc[2]-loc[1])
+                sup.err[i,j] <-max(abs(Sigma.t-Sigma_fou))
             }
         }
         L2dist[[as.character(n_loc)]] <- l2.err

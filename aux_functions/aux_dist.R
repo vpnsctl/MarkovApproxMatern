@@ -71,7 +71,7 @@ process_dist <- function(...){
 
 library(ggplot2)
 
-plot_dist <- function(df_dist, n_loc = NULL, distance = c("L2", "Linf"), methods = NULL, logscale = TRUE){
+plot_dist <- function(df_dist, n_loc = NULL, distance = c("L2", "Linf"), methods = NULL, logscale = TRUE, style=1){
     if(is.null(n_loc)){
         n_loc <- df_dist[["N"]][1]
     }
@@ -82,8 +82,13 @@ plot_dist <- function(df_dist, n_loc = NULL, distance = c("L2", "Linf"), methods
     }
     distance <- distance[[1]]
     if(logscale){
-        return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
-            geom_line(aes(x = nu, y = Error, col = m,linetype=Method)) + scale_y_log10())
+        if(style==1){
+            return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
+                geom_line(aes(x = nu, y = Error, col = m,linetype=Method)) + scale_y_log10())
+        } else{
+                        return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
+                geom_line(aes(x = nu, y = Error, col = Method,linetype=m)) + scale_y_log10())
+        }
     } else{
         return(df_dist |> dplyr::filter(Dist == distance, Method %in% methods) |> ggplot2::ggplot() + 
             geom_line(aes(x = nu, y = Error, col = m,linetype=Method)))

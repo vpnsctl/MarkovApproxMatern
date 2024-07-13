@@ -2,40 +2,15 @@
 
 library(rSPDE)
 
-nn.like <- function(theta, loc, n.nbr, Y,nu = NULL) {
-    kappa = exp(theta[1])
-    sigma = exp(theta[2])
-    if(length(theta)==4) { 
-        nu = exp(theta[3])
-        sigma.e = exp(theta[4])
-    } else {
-        sigma.e = exp(theta[3])    
-    }
+# Sparse matrices
 
-    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr)
-    
-    n <- length(Y)
-    
-    prior.ld <- 0.5 * sum(log(diag(tmp$Fi)))
-    
-    Q.post <- t(tmp$Bs)%*%tmp$Fi%*%tmp$Bs + Diagonal(n) / sigma.e^2
-    
-    
-    R.post <- Matrix::Cholesky(Q.post)
-    
-    posterior.ld <-  c(determinant(R.post, logarithm = TRUE, sqrt = TRUE)$modulus)
-    
-    AtY <- Y / sigma.e^2
-    
-    mu.post <- solve(R.post, AtY, system = "A")
-    
-    lik <- prior.ld - posterior.ld - n * log(sigma.e)
-    v <- tmp$Bs %*% mu.post
-    lik <- lik - 0.5 * (t(v) %*% tmp$Fi %*% v +
-                            t(Y - mu.post) %*% (Y - mu.post) / sigma.e^2)
-    
-    return(-as.double(lik))
-}
+library(Matrix)
+
+# Toeplitz
+
+library(SuperGauss)
+
+# Our method
 
 rat.like <- function(theta, loc, m, Y,nu = NULL) {
     
@@ -70,13 +45,6 @@ rat.like <- function(theta, loc, m, Y,nu = NULL) {
     
     return(-as.double(lik))
 }
-# Sparse matrices
-
-library(Matrix)
-
-# Toeplitz
-
-library(SuperGauss)
 
 # get corresponding m to other method based on ours:
 
@@ -85,25 +53,34 @@ get_m <- function(nu, m, method = c("nngp", "statespace", "kl"), type = c("predi
   alpha <- nu + 0.5
   if(type == "prediction"){
     if(method == "statespace"){
-      return(max((m-1)*ceil(alpha) + 1,1))
+      return(pmax((m-1)*ceil(alpha) + 1,1))
     } else if(method == "nngp"){
-      return(max(2*round((m+3)*sqrt(m) * ceil(alpha)^(3/2)),1))
+        if(alpha < 1.5){
+            return(m+1)
+        }
+      return(pmax(2*round((m+3)*sqrt(m) * ceil(alpha)^(3/2)),1))
     } else if(method == "kl"){
-      return(max(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+      return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
     } else{
       stop("method not implemented.")
     }
   } else{
     if(method == "statespace"){
-      return(max(round(ceil(alpha) * (m^(1/3)-1)) + 1,1))
+    #   return(pmax(round(ceil(alpha) * (m^(1/3)-1)) + 1,1))
+    return(m+floor(alpha) + 1)
     } else if(method == "nngp"){
-      m_nngp <- round(sqrt(9*m) * ceil(alpha+2)^(3/2))
+      m_nngp <- round(8*(m+1)* ceil(alpha+1))
       d_m <- diff(m_nngp)
       d_m <- ifelse(d_m == 0, 1, d_m)
       m_nngp <- c(m_nngp[1], m_nngp[1]+cumsum(d_m))
-      return(max(m_nngp,1))
+      return(pmax(m_nngp,1))
     } else if(method == "kl"){
-      return(max(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+        m_kl <- round(8*(m+1) * ceil(alpha+1))
+        d_m <- diff(m_kl)
+        d_m <- ifelse(d_m == 0, 1, d_m)
+        m_kl <- c(m_kl[1], m_kl[1]+cumsum(d_m))
+        m_kl <- m_kl + 1
+        return(pmax(m_kl,1))
     } else{
       stop("method not implemented.")
     }
@@ -225,6 +202,44 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
                                 dims = c(k, length(S)))
     return(Bs)
 }
+
+
+nn.like <- function(theta, loc, n.nbr, Y,nu = NULL) {
+    kappa = exp(theta[1])
+    sigma = exp(theta[2])
+    if(length(theta)==4) { 
+        nu = exp(theta[3])
+        sigma.e = exp(theta[4])
+    } else {
+        sigma.e = exp(theta[3])    
+    }
+
+    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr)
+    
+    n <- length(Y)
+    
+    prior.ld <- 0.5 * sum(log(diag(tmp$Fi)))
+    
+    Q.post <- t(tmp$Bs)%*%tmp$Fi%*%tmp$Bs + Diagonal(n) / sigma.e^2
+    
+    
+    R.post <- Matrix::Cholesky(Q.post)
+    
+    posterior.ld <-  c(determinant(R.post, logarithm = TRUE, sqrt = TRUE)$modulus)
+    
+    AtY <- Y / sigma.e^2
+    
+    mu.post <- solve(R.post, AtY, system = "A")
+    
+    lik <- prior.ld - posterior.ld - n * log(sigma.e)
+    v <- tmp$Bs %*% mu.post
+    lik <- lik - 0.5 * (t(v) %*% tmp$Fi %*% v +
+                            t(Y - mu.post) %*% (Y - mu.post) / sigma.e^2)
+    
+    return(-as.double(lik))
+}
+
+
 ## Fourier 
 
 

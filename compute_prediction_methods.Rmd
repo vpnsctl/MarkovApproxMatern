@@ -94,13 +94,14 @@ We will now provide the settings we will be computing the $L_2$ and $L_\infty$ d
 ```{r}
 N <- c(500,1000)
 # L - length of the interval, [0,L]
-L <- 20
+L <- 10
+N <- 500
 
 # nu_vec=seq(0.01, 2.99, by = 0.01)
-nu_vec=seq(0.1, 2.9, by = 0.1)
+nu_vec=seq(0.1, 1.5,  by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec <- nu_vec[idx]
-range =0.2 * L
+range = 1
 sigma = 1
 samples = 10
 m <- 1:6
@@ -114,7 +115,7 @@ sigma_e <- 0.01
 We will now compute the distances between the posterior means with the help of the auxiliary functions `compute_pred_errors`. It will provide the predictions using our method introduced in [@BMS2024], a PCA low rank approximation, the nearest neighbor method of [@DBFG], the Fourier method of [@RR] and the state-space method of [@KS]. We will set a seed for reproducibility. This function generates the response variables that consist of a stationary Gaussian process with Matérn covariance function at different locations plus independent Gaussian measurement errors.
 
 ```{r, results="hide"}
-df_pred_error <- compute_pred_errors(N = N, range = range, nu.vec = nu_vec, m.vec = m, sigma_e = sigma_e, L = L, seed = 123, print=TRUE)
+df_pred_error <- compute_pred_errors(N = N, range = range, sigma=sigma, nu.vec = nu_vec, m.vec = m, sigma_e = sigma_e, L = L, seed = 123, print=TRUE)
 ```
 
 ## Error plots

@@ -73,7 +73,7 @@ For this case we will consider that we have $N=1000$ observations, the range par
 
 We start by defining the parameters:
 ```{r}
-N <- 1000
+N <- 200
 range =0.2
 sigma = 1
 samples = 10
@@ -92,7 +92,7 @@ Let us now plot the results to observe that the costs are, in fact, similar:
 library(dplyr)
 library(ggplot2)
 
-times |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha)
+times |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha)+ scale_y_log10()
 ```
 
 
@@ -106,5 +106,5 @@ times <- compare_times_simulation(N = N, m = m, range = range, sigma = sigma, ns
 
 Let us now plot the results:
 ```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-times |> filter(N == 1000) |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha)
+times |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha) + scale_y_log10()
 ```

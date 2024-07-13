@@ -35,6 +35,7 @@ time_run2_sample <- list()
 time_run2_approx <- list()
 
 for(i_m in m){
+    start = Sys.time()
     if(nu < 0.5){
         r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
     } else if ( 0.5 < nu ){
@@ -43,18 +44,19 @@ for(i_m in m){
         r$Q <- (r$Q + t(r$Q))/2
         A_mat = t(r$A)
         Q_xgiveny <-(A_mat%*% (r$A))/sigma_e^2 + r$Q
-        for (j in (1:samples))
-        {
+        # for (j in (1:samples))
+        # {
         y <- rnorm(N)
-            start = Sys.time()
             post_y <- (A_mat%*% y)/sigma_e^2
             R <- Matrix::Cholesky(Q_xgiveny, perm=FALSE)
             mu_xgiveny <- solve(R, post_y, system = "A")
             approx_mean1 <-  r$A %*% mu_xgiveny
-            end = Sys.time()
-        time_run2_sample[[as.character(i_m)]][j] = as.numeric(end-start, units = "secs")
-        }
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])/samples        
+
+
+        # }
+        end = Sys.time()
+        time_run2_sample[[as.character(i_m)]] = as.numeric(end-start, units = "secs")
+        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])
         if(print){
             print(time_run2_approx[[as.character(i_m)]])
         }
@@ -76,22 +78,23 @@ D_loc <- dist2matR(dist(loc))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
+    start = Sys.time()
     K <- eigen_cov$vec[,1:i_m]    
     D <- diag(eigen_cov$val[1:i_m])    
     cov_KL <- K%*%D%*%t(K)
     svd_K <- svd(K%*%sqrt(D))
     cov_KL_svd_U <- cov_KL %*% svd_K$u
-    for (j in (1:samples))
-    {
+    # for (j in (1:samples))
+    # {
         y=rnorm(N)
-        start = Sys.time()
+
         y_new <- t(svd_K$u) %*% y
         prec_nugget <- cov_KL_svd_U %*% Matrix::Diagonal(x = 1/(svd_K$d^2 + sigma_e^2)) 
         post_mean = prec_nugget%*%y_new
         end =Sys.time()
-        time_run2_sample[[as.character(i_m)]][j] = as.numeric(end-start, units = "secs")
-        }
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])/samples        
+        time_run2_sample[[as.character(i_m)]] = as.numeric(end-start, units = "secs")
+        # }
+        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])    
     if(print){
             print(time_run2_approx[[as.character(i_m)]])
     }
@@ -155,20 +158,20 @@ for(i in m){
 }    
 D <- dist2matR(dist(loc))     
 for(i_m in m){
+        start = Sys.time()    
         prec_mat <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
         I <- Matrix::Diagonal(n = ncol(prec_mat), x = 1)
         Q_xgiveny <- I * 1/sigma_e^2 + prec_mat
-        for (j in (1:samples))
-        {
+        # for (j in (1:samples))
+        # {
         y <- rnorm(N)
-        start = Sys.time()
               post_y <- y/sigma_e^2
               R <- Matrix::Cholesky(Q_xgiveny, perm=FALSE)
               mu_xgiveny <- solve(R, post_y, system = "A")
         end = Sys.time()
-        time_run2_sample[[as.character(i_m)]][j] = as.numeric(end-start, units = "secs")
-        }
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])/samples
+        time_run2_sample[[as.character(i_m)]] = as.numeric(end-start, units = "secs")
+        # }
+        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])
         if(print){
             print(time_run2_approx[[as.character(i_m)]])
         }
