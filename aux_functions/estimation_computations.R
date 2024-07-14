@@ -9,7 +9,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
         if(est_nu){
             t1 <- Sys.time()
             theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
-            par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m, nu = nu)
+            par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m)
             t2 <- Sys.time()
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
@@ -54,7 +54,7 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
         if(est_nu){
             t1 <- Sys.time()
             theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
-            par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, n.nbr = m, nu = nu)
+            par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, n.nbr = m)
             t2 <- Sys.time()
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
@@ -107,7 +107,7 @@ compute_timings_likelihood <- function(loc, obs_ind, nu_vec, range, sigma, sigma
                           kappa=kappa, sigma=sigma, nu = nu, sigma_e = sigma_e, est_nu = est_nu)
 
       m_nngp <- m_nngp_fun(m, alpha)
-      res[["nngp"]][[as.character(nu)]] <- compute_likelihood_nn(y=Y, loc=loc, obs_ind=obs_ind, m_vec=m, 
+      res[["nngp"]][[as.character(nu)]] <- compute_likelihood_nn(y=Y, loc=loc, obs_ind=obs_ind, m_vec=m_nngp, 
                           kappa=kappa, sigma=sigma, nu = nu,sigma_e = sigma_e, est_nu = est_nu)
       res[["true"]][[as.character(nu)]] <-  true_pred(Y, loc = loc[obs_ind], loc_pred = loc, nu = nu, 
       kappa = kappa, sigma = sigma, sigma_e = sigma_e)  

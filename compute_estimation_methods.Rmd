@@ -107,13 +107,7 @@ nu_vec <- c(0.3, 0.8, 1.4)
 m = 1:6
 
 m_nngp_fun <- function(m, alpha){
-              if(alpha<1) {
-                mn <- m
-            } else if (alpha < 2) {
-                mn <- round(m*(ceil(alpha)+1)^1.5)    
-            } else {
-                mn <- round(m*(ceil(alpha)+1)^1.5)
-            }
+         mn <- round(((m+2)*(ceil(alpha)+1)^(1.5)))
             return(mn)
 } 
 ```
@@ -214,7 +208,7 @@ Finally, let us plot the posterior means:
 
 ```{r}
 plot(loc,res_lik_est_nu[["true"]][["1.4"]], type = "l", main = "black true, red nn, green markov")
-points(loc[obs_ind],Y)
+points(loc[obs_ind],res_lik_est_nu[["Y"]][["1.4"]])
 lines(loc,res_lik_est_nu[["nngp"]][["1.4"]]$post_mean[[6]],col="red")
 lines(loc,res_lik_est_nu[["rat"]][["1.4"]]$post_mean[[6]],col="green")
 ```
