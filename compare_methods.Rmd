@@ -115,7 +115,25 @@ for(sample in 1:samples){
 
 We will now compare the times for the same choices of parameters by using the `compare_times_simulation()` function:
 
+```{r}
+m_nngp_fun_sim <- function(m, alpha){
+      m_nngp <- round(8*(m+1)* ceil(alpha+1))
+      d_m <- diff(m_nngp)
+      d_m <- ifelse(d_m == 0, 1, d_m)
+      m_nngp <- c(m_nngp[1], m_nngp[1]+cumsum(d_m))
+      return(pmax(m_nngp,1))
+} 
+m_pca_fun_sim <- function(m, alpha){
+        m_kl <- round(8*(m+1) * ceil(alpha+1))
+        d_m <- diff(m_kl)
+        d_m <- ifelse(d_m == 0, 1, d_m)
+        m_kl <- c(m_kl[1], m_kl[1]+cumsum(d_m))
+        m_kl <- m_kl + 1
+        return(pmax(m_kl,1))
+}
+```
+
 ```{r, results="hide"}
 times <- compare_times_simulation(N = N, m = m_rat, range = range, 
-sigma = sigma, nsim = 1, samples = 100, m_nngp_fun = m_nngp_fun, m_pca_fun = m_pca_fun)
+sigma = sigma, nsim = 1, samples = 100, m_nngp_fun = m_nngp_fun_sim, m_pca_fun = m_pca_fun_sim)
 ```
