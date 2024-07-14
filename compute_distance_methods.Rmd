@@ -105,6 +105,26 @@ sigma = 1
 samples = 10
 # m = 0 is the parsimonious method
 m <- 0:6
+
+m_nngp_fun <- function(m, alpha){
+              if(alpha<1) {
+                mn <- m
+            } else if (alpha < 2) {
+                mn <- round(m*(ceil(alpha)+1)^1.5)    
+            } else {
+                mn <- round(m*(ceil(alpha)+1)^1.5)
+            }
+            return(mn)
+} 
+m_pca_fun <- function(m, alpha){
+      return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+}
+m_fourier_fun <- function(m, alpha){
+    return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+}
+m_statespace_fun <- function(m, alpha){
+    return(m+floor(alpha) + 1)
+}
 ```
 
 
@@ -115,13 +135,13 @@ We will now compute the distances with the help of the auxiliary functions `comp
 ```{r, results="hide"}
 dist_rat <- compute_distances_rational(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 
-dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
 
-dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples)
+dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
 
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 ```
 
 ## Distance plots based on prediction calibration
