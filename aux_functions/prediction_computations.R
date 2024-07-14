@@ -195,6 +195,7 @@ pred_rat_markov_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted
                     }                    
                 } else{
                     approx_mean1 <-  mu_xgiveny
+                    pred[["A"]][[as.character(i_m)]] <- r$A
                 }
                 pred[[as.character(i_m)]] <- approx_mean1
                 if(return_timings){
@@ -260,6 +261,7 @@ pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, so
                     }                    
                 } else{
                     approx_mean1 <-  mu_xgiveny
+                    pred[["A"]][[as.character(i_m)]] <- r$A                    
                 }
                 pred[[as.character(i_m)]] <- approx_mean1
                 if(return_timings){
@@ -297,12 +299,21 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
         pred_obs <- pred_rat_markov_obs(y_sorted, loc_obs = sorted_loc_obs, m = m, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, sorted = sorted, test_equally_spaced = test_equally_spaced,  return_full = TRUE, return_timings = return_timings)
     }
 
+    # full_loc_pred <- loc_pred
+    # full_pred_obs <- pred_obs
+
+    # idx_pred_obs <- (loc_pred %in% loc_obs)
+
+    # loc_pred <- loc_pred[!idx_pred_obs]
+
     # print("getting obs predictions")
     # print(end-start)
 
     # print("creating nbrs matrix")
     start <- Sys.time()
     nbrs_mat <- matrix(nrow = length(loc_pred), ncol=2)
+    loc_pred_obs <- rep(FALSE, length(loc_pred))
+    loc_pred_obs_loc <- rep(NA, length(loc_pred))
     for(i in 1:length(loc_pred)){
         dists_full <- (loc_pred[i] - sorted_loc_obs)
         dists_tmp <- dists_tmp2 <- dists_full
@@ -312,7 +323,14 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
             dists_tmp <- dists_tmp2
         }
         nbrs_mat[i,] <- sort(c(which.min(abs(dists_tmp)), which.min(dists_tmp2)))
+        if(min(abs(dists_tmp)) == 0 || min(dists_tmp2) == 0){
+            loc_pred_obs[i] <- TRUE
+            loc_pred_obs_loc[i] <- nbrs_mat[i,1]
+        }
     }
+
+    loc_pred <- loc_pred[!loc_pred_obs]
+    nbrs_mat <- nbrs_mat[!loc_pred_obs,]
 
     # different neighbors
     d.nbrs <- (nbrs_mat[,1] - nbrs_mat[,2])
@@ -323,6 +341,7 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
     A <- list()
     alpha <- nu + 0.5
     exp_1 <- max(floor(alpha)-1,0)
+
     k <- length(loc_pred)
     n_obs <- length(sorted_loc_obs)
 
@@ -545,7 +564,10 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
         if(return_timings){
             start <- Sys.time()
         }
-        pred_obs[[as.character(i_m)]] <- A[[as.character(i_m)]] %*% cov_coeff[[as.character(i_m)]] %*% pred_obs[[as.character(i_m)]]
+        pred_obs_full <- rep(0, length(loc_pred_obs))
+        pred_obs_full[loc_pred_obs] <- (pred_obs[["A"]][[as.character(i_m)]] %*% pred_obs[[as.character(i_m)]])[loc_pred_obs_loc[loc_pred_obs]]
+        pred_obs_full[!loc_pred_obs] <- A[[as.character(i_m)]] %*% cov_coeff[[as.character(i_m)]] %*% pred_obs[[as.character(i_m)]]
+        pred_obs[[as.character(i_m)]] <- pred_obs_full
         if(return_timings){
             end <- Sys.time()
             pred_obs[["timings"]][[as.character(i_m)]][["assemble_preds"]] <- end-start
