@@ -138,7 +138,7 @@ It is important to observe that we are computing the posterior probabilities for
 Note that it is possible to have unobserved locations that are supporting points for the nearest neighbor Gaussian processes, however in this case, a practitioner would need to know he/she would be interested in studying that location at the time they were building the model, which is an unrealistic assumption.
 
 ```{r}
-prob_ests <- compute_prob_ests(loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L_statespace = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
+prob_ests <- compute_prob_ests(type = "unobserved", loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L_statespace = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
 m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun, samples = 10)
 ```
 ```{r}
@@ -159,6 +159,35 @@ plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))),
 lines(m, err.nn, col = 2)
 err.rat <- unlist(prob_ests[[4]]$rat) - prob_ests[[4]]$true
 err.nn <- unlist(prob_ests[[4]]$nngp) - prob_ests[[4]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[4])
+lines(m, err.nn, col = 2)
+```
+
+Let us now compute the posterior probabilities with respect to all locations, that is, both observed and unobserved locations:
+
+```{r}
+prob_ests_all <- compute_prob_ests(type = "all", loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L_statespace = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
+m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun, samples = 10)
+```
+```{r}
+err.rat <- unlist(prob_ests_all[[1]]$rat) - prob_ests_all[[1]]$true
+err.nn <- unlist(prob_ests_all[[1]]$nngp) - prob_ests_all[[1]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[1])
+lines(m, err.nn, col = 2)
+err.rat <- unlist(prob_ests_all[[2]]$rat) - prob_ests_all[[2]]$true
+err.nn <- unlist(prob_ests_all[[2]]$nngp) - prob_ests_all[[2]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[2])
+lines(m, err.nn, col = 2)
+err.rat <- unlist(prob_ests_all[[3]]$rat) - prob_ests_all[[3]]$true
+err.nn <- unlist(prob_ests_all[[3]]$nngp) - prob_ests_all[[3]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[3])
+lines(m, err.nn, col = 2)
+err.rat <- unlist(prob_ests_all[[4]]$rat) - prob_ests_all[[4]]$true
+err.nn <- unlist(prob_ests_all[[4]]$nngp) - prob_ests_all[[4]]$true
 plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
                           max(c(max(err.rat), max(err.nn)))), main = nu_vec[4])
 lines(m, err.nn, col = 2)
