@@ -751,8 +751,8 @@ n.obs <- length(idx_obs)
 for(i_m in m){
         # prec_mat <- get.nnQ(Sigma, i_m)
         prec_mat <- get.nnQ(loc=loc_full[idx_obs],kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
-        Qhat <- prec_mat + Diagonal(n.obs)/sigma.e^2   
-        mu.nn <- solve(Qhat, y/sigma.e^2)
+        Qhat <- prec_mat + Diagonal(n.obs)/sigma_e^2   
+        mu.nn <- solve(Qhat, y/sigma_e^2)
         Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = idx_obs)
         mu.nn <- Bp%*%mu.nn        
 
