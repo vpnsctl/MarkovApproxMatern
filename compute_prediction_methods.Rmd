@@ -89,46 +89,17 @@ source("aux_functions/predict_methods.R")
 source("aux_functions/prediction_computations.R")
 ```
 
-We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
-
-```{r}
-N <- c(5000,8000)
-n_obs <- c(4000, 6000)
-# L - length of the interval, [0,L]
-L <- 30
-range <- 1
-sigma <- 1
-sigma_e <- 0.1
-m_rat <- 1:6
-m_nngp_fun <- function(m, alpha){
-              if(alpha<1) {
-                mn <- m
-            } else if (alpha < 2) {
-                mn <- round(m*(ceil(alpha)+1)^1.5)    
-            } else {
-                mn <- round(m*(ceil(alpha)+1)^1.5)
-            }
-            return(mn)
-} 
-m_pca_fun <- function(m, alpha){
-      return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
-}
-```
-
-We will start by comparing the times and errors for our method, NNGP and KL. We will observe in `n_obs` random locations and predict on an equally spaced grid. To this end we will use the auxiliary `compare_times()` function. We will obtain 10 samples.
-
-```{r}
-results <- list()
-samples <- 10
-for(sample in samples){
-  results[[sample]] <- compare_times(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun)
-}
-```
+≈
 
 ## Computing $l_2$ and Max norms between the true posterior mean and the approximated ones
 
+We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
+
 ```{r}
-# nu_vec=seq(0.01, 2.99, by = 0.01)
+N <- 500
+L <- 10
+range <- 1
+sigma <- 1
 nu_vec=seq(0.1, 1.5,  by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec <- nu_vec[idx]

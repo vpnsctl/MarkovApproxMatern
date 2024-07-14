@@ -7,11 +7,28 @@ n <- 3000
 n.obs <- 2500
 n.rep <- 1
 loc <- seq(0,n/100,length.out=n)
+# loc_perm <- sample(n, n)
+# loc <- loc[loc_perm]
 
+
+nu.vec <- seq(from = 0.1, to = 3.25, length.out = 10)
+nu.vec <- c(0.3, 0.8)
+
+# loc <- 30*runif(2500)
+# pred_loc <- 30*runif(500)
+
+# loc <- c(loc, pred_loc)
+# obs.ind <- 1:2500
+# loc_df <- data.frame(loc = loc, obs = c(rep(TRUE,2500), rep(FALSE,500)))
+# ord_loc <- order(loc)
+# loc_df <- loc_df[ord_loc,]
+# loc <- loc_df[,1]
+# obs.ind <- which(loc_df[,2])
 D <- as.matrix(dist(loc))
-nu.vec <- seq(from = 0.1, to = 2.45, length.out = 10)
-m.vec <- 2:6
-t.nn <- t.rat <- t.nn1 <- t.rat1 <- err.nn <- err.rat <- matrix(0,nrow= length(nu.vec), ncol = length(m.vec))
+
+
+m.vec <- 3
+t.nn <- t.rat <- t.rat_alt <- t.rat_alt1 <- t.nn1 <- t.rat1 <- err.nn <- err.rat <- err.rat_alt <- matrix(0,nrow= length(nu.vec), ncol = length(m.vec))
 for(kk in 1:n.rep) {
     obs.ind <- sort(sample(1:n)[1:n.obs])
     for(i in 1:length(nu.vec)) {
@@ -52,9 +69,9 @@ for(kk in 1:n.rep) {
             
             t1 <- Sys.time()
             if(nu < 0.5) {
-                Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline")    
+                Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
             } else {
-                Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline")    
+                Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
             }
             
             Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
@@ -62,10 +79,31 @@ for(kk in 1:n.rep) {
             Qhat.rat <- Q + t(Qrat$A[obs.ind,])%*%Qrat$A[obs.ind,]/sigma.e^2        
             mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs.ind,])%*%Y/sigma.e^2)
             t3 <- Sys.time()
+            # mu.rat2 <- pred_rat_markov_pred(Y, loc_obs = loc[obs.ind], loc_pred = loc ,m = m, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma.e, return_timings=TRUE)
+            # t.rat_alt[i,j] <- t.rat_alt[i,j] + mu.rat2[["timings"]][[as.character(m)]][["get_pred"]] + mu.rat2[["timings"]][[as.character(m)]][["build_pred_matrices"]] + mu.rat2[["timings"]][[as.character(m)]][["assemble_preds"]]
+            # t.rat_alt1[i,j] <- t.rat_alt1[i,j] + mu.rat2[["timings"]][[as.character(m)]][["build_Q"]]
+            # print("t.rat_alt")
+            # print(t.rat_alt[i,j])
+            # print("t.rat_alt1")
+            # print(t.rat_alt1[i,j])            
             t.rat[i,j] <- t.rat[i,j] + (t3-t2)/n.rep
-            t.rat1[i,j] <- t.rat1[i,j] + (t3-t1)/n.rep
+            t.rat1[i,j] <- t.rat1[i,j] + (t2-t1)/n.rep
+                        print("t.rat")
+            print(t.rat[i,j])
+            print("t.rat1")
+            print(t.rat1[i,j])
             err.nn[i,j] <- err.nn[i,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
             err.rat[i,j] <- err.rat[i,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
+            print("t.nn")
+            print(t.nn[i,j])
+            print("t.nn1")
+            print(t.nn1[i,j])
+            print("err rat")
+            print(err.rat[i,j])
+            print("err nn")
+            print(err.nn[i,j])
+            print("err alt")
+            print(err.rat_alt[i,j])
         }
     }
     

@@ -64,36 +64,51 @@ We will now load all the auxiliary functions:
 ```{r, message=FALSE}
 source("aux_functions/aux_functions_cov.R")
 source("aux_functions/predict_methods.R")
+source("aux_functions/prediction_computations.R")
 source("aux_functions/simulate_methods.R")
 ```
 
 ## Cost comparison based on predictions
 
-For this case we will consider that we have $N=1000$ observations, the range parameter will be $0.2$, the standard deviation will be $1$. The cost will be measured for the smoothness parameter $\nu$ between $0$ and $0.5$, and between $0.5$ and $1.5$. The hyperparameter of the model will be $m$ taken from 1 to 6 for the reference method, and calibrated following Table 1 of [@BMS2024] for the PCA method and nearest neighbor methods. 
+For this case we will consider that we have $N=1000$ observations, the range parameter will be $0.2$, the standard deviation will be $1$. The cost will be measured for the smoothness parameter $\nu$ between $0$ and $0.5$, between $0.5$ and $1.5$, and between $1.5$ and $2.5$. The hyperparameter of the model will be $m$ taken from 1 to 6 for the reference method, and calibrated following Table 1 of [@BMS2024] for the PCA method and nearest neighbor methods. 
 
 We start by defining the parameters:
+
 ```{r}
-N <- 200
-range =0.2
-sigma = 1
-samples = 10
-m <- 1:6
+N <- c(1000,2000)
+n_obs <- c(800, 1800)
+# L - length of the interval, [0,L]
+L <- 30
+range <- 1
+sigma <- 1
+sigma_e <- 0.1
+m_rat <- 1:6
+m_nngp_fun <- function(m, alpha){
+              if(alpha<1) {
+                mn <- m
+            } else if (alpha < 2) {
+                mn <- round(m*(ceil(alpha)+1)^1.5)    
+            } else {
+                mn <- round(m*(ceil(alpha)+1)^1.5)
+            }
+            return(mn)
+} 
+m_pca_fun <- function(m, alpha){
+      return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+}
 ```
 
-We will now compute the times based on prediction by using the `compare_times()` function:
+We will start by comparing the times and errors for our method, NNGP and KL. We will observe in `n_obs` random locations and predict on an equally spaced grid. To this end we will use the auxiliary `compare_times()` function. We will obtain 10 samples.
 
-```{r, results="hide"}
-times <- compare_times(N = N, m = m, range = range, sigma = sigma, samples = 100)
+```{r}
+results <- list()
+samples <- 10
+for(sample in 1:samples){
+  cat(sample, '\n')
+  results[[sample]] <- compare_times(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun)
+}
 ```
 
-Let us now plot the results to observe that the costs are, in fact, similar:
-
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-library(dplyr)
-library(ggplot2)
-
-times |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha)+ scale_y_log10()
-```
 
 
 ## Cost comparison based on sampling
