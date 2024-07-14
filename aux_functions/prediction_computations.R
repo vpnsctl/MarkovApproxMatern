@@ -747,18 +747,16 @@ pred <- list()
 rat_m <- m
 m <- m_nngp_fun(m, nu + 0.5)
 count <- 1
+n.obs <- length(idx_obs)
 for(i_m in m){
         # prec_mat <- get.nnQ(Sigma, i_m)
-        prec_mat <- get.nnQ(loc=loc_full,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
-        I <- Matrix::Diagonal(n = ncol(prec_mat), x = 1)
-            A_pred <- I[idx_pred,]
-            A_obs <- I[idx_obs,]
-        A_mat <- t(A_obs)
-        Q_xgiveny <- (A_mat%*%A_obs)/sigma_e^2 + prec_mat
-        post_y <- (A_mat%*%y)/sigma_e^2
-        R <- Matrix::Cholesky(Q_xgiveny, perm=FALSE)
-        mu_xgiveny <- solve(R, post_y, system = "A")
-        pred[[as.character(rat_m[count])]] <- A_pred%*%mu_xgiveny
+        prec_mat <- get.nnQ(loc=loc_full[idx_obs],kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
+        Qhat <- prec_mat + Diagonal(n.obs)/sigma.e^2   
+        mu.nn <- solve(Qhat, y/sigma.e^2)
+        Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = idx_obs)
+        mu.nn <- Bp%*%mu.nn        
+
+        pred[[as.character(rat_m[count])]] <- mu.nn[idx_pred]
         count <- count + 1
     }
     return(pred)
