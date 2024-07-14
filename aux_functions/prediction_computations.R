@@ -954,7 +954,7 @@ print = FALSE){
             if(print){
                 message("Starting state-space posterior")
             }
-            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace_idx(y=y, idx_obs=idx_obs, idx_pred = idx_pred, loc_full=loc_full, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e, flim = 2, fact = 100, m_statespace_fun)
+            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace_idx(y=y, idx_obs=idx_obs, idx_pred = idx_pred, loc_full=loc_full, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e, flim = 2, fact = 100, m_statespace_fun = m_statespace_fun)
         }
     }
 
