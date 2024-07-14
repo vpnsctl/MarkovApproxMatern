@@ -79,11 +79,12 @@ posterior_constructor_nngp <- function(prec_mat, y, sigma_e, idx_pred, obs.ind, 
     n.obs <- length(obs.ind)
     Qhat <- prec_mat + Diagonal(n.obs)/sigma_e^2        
     mu.nn <- solve(Qhat, y/sigma_e^2)
-    Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = obs.ind)
+    tmp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = obs.ind)
+    Bp <- tmp$B
     mu.nn <- Bp%*%mu.nn
     mu.nn <- mu.nn[idx_pred]
-    post_cov <- Bp %*% solve(Qhat, t(Bp))
-    post_cov <- post_cov[idx_pred, idx_pred]
+    post_cov <- Bp %*% solve(Qhat, t(Bp))+ tmp$F
+    post_cov <- post_cov[idx_pred, idx_pred] 
     return(list(post_mean = mu.nn, post_cov = post_cov))
 }
 

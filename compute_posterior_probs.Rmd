@@ -93,14 +93,14 @@ source("aux_functions/probability_computations.R")
 We will now consider the basic setup:
 
 ```{r}
-N <- 250
-N_prob <- 100
+N <- 100
+N_prob <- 30
 obs_ind <- sort(sample(1:N, N-N_prob))
 prob_ind <- which(!(1:N %in% obs_ind))
 L <- 10
 range <- 1
 sigma <- 1
-nu_vec=seq(0.1, 1.5,  by = 0.1)
+nu_vec=c(0.6,0.8,1,1.2)#seq(0.6, 1.2,  by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec <- nu_vec[idx]
 samples = 10
@@ -126,6 +126,9 @@ m_pca_fun <- function(m, alpha){
 m_statespace_fun <- function(m, alpha){
     return(m+floor(alpha) + 1)
 }
+m_fourier_fun <- function(m, alpha){
+    return(m+floor(alpha) + 1)
+}
 ```
 
 We will now compute the probability estimates based on the above calibration, which is taken with respect to prediction timings.
@@ -137,4 +140,29 @@ Note that it is possible to have unobserved locations that are supporting points
 ```{r}
 prob_ests <- compute_prob_ests(loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L_statespace = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
 m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun, samples = 10)
+```
+```{r}
+err.rat <- unlist(prob_ests[[1]]$rat) - prob_ests[[1]]$true
+err.nn <- unlist(prob_ests[[1]]$nngp) - prob_ests[[1]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[1])
+lines(m, err.nn, col = 2)
+err.rat <- unlist(prob_ests[[2]]$rat) - prob_ests[[2]]$true
+err.nn <- unlist(prob_ests[[2]]$nngp) - prob_ests[[2]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[2])
+lines(m, err.nn, col = 2)
+err.rat <- unlist(prob_ests[[3]]$rat) - prob_ests[[3]]$true
+err.nn <- unlist(prob_ests[[3]]$nngp) - prob_ests[[3]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[3])
+lines(m, err.nn, col = 2)
+err.rat <- unlist(prob_ests[[4]]$rat) - prob_ests[[4]]$true
+err.nn <- unlist(prob_ests[[4]]$nngp) - prob_ests[[4]]$true
+plot(m, err.rat, ylim = c(min(c(min(err.rat), min(err.nn))), 
+                          max(c(max(err.rat), max(err.nn)))), main = nu_vec[4])
+lines(m, err.nn, col = 2)
+
+
+
 ```
