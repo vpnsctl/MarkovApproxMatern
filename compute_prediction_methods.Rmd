@@ -204,10 +204,4 @@ plot_pred(df_pred_error, norm = "l2", methods = c("Rational", "State-Space"))
 
 For $m\geq 2$, we have that the Markov-based rational approximation considerably outperforms the state-space approximation with respect to the $L_2$ norm. For nu greater than 2.5, the Markov-based rational approximation outperforms the state-space approximation for $m\geq 3$.
 
-Now, the $L_\infty$ distance:
 
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-plot_dist(df_dist, distance = "Linf", methods = c("Rational", "State-Space"))
-```
-
-We can see a similar behavior with respect to the $L_\infty$ norm.
