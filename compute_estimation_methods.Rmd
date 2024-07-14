@@ -163,43 +163,47 @@ lines(loc,res_lik[["rat"]][["1.4"]]$post_mean[[6]],col="green")
 
 ## Computing timings also estimating nu
 
-We will do the same as above, but we will also estimate nu:
+We will do the same as above, but we will also estimate nu. Let us consider `nu = c(0.3, 0.8)`.
+
+```{r}
+nu_vec <- c(0.3, 0.8)
+```
 
 ```{r}
 res_lik_est_nu <- compute_timings_likelihood(loc, obs_ind, nu_vec, 
           range, sigma, sigma_e, m, m_nngp_fun, est_nu = TRUE)
 ```
 
-We will now also look at `nu=1.4` and `m=6`:
+We will now also look at `nu=0.8` and `m=6`:
 
 
-Let us look, for example, at `nu = 1.4` and `m=6`. We start by looking at the timings. First for our rational approximation:
+Let us look, for example, at `nu = 0.8` and `m=6`. We start by looking at the timings. First for our rational approximation:
 
 ```{r}
-res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]]
+res_lik_est_nu[["rat"]][["0.8"]]$timings[[6]]
 ```
 
 Now for the nearest neighbor Gaussian model:
 
 ```{r}
-res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]]
+res_lik_est_nu[["nngp"]][["0.8"]]$timings[[6]]
 ```
 
 Let us proceed as above and summarize the results as a `data.frame`:
 
 ```{r}
-res_est_nu <- data.frame(error = c(sqrt((loc[2]-loc[1])*sum((res_lik_est_nu[["true"]][["1.4"]] -
-                  res_lik_est_nu[["nngp"]][["1.4"]]$post_mean[[6]])^2)), 
-                  sqrt((loc[2]-loc[1])*sum((res_lik_est_nu[["true"]][["1.4"]] - 
-                  res_lik_est_nu[["rat"]][["1.4"]]$post_mean[[6]])^2))),
-                  time_optimization = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]][["Optimization"]],
-                  res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]][["Optimization"]]),
-                  time_posterior_mean = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]][["Posterior_mean"]],
-                  res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]][["Posterior_mean"]]),
-                  time_compute_precision = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]][["Precision_computation"]],
-                  res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]][["Precision_computation"]]),
-                  count = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[["6"]][["Optimization_counts"]],
-                  res_lik_est_nu[["rat"]][["1.4"]]$timings[["6"]][["Optimization_counts"]]),
+res_est_nu <- data.frame(error = c(sqrt((loc[2]-loc[1])*sum((res_lik_est_nu[["true"]][["0.8"]] -
+                  res_lik_est_nu[["nngp"]][["0.8"]]$post_mean[[6]])^2)), 
+                  sqrt((loc[2]-loc[1])*sum((res_lik_est_nu[["true"]][["0.8"]] - 
+                  res_lik_est_nu[["rat"]][["0.8"]]$post_mean[[6]])^2))),
+                  time_optimization = c(res_lik_est_nu[["nngp"]][["0.8"]]$timings[[6]][["Optimization"]],
+                  res_lik_est_nu[["rat"]][["0.8"]]$timings[[6]][["Optimization"]]),
+                  time_posterior_mean = c(res_lik_est_nu[["nngp"]][["0.8"]]$timings[[6]][["Posterior_mean"]],
+                  res_lik_est_nu[["rat"]][["0.8"]]$timings[[6]][["Posterior_mean"]]),
+                  time_compute_precision = c(res_lik_est_nu[["nngp"]][["0.8"]]$timings[[6]][["Precision_computation"]],
+                  res_lik_est_nu[["rat"]][["0.8"]]$timings[[6]][["Precision_computation"]]),
+                  count = c(res_lik_est_nu[["nngp"]][["0.8"]]$timings[["6"]][["Optimization_counts"]],
+                  res_lik_est_nu[["rat"]][["0.8"]]$timings[["6"]][["Optimization_counts"]]),
                   row.names = c("NN", "Rat"))
 res
 ```
@@ -207,8 +211,8 @@ res
 Finally, let us plot the posterior means:
 
 ```{r}
-plot(loc,res_lik_est_nu[["true"]][["1.4"]], type = "l", main = "black true, red nn, green markov")
-points(loc[obs_ind],res_lik_est_nu[["Y"]][["1.4"]])
-lines(loc,res_lik_est_nu[["nngp"]][["1.4"]]$post_mean[[6]],col="red")
-lines(loc,res_lik_est_nu[["rat"]][["1.4"]]$post_mean[[6]],col="green")
+plot(loc,res_lik_est_nu[["true"]][["0.8"]], type = "l", main = "black true, red nn, green markov")
+points(loc[obs_ind],res_lik_est_nu[["Y"]][["0.8"]])
+lines(loc,res_lik_est_nu[["nngp"]][["0.8"]]$post_mean[[6]],col="red")
+lines(loc,res_lik_est_nu[["rat"]][["0.8"]]$post_mean[[6]],col="green")
 ```
