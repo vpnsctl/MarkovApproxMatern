@@ -116,10 +116,6 @@ for(sample in 1:samples){
 We will now compare the times for the same choices of parameters by using the `compare_times_simulation()` function:
 
 ```{r, results="hide"}
-times <- compare_times_simulation(N = N, m = m, range = range, sigma = sigma, nsim = 1, samples = 100)
-```
-
-Let us now plot the results:
-```{r, message=FALSE, fig.width=7, fig.height=5, fig.align = "center"}
-times |> ggplot() + geom_line(aes(x = m, y = Time, col = method)) + facet_wrap(~alpha) + scale_y_log10()
+times <- compare_times_simulation(N = N, m = m_rat, range = range, 
+sigma = sigma, nsim = 1, samples = 100, m_nngp_fun = m_nngp_fun, m_pca_fun = m_pca_fun)
 ```

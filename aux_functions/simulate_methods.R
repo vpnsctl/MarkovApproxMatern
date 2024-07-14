@@ -53,37 +53,48 @@ samp_mat <- matrix(nrow = nsim, ncol = N)
 time_run2_approx <- list()
 sim_list <- list()
 for(i_m in m){
+    start <- Sys.time()
     if(nu < 0.5){
         # r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
         r <- rSPDE::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
     } else if ( 0.5 < nu ){
         # r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
         r <- rSPDE::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
-    } 
+    }
+    prec_mat <- t(r$L)%*%r$D%*%r$L
+    end1 <- Sys.time()
+
         # r$Q <- (r$Q + t(r$Q))/2
-        L <- r$L %*% sqrt(r$D)
+        # L <- r$L %*% sqrt(r$D)
         # L <- as(L, "TsparseMatrix")
-        time_run2_approx[[as.character(i_m)]] <- 0
+        time_run2_approx[[as.character(i_m)]] <- list()
+        time_run2_approx[[as.character(i_m)]][["Compute_Q"]] <- as.numeric(end1 - start, units="secs")
+        time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- 0
+        start <- Sys.time()
+        R <- chol(prec_mat)
+        end2 <- Sys.time()
+        time_run2_approx[[as.character(i_m)]][["Compute_chol"]] <- as.numeric(end2 - start, units="secs")
         for(ii in 1:samples){
             y <- matrix(rnorm(ncol(r$L) * nsim), ncol = ncol(r$L), nrow = nsim)
             if(!eigen_chol){
                 # R <- Matrix::Cholesky(r$Q, perm=FALSE, LDL=FALSE)
                 # sim_full <- solve(R, t(y), system = "Lt")
                 start = Sys.time()
-                sim_full <- solve(L, t(y), system = "Lt")
+                # sim_full <- solve(L, t(y), system = "Lt")
+                sim_full <- solve(R, t(y), system = "Lt")                
                 sim <- (r$A)%*%sim_full
                 end = Sys.time()
             } else{
                 start = Sys.time()            
-                sim_full <- sampleCholSparse(r$Q, t(y))
+                sim_full <- sampleCholSparse(prec_mat, t(y))
                 sim <- (r$A)%*%sim_full
                 end = Sys.time()                
             }
             sim_list[[as.character(i_m)]] <- as.matrix(sim)
             time_temp = as.numeric(end-start, units = "secs")
-            time_run2_approx[[as.character(i_m)]] <- time_run2_approx[[as.character(i_m)]] + time_temp
+            time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- time_run2_approx[[as.character(i_m)]][["Compute_solve"]] + time_temp
         } 
-        time_run2_approx[[as.character(i_m)]] <- time_run2_approx[[as.character(i_m)]]/samples 
+        time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- time_run2_approx[[as.character(i_m)]][["Compute_solve"]]/samples 
         if(print){
             print(time_run2_approx[[as.character(i_m)]])
         }
@@ -113,10 +124,11 @@ for(i_m in m){
 
 ## Simulate PCA
 
-simulate_PCA <- function(loc, m, nu, kappa, sigma, nsim, print=TRUE, only_time = FALSE, samples = 1){
+simulate_PCA <- function(loc, m, nu, kappa, sigma, nsim, print=TRUE, only_time = FALSE, samples = 1, m_pca_fun){
 N <- length(loc)
 time_run2_approx <- list()
 sim_list <- list()
+m <- m_pca_fun(m, nu + 0.5)
 
 D_loc <- dist2matR(dist(loc))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
@@ -215,18 +227,26 @@ return(list(sim = sim_list, time = time_run2_approx))
 
 # simulate NN 
 
-simulate_rat_NN <- function(loc, m, nu, kappa, sigma, nsim, samples, print=TRUE, only_time = FALSE){
+simulate_rat_NN <- function(loc, m, nu, kappa, sigma, nsim, samples, print=TRUE, only_time = FALSE, m_nngp_fun){
 N <- length(loc)
 time_run2_approx <- list()
 sim_list <- list()
 
+m <- m_nngp_fun(m, nu + 0.5)
 D <- dist2matR(dist(loc))
 # perm <- comp.reo.fast(N, m = 0, alpha = 0.6)    
 for(i_m in m){
+        start <- Sys.time()
         prec_mat <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
-        time_run2_approx[[as.character(i_m)]] <- 0
+        end1 <- Sys.time()
+        time_run2_approx[[as.character(i_m)]] <- list()
+        time_run2_approx[[as.character(i_m)]][["Compute_Q"]] <- as.numeric(end1 - start, units="secs")
+        time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- 0
         # R <- Matrix::Cholesky(prec_mat, perm=FALSE, LDL=FALSE)
+        start <- Sys.time()
         R <- chol(prec_mat)
+        end2 <- Sys.time()
+        time_run2_approx[[as.character(i_m)]][["Compute_chol"]] <- as.numeric(end2 - start, units="secs")
         for(ii in 1:samples){
             y <- matrix(rnorm(ncol(prec_mat) * nsim), ncol = ncol(prec_mat), nrow = nsim)
             # Starting after as the method directly obtains the cholesky
@@ -235,9 +255,9 @@ for(i_m in m){
             end = Sys.time()
             sim_list[[as.character(i_m)]] <- as.matrix(sim_full)
             time_temp = as.numeric(end-start, units = "secs")
-            time_run2_approx[[as.character(i_m)]] <- time_run2_approx[[as.character(i_m)]] + time_temp
+            time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- time_run2_approx[[as.character(i_m)]][["Compute_solve"]] + time_temp
         }
-        time_run2_approx[[as.character(i_m)]] <- time_run2_approx[[as.character(i_m)]]/samples
+        time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- time_run2_approx[[as.character(i_m)]][["Compute_solve"]]/samples
         if(print){
             print(time_run2_approx[[as.character(i_m)]])
         }
@@ -265,7 +285,7 @@ for(i_m in m){
 
 # Compute times
 
-compare_times_simulation <- function(N, m, range, sigma, nsim, samples){
+compare_times_simulation <- function(N, m, range, sigma, nsim, samples, m_nngp_fun, m_pca_fun){
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
     timings_alpha23_rat <- list()    
@@ -292,18 +312,17 @@ compare_times_simulation <- function(N, m, range, sigma, nsim, samples){
             loc <- seq(0, 100, length.out = n_loc)
             nu <- 0.3
             kappa <- sqrt(8*nu)/range
-            m_nngp <- get_m(nu = nu, m = m, method = "nngp", type = "simulation")
-            timings_alpha01_nngp[[as.character(n_loc)]] <- simulate_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples)
+            timings_alpha01_nngp[[as.character(n_loc)]] <- simulate_rat_NN(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples, m_nngp_fun = m_nngp_fun)
 
             nu <- 1.2
             kappa <- sqrt(8*nu)/range        
             m_nngp <- get_m(nu = nu, m= m, method = "nngp", type = "simulation")  
-            timings_alpha12_nngp[[as.character(n_loc)]] <- simulate_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples)
+            timings_alpha12_nngp[[as.character(n_loc)]] <- simulate_rat_NN(loc = loc, m, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples, m_nngp_fun = m_nngp_fun)
 
             nu <- 1.8
             kappa <- sqrt(8*nu)/range        
             m_nngp <- get_m(nu = nu, m= m, method = "nngp", type = "simulation")  
-            timings_alpha23_nngp[[as.character(n_loc)]] <- simulate_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples)            
+            timings_alpha23_nngp[[as.character(n_loc)]] <- simulate_rat_NN(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples, m_nngp_fun = m_nngp_fun)
     }
     print("Starting PCA")
     timings_alpha01_kl <- list()
@@ -313,18 +332,17 @@ compare_times_simulation <- function(N, m, range, sigma, nsim, samples){
             loc <- seq(0, 100, length.out = n_loc)
             nu <- 0.3
             kappa <- sqrt(8*nu)/range
-            m_kl <- get_m(nu = nu, m = m, method = "kl", type = "simulation")
-            timings_alpha01_kl[[as.character(n_loc)]] <- simulate_PCA(loc = loc, m = m_kl, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples)   
+            timings_alpha01_kl[[as.character(n_loc)]] <- simulate_PCA(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples, m_pca_fun = m_pca_fun)   
 
             nu <- 1.2
             kappa <- sqrt(8*nu)/range        
             m_kl <- get_m(nu = nu, m = m, method = "kl", type = "simulation")      
-            timings_alpha12_kl[[as.character(n_loc)]] <- simulate_PCA(loc = loc, m = m_kl, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples)    
+            timings_alpha12_kl[[as.character(n_loc)]] <- simulate_PCA(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples, m_pca_fun = m_pca_fun)      
 
             nu <- 1.8
             kappa <- sqrt(8*nu)/range        
             m_kl <- get_m(nu = nu, m = m, method = "kl", type = "simulation")      
-            timings_alpha23_kl[[as.character(n_loc)]] <- simulate_PCA(loc = loc, m = m_kl, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples)    
+            timings_alpha23_kl[[as.character(n_loc)]] <- simulate_PCA(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, nsim=nsim, print = FALSE, only_time=TRUE, samples = samples, m_pca_fun = m_pca_fun)       
     }    
     res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, rational23 = timings_alpha23_rat,
      nngp01 = timings_alpha01_nngp, nngp12 = timings_alpha12_nngp, 
