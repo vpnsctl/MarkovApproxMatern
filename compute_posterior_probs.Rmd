@@ -130,6 +130,10 @@ m_statespace_fun <- function(m, alpha){
 
 We will now compute the probability estimates based on the above calibration, which is taken with respect to prediction timings.
 
+It is important to observe that we are computing the posterior probabilities for nearest neighbor Gaussian models on locations that are not supporting points. That is, we assume that the location in which we want to do prediction is a new location to the model.
+
+Note that it is possible to have unobserved locations that are supporting points for the nearest neighbor Gaussian processes, however in this case, a practitioner would need to know he/she would be interested in studying that location at the time they were building the model, which is an unrealistic assumption.
+
 ```{r}
 prob_ests <- compute_prob_ests(loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L_statespace = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
 m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun, samples = 10)
