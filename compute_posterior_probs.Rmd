@@ -94,7 +94,7 @@ We will now consider the basic setup:
 
 ```{r}
 N <- 250
-N_prob <- 4
+N_prob <- 100
 obs_ind <- sort(sample(1:N, N-N_prob))
 prob_ind <- which(!(1:N %in% obs_ind))
 L <- 10
@@ -123,9 +123,6 @@ m_nngp_fun <- function(m, alpha){
 m_pca_fun <- function(m, alpha){
       return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
 }
-m_fourier_fun <- function(m, alpha){
-    return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
-}
 m_statespace_fun <- function(m, alpha){
     return(m+floor(alpha) + 1)
 }
@@ -134,6 +131,6 @@ m_statespace_fun <- function(m, alpha){
 We will now compute the probability estimates based on the above calibration, which is taken with respect to prediction timings.
 
 ```{r}
-prob_ests <- compute_prob_ests(loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
-m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun)
+prob_ests <- compute_prob_ests(loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L_statespace = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
+m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun, samples = 10)
 ```

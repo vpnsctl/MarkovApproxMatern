@@ -212,7 +212,7 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, m
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
-            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=1)
+            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- m_fourier_fun(m, alpha)
