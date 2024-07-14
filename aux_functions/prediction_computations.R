@@ -656,7 +656,7 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
 
 ## Predict PCA
 
-pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("woodbury", "approx")){
+pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("woodbury", "approx"), m_pca_fun){
 loc_full <- c(loc_pred,loc)
 N <- length(loc_full)
 method <- method[[1]]
@@ -665,7 +665,7 @@ D_loc <- dist2matR(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 rat_m <- m
-m <- get_m(nu = nu, m = m, method = "kl", type = "prediction")
+m <- m_pca_fun(m, nu + 0.5)
 count <- 1
 for(i_m in m){
     i_m <- min(i_m, N/2)
@@ -742,10 +742,10 @@ return(pred)
 #     return(pred)
 # }
 
-pred_rat_NN <- function(y, loc_full, idx_pred, idx_obs, m, nu, kappa, sigma, sigma_e){
+pred_rat_NN <- function(y, loc_full, idx_pred, idx_obs, m, nu, kappa, sigma, sigma_e, m_nngp_fun){
 pred <- list()     
 rat_m <- m
-m <- get_m(nu = nu, m = m, method = "nngp", type = "prediction")
+m <- m_nngp_fun(m, nu + 0.5)
 count <- 1
 for(i_m in m){
         # prec_mat <- get.nnQ(Sigma, i_m)
@@ -775,13 +775,13 @@ for(i_m in m){
 
 # Predict Fourier
 
-pred_Fourier <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e,samples = 100){
+pred_Fourier <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e,samples = 100, m_fourier_fun){
 loc_full <- c(loc_pred, loc)
 N <- length(loc_full)
 pred <- list()
 D_loc <- dist2matR(dist(loc_full))
 rat_m <- m
-m <- get_m(nu = nu, m = m, method = "kl", type = "prediction")
+m <- m_fourier_fun(m, nu + 0.5)
 count <- 1
 for(i_m in m){
     post_mean <- rep(0, length(y))
@@ -855,13 +855,13 @@ return(pred)
 # Predict SS
 # loc in [0,1]
 
-pred_statespace_idx <- function(y, idx_obs, idx_pred, loc_full, m, nu, kappa, sigma, sigma_e, L=1, flim = 2, fact = 100){
+pred_statespace_idx <- function(y, idx_obs, idx_pred, loc_full, m, nu, kappa, sigma, sigma_e, L=1, flim = 2, fact = 100, m_statespace_fun){
 N <- length(loc_full)
 ind = 1 + fact*(0:(N-1))
 h2 = seq(from=0,to=L,length.out=fact*(N-1)+1)
 pred <- list()     
 rat_m <- m
-m <- get_m(nu = nu, m = m, method = "statespace", type = "prediction")
+m <- m_statespace_fun(m, nu + 0.5)
 count <- 1
 for(i_m in m){
         coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,i_m)
@@ -887,7 +887,9 @@ for(i_m in m){
 # Generate complete table
 # L is the length of the interval
 
-compute_pred_errors <- function(N, range, sigma, nu.vec, m.vec, sigma_e, L = 1, seed = 123, print = FALSE){
+compute_pred_errors <- function(N, range, sigma, nu.vec, m.vec, sigma_e, L = 1, seed = 123, 
+m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun,
+print = FALSE){
     post_mean_true <- list()
     post_mean_rat <- list()
     post_mean_rat_ldl <- list()    
@@ -939,20 +941,20 @@ compute_pred_errors <- function(N, range, sigma, nu.vec, m.vec, sigma_e, L = 1, 
             if(print){
                 message("Starting PCA posterior")
             }
-            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)  
+            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, m_pca_fun = m_pca_fun)  
             if(print){
                 message("Starting nnGP posterior")
             }
             # post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- tryCatch(pred_rat_NN(y = y, loc_pred = loc_pred, loc=loc, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e), error = function(e){NULL})
-            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- tryCatch(pred_rat_NN(y = y, loc_full = loc_full, idx_obs=idx_obs, idx_pred = idx_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e), error = function(e){NULL})            
+            post_mean_nnGP[[as.character(n_loc)]][[as.character(nu)]] <- tryCatch(pred_rat_NN(y = y, loc_full = loc_full, idx_obs=idx_obs, idx_pred = idx_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e, m_nngp_fun = m_nngp_fun), error = function(e){NULL})            
             if(print){
                 message("Starting Fourier posterior")
             }
-            post_mean_fourier[[as.character(n_loc)]][[as.character(nu)]] <- pred_Fourier(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e,samples = 100)
+            post_mean_fourier[[as.character(n_loc)]][[as.character(nu)]] <- pred_Fourier(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e,samples = 100, m_fourier_fun = m_fourier_fun)
             if(print){
                 message("Starting state-space posterior")
             }
-            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace_idx(y=y, idx_obs=idx_obs, idx_pred = idx_pred, loc_full=loc_full, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e, flim = 2, fact = 100)
+            post_mean_statespace[[as.character(n_loc)]][[as.character(nu)]] <- pred_statespace_idx(y=y, idx_obs=idx_obs, idx_pred = idx_pred, loc_full=loc_full, m=m.vec, nu=nu, kappa=kappa, sigma = sigma, sigma_e=sigma_e, flim = 2, fact = 100, m_statespace_fun)
         }
     }
 

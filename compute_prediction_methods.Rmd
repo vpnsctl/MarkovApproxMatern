@@ -107,12 +107,34 @@ samples = 10
 m <- 1:6
 # Std. dev. of the measurement error
 sigma_e <- 0.01
+
+m_nngp_fun <- function(m, alpha){
+              if(alpha<1) {
+                mn <- m
+            } else if (alpha < 2) {
+                mn <- round(m*(ceil(alpha)+1)^1.5)    
+            } else {
+                mn <- round(m*(ceil(alpha)+1)^1.5)
+            }
+            return(mn)
+} 
+m_pca_fun <- function(m, alpha){
+      return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+}
+m_fourier_fun <- function(m, alpha){
+  return(round(seq(1000,10000, length.out = length(m))))
+}
+m_statespace_fun <- function(m, alpha){
+    return(m+floor(alpha) + 1)
+}
 ```
 
 We will now compute the distances between the posterior means with the help of the auxiliary functions `compute_pred_errors`. It will provide the predictions using our method introduced in [@BMS2024], a PCA low rank approximation, the nearest neighbor method of [@DBFG], the Fourier method of [@RR] and the state-space method of [@KS]. We will set a seed for reproducibility. This function generates the response variables that consist of a stationary Gaussian process with Matérn covariance function at different locations plus independent Gaussian measurement errors.
 
 ```{r, results="hide"}
-df_pred_error <- compute_pred_errors(N = N, range = range, sigma=sigma, nu.vec = nu_vec, m.vec = m, sigma_e = sigma_e, L = L, seed = 123, print=TRUE)
+df_pred_error <- compute_pred_errors(N = N, range = range, sigma=sigma, nu.vec = nu_vec, 
+m.vec = m, m_nngp_fun = m_nngp_fun, m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun,
+sigma_e = sigma_e, L = L, seed = 123, print=TRUE)
 ```
 
 ## Error plots
