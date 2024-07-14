@@ -9,7 +9,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
         if(est_nu){
             t1 <- Sys.time()
             theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
-            par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = Y, m = m, nu = nu)
+            par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m, nu = nu)
             t2 <- Sys.time()
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
@@ -21,7 +21,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
         } else{
             t1 <- Sys.time()
             theta0 <- c(log(kappa), log(sigma), log(sigma_e))
-            par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = Y, m = m, nu = nu)
+            par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m, nu = nu)
             t2 <- Sys.time()    
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
@@ -34,7 +34,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
         Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
 
         Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
-        mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%Y/sigma_e_est^2)
+        mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2)
         t4 <- Sys.time()
         timings[[as.character(m)]][["Optimization"]] <- as.numeric(t2-t1, units = "secs")
         timings[[as.character(m)]][["Precision_computation"]] <- as.numeric(t3-t2, units = "secs")
@@ -54,7 +54,7 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
         if(est_nu){
             t1 <- Sys.time()
             theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
-            par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = Y, n.nbr = m, nu = nu)
+            par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, n.nbr = m, nu = nu)
             t2 <- Sys.time()
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
@@ -65,7 +65,7 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
         } else{
             t1 <- Sys.time()
             theta0 <- c(log(kappa), log(sigma), log(sigma_e))
-            par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = Y, n.nbr = m, nu = nu)
+            par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, n.nbr = m, nu = nu)
             t2 <- Sys.time()    
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
@@ -78,7 +78,7 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
 
         A = Diagonal(n.obs)
         Qhat <- Qnn + t(A)%*%A/sigma_e^2        
-        mu.nn <- solve(Qhat, t(A)%*%Y/sigma_e^2)
+        mu.nn <- solve(Qhat, t(A)%*%y/sigma_e^2)
         Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu, sigma = sigma_est, n.nbr = m, S = obs_ind)$B
         mu.nn <- Bp%*%mu.nn
         t4 <- Sys.time()
@@ -92,24 +92,26 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
 }
 
 
-compute_timings_likelihood <- function(loc, obs_ind, nu_vec, kappa, sigma, sigma_e, m, m_nngp_fun){
+compute_timings_likelihood <- function(loc, obs_ind, nu_vec, range, sigma, sigma_e, m, m_nngp_fun, est_nu){
     res <- list()
     res[["rat"]] <- list()
     res[["nngp"]] <- list()
-    true_mu <- list()
+    res[["true"]] <- list()
+    res[["Y"]] <- list()
     for(nu in nu_vec){
       alpha <- nu + 1/2
       kappa = sqrt(8*nu)/range  
       Y <- sample_y(loc[obs_ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-      true_mu[[as.character(nu)]] <- true_pred(Y, loc = loc[obs_ind], loc_pred = loc, nu = nu, 
-      kappa = kappa, sigma = sigma, sigma_e = sigma_e)  
     
-      res[["rat"]][[as.character(nu)]] <- compute_likelihood_rat(Y, loc, obs_ind, m, 
-                          kappa, sigma, nu, sigma_e, est_nu = FALSE)
+      res[["rat"]][[as.character(nu)]] <- compute_likelihood_rat(y=Y, loc=loc, obs_ind=obs_ind, m_vec=m, 
+                          kappa=kappa, sigma=sigma, nu = nu, sigma_e = sigma_e, est_nu = est_nu)
 
       m_nngp <- m_nngp_fun(m, alpha)
-      res[["nngp"]][[as.character(nu)]] <- compute_likelihood_nn(Y, loc, obs_ind, m, 
-                          kappa, sigma, nu, sigma_e, est_nu = FALSE)      
+      res[["nngp"]][[as.character(nu)]] <- compute_likelihood_nn(y=Y, loc=loc, obs_ind=obs_ind, m_vec=m, 
+                          kappa=kappa, sigma=sigma, nu = nu,sigma_e = sigma_e, est_nu = est_nu)
+      res[["true"]][[as.character(nu)]] <-  true_pred(Y, loc = loc[obs_ind], loc_pred = loc, nu = nu, 
+      kappa = kappa, sigma = sigma, sigma_e = sigma_e)  
+      res[["Y"]][[as.character(nu)]] <- Y 
     }
     return(res)
 }

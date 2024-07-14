@@ -103,7 +103,7 @@ n <- 1000
 n.obs <- 200
 loc <- seq(0,n/100,length.out=n)
 obs_ind <- sort(sample(1:n)[1:n.obs])
-nu_vec <- c(0.3, 0.8, 1.4, 1.8, 2.2)
+nu_vec <- c(0.3, 0.8, 1.4)
 m = 1:6
 
 m_nngp_fun <- function(m, alpha){
@@ -118,10 +118,11 @@ m_nngp_fun <- function(m, alpha){
 } 
 ```
 
-We will now compute the timings using the `compute_likelihood_rat()` and `compute_likelihood_nn()` functions.
+We will now compute the timings using the `compute_likelihood_rat()` and `compute_likelihood_nn()` functions. We start without estimating `nu`:
 
 ```{r}
-res <- compute_timings_likelihood(loc, obs_ind, nu_vec, kappa, sigma, sigma_e, m, m_nngp_fun)
+res_lik <- compute_timings_likelihood(loc, obs_ind, nu_vec, range, 
+          sigma, sigma_e, m, m_nngp_fun, est_nu = FALSE)
 ```
 
 ## Some examples
@@ -129,28 +130,30 @@ res <- compute_timings_likelihood(loc, obs_ind, nu_vec, kappa, sigma, sigma_e, m
 Let us look, for example, at `nu = 1.4` and `m=6`. We start by looking at the timings. First for our rational approximation:
 
 ```{r}
-res[["rat"]][["1.4"]]$timings[[6]]
+res_lik[["rat"]][["1.4"]]$timings[[6]]
 ```
 
 Now for the nearest neighbor Gaussian model:
 
 ```{r}
-res[["nngp"]][["1.4"]]$timings[[6]]
+res_lik[["nngp"]][["1.4"]]$timings[[6]]
 ```
 
 Let us summarize as a `data.frame`:
 
 ```{r}
-res <- data.frame(error = c(sqrt((loc[2]-loc[1])*sum((mu-res[["nngp"]][["1.4"]]$post_mean[[6]])^2)), 
-              sqrt((loc[2]-loc[1])*sum((mu-res[["rat"]][["1.4"]]$post_mean[[6]])^2))),
-                  time_optimization = c(res[["nngp"]][["1.4"]]$timings[[6]][["Optimization"]],
-                  res[["rat"]][["1.4"]]$timings[[6]][["Optimization"]]),
-                  time_posterior_mean = c(res[["nngp"]][["1.4"]]$timings[[6]][["Posterior_mean"]],
-                  res[["rat"]][["1.4"]]$timings[[6]][["Posterior_mean"]]),
-                  time_compute_precision = c(res[["nngp"]][["1.4"]]$timings[[6]][["Precision_computation"]],
-                  res[["rat"]][["1.4"]]$timings[[6]][["Precision_computation"]]),
-                  count = c(res[["nngp"]][["1.4"]]$timings[["6"]][["Optimization_counts"]],
-                  res[["rat"]][["1.4"]]$timings[["6"]][["Optimization_counts"]]),
+res <- data.frame(error = c(sqrt((loc[2]-loc[1])*sum((res_lik[["true"]][["1.4"]] -
+                  res_lik[["nngp"]][["1.4"]]$post_mean[[6]])^2)), 
+                  sqrt((loc[2]-loc[1])*sum((res_lik[["true"]][["1.4"]] - 
+                  res_lik[["rat"]][["1.4"]]$post_mean[[6]])^2))),
+                  time_optimization = c(res_lik[["nngp"]][["1.4"]]$timings[[6]][["Optimization"]],
+                  res_lik[["rat"]][["1.4"]]$timings[[6]][["Optimization"]]),
+                  time_posterior_mean = c(res_lik[["nngp"]][["1.4"]]$timings[[6]][["Posterior_mean"]],
+                  res_lik[["rat"]][["1.4"]]$timings[[6]][["Posterior_mean"]]),
+                  time_compute_precision = c(res_lik[["nngp"]][["1.4"]]$timings[[6]][["Precision_computation"]],
+                  res_lik[["rat"]][["1.4"]]$timings[[6]][["Precision_computation"]]),
+                  count = c(res_lik[["nngp"]][["1.4"]]$timings[["6"]][["Optimization_counts"]],
+                  res_lik[["rat"]][["1.4"]]$timings[["6"]][["Optimization_counts"]]),
                   row.names = c("NN", "Rat"))
 res
 ```
@@ -158,8 +161,60 @@ res
 Finally, let us plot the posterior means:
 
 ```{r}
-plot(loc,mu, type = "l", main = "black true, red nn, green markov")
+plot(loc,res_lik[["true"]][["1.4"]], type = "l", main = "black true, red nn, green markov")
+points(loc[obs_ind],res_lik[["Y"]][["1.4"]])
+lines(loc,res_lik[["nngp"]][["1.4"]]$post_mean[[6]],col="red")
+lines(loc,res_lik[["rat"]][["1.4"]]$post_mean[[6]],col="green")
+```
+
+## Computing timings also estimating nu
+
+We will do the same as above, but we will also estimate nu:
+
+```{r}
+res_lik_est_nu <- compute_timings_likelihood(loc, obs_ind, nu_vec, 
+          range, sigma, sigma_e, m, m_nngp_fun, est_nu = TRUE)
+```
+
+We will now also look at `nu=1.4` and `m=6`:
+
+
+Let us look, for example, at `nu = 1.4` and `m=6`. We start by looking at the timings. First for our rational approximation:
+
+```{r}
+res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]]
+```
+
+Now for the nearest neighbor Gaussian model:
+
+```{r}
+res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]]
+```
+
+Let us proceed as above and summarize the results as a `data.frame`:
+
+```{r}
+res_est_nu <- data.frame(error = c(sqrt((loc[2]-loc[1])*sum((res_lik_est_nu[["true"]][["1.4"]] -
+                  res_lik_est_nu[["nngp"]][["1.4"]]$post_mean[[6]])^2)), 
+                  sqrt((loc[2]-loc[1])*sum((res_lik_est_nu[["true"]][["1.4"]] - 
+                  res_lik_est_nu[["rat"]][["1.4"]]$post_mean[[6]])^2))),
+                  time_optimization = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]][["Optimization"]],
+                  res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]][["Optimization"]]),
+                  time_posterior_mean = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]][["Posterior_mean"]],
+                  res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]][["Posterior_mean"]]),
+                  time_compute_precision = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[[6]][["Precision_computation"]],
+                  res_lik_est_nu[["rat"]][["1.4"]]$timings[[6]][["Precision_computation"]]),
+                  count = c(res_lik_est_nu[["nngp"]][["1.4"]]$timings[["6"]][["Optimization_counts"]],
+                  res_lik_est_nu[["rat"]][["1.4"]]$timings[["6"]][["Optimization_counts"]]),
+                  row.names = c("NN", "Rat"))
+res
+```
+
+Finally, let us plot the posterior means:
+
+```{r}
+plot(loc,res_lik_est_nu[["true"]][["1.4"]], type = "l", main = "black true, red nn, green markov")
 points(loc[obs_ind],Y)
-lines(loc,res[["nngp"]][["1.4"]]$post_mean[[6]],col="red")
-lines(loc,res[["rat"]][["1.4"]]$post_mean[[6]],col="green")
+lines(loc,res_lik_est_nu[["nngp"]][["1.4"]]$post_mean[[6]],col="red")
+lines(loc,res_lik_est_nu[["rat"]][["1.4"]]$post_mean[[6]],col="green")
 ```
