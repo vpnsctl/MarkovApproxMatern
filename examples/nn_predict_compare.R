@@ -61,7 +61,7 @@ for(kk in 1:n.rep) {
             t2 <- Sys.time()
             Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
             mu.nn <- solve(Qhat, Y/sigma.e^2)
-            Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)
+            Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
             mu.nn <- Bp%*%mu.nn
             t3 <- Sys.time()
             t.nn[i,j] <- t.nn[i,j] + (t3-t2)/n.rep

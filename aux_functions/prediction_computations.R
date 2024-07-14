@@ -626,34 +626,6 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
 # end - start
 
 
-
-get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
-    k <- length(loc)
-    N <- k*n.nbr
-    ii <- numeric(N)
-    jj <- numeric(N)
-    val <- numeric(N)
-    counter <- 0
-    for(i in 1:k) {
-        dists <- abs(loc[i] - loc[S])
-        nbrs <- sort(sort(dists, index.return = TRUE)$ix[1:n.nbr])
-        Sigma.in <- matern.covariance(h = abs(loc[S[nbrs]]-loc[i]), 
-                                      kappa = kappa, nu = nu, sigma = sigma)
-        Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[S[nbrs]])), 
-                                      kappa = kappa, nu = nu, sigma = sigma)
-        val[counter + (1:n.nbr)] <- t(solve(Sigma.nn,Sigma.in))
-        ii[counter + (1:n.nbr)] <- rep(i,n.nbr)
-        jj[counter + (1:n.nbr)] <- nbrs
-        counter <- counter + n.nbr
-    }
-    Bs <-  Matrix::sparseMatrix(i   = ii,
-                                j    = jj,
-                                x    = val,
-                                dims = c(k, length(S)))
-    return(Bs)
-}
-
-
 ## Predict PCA
 
 pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("woodbury", "approx"), m_pca_fun){
@@ -753,7 +725,7 @@ for(i_m in m){
         prec_mat <- get.nnQ(loc=loc_full[idx_obs],kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
         Qhat <- prec_mat + Diagonal(n.obs)/sigma_e^2   
         mu.nn <- solve(Qhat, y/sigma_e^2)
-        Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = idx_obs)
+        Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = idx_obs)$B
         mu.nn <- Bp%*%mu.nn        
 
         pred[[as.character(rat_m[count])]] <- mu.nn[idx_pred]

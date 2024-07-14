@@ -207,7 +207,7 @@ for(i_m in m){
         end1 <- Sys.time()
         Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
         mu.nn <- solve(Qhat, y/sigma.e^2)
-        Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = obs.ind)
+        Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = obs.ind)$B
         mu.nn <- Bp%*%mu.nn
         end2 <- Sys.time()
         time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
@@ -303,7 +303,7 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
 
         kappa <- sqrt(8*nu)/range            
-        timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+        timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_nngp <- m_nngp_fun(m_rat, nu+0.5)
         timings_alpha23_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)

@@ -82,7 +82,7 @@ Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa_est,nu = nu,sigma = sigma_est, n
 A = Diagonal(n.obs)
 Qhat <- Qnn + t(A)%*%A/sigma.e^2        
 mu.nn <- solve(Qhat, t(A)%*%Y/sigma.e^2)
-Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu, sigma = sigma_est, n.nbr = mn, S = obs.ind)
+Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu, sigma = sigma_est, n.nbr = mn, S = obs.ind)$B
 mu.nn <- Bp%*%mu.nn
 t2 <- Sys.time()
 t.nn <- t2 - t1
