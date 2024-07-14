@@ -348,10 +348,10 @@ compare_times_simulation <- function(N, m, range, sigma, nsim, samples, m_nngp_f
      nngp01 = timings_alpha01_nngp, nngp12 = timings_alpha12_nngp, 
      nngp23 = timings_alpha23_nngp, kl01 = timings_alpha01_kl, kl12 = timings_alpha12_kl, kl23 = timings_alpha23_kl)
 
-    res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N)), rep("23", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]]), unlist(res[["rational23"]])), m = rep(m, length(N)))
-    res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N)),rep("23", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]]), unlist(res[["nngp23"]])), m = rep(m, length(N)))
-    res_df <- rbind(res_df, res_df_tmp)
-    res_df_tmp <- data.frame(method = "PCA", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N)),rep("23", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["kl01"]]), unlist(res[["kl12"]]), unlist(res[["kl23"]])), m = rep(m, length(N)))
-    res_df <- rbind(res_df, res_df_tmp)
-    return(res_df)
+    # res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N)), rep("23", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]]), unlist(res[["rational23"]])), m = rep(m, length(N)))
+    # res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N)),rep("23", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]]), unlist(res[["nngp23"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # res_df_tmp <- data.frame(method = "PCA", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N)),rep("23", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["kl01"]]), unlist(res[["kl12"]]), unlist(res[["kl23"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    return(res)
 }
