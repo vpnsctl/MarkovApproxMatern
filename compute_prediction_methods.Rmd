@@ -89,8 +89,6 @@ source("aux_functions/predict_methods.R")
 source("aux_functions/prediction_computations.R")
 ```
 
-≈
-
 ## Computing $l_2$ and Max norms between the true posterior mean and the approximated ones
 
 We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
@@ -134,7 +132,7 @@ We will now compute the distances between the posterior means with the help of t
 ```{r, results="hide"}
 df_pred_error <- compute_pred_errors(N = N, range = range, sigma=sigma, nu.vec = nu_vec, 
 m.vec = m, m_nngp_fun = m_nngp_fun, m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun,
-sigma_e = sigma_e, L = L, seed = 123, print=TRUE)
+sigma_e = sigma_e, L = L, seed = 123, print=FALSE)
 ```
 
 ## Error plots

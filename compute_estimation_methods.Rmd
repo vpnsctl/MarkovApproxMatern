@@ -1,0 +1,165 @@
+---
+title: "Timings for estimations under different approximations of the Matérn covariance function"
+author: "David Bolin, Vaibhav Mehandiratta, and Alexandre B. Simas"
+date: "Created: 2024-05-20. Last modified: `r Sys.Date()`."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Timings for estimations under different approximations of the Matérn covariance function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+references:
+- id: BMS2024
+  title: "Linear cost and exponentially convergent approximation of Gaussian Matérn stochastic processes"
+  author:
+  - family: Bolin
+    given: David
+  - family: Mehandiratta
+    given: Vaibhav
+  - family: Simas
+    given: Alexandre B.
+  container-title: Preprint
+- id: DBFG
+  title: "Hierarchical nearest-neighbor Gaussian process models for large geostatistical datasets"
+  author:
+  - family: Datta
+    given: A.
+  - family: Benerjee
+    given: S. 
+  - family: Finley
+    given: A. O.
+  - family: Gelfand
+    given: A. E.
+  container-title: J. Amer. Statist. Assoc.
+  type: article
+  issue: 111
+  pages: 800-812
+  issued:
+    year: 2016
+- id: KS
+  title: "Approximate state-space Gaussian processes via spectral transformation"
+  author:
+  - family: Karvonen
+    given: T.
+  - family: Sarkkä
+    given: S. 
+  container-title: 2016 IEEE 26th International Workshop on Machine Learning for Signal Processing (MLSP)
+  type: article
+  pages: 1-6
+  issued:
+    year: 2016
+- id: RR
+  title: "Random features for large-scale kernel machines"
+  author:
+  - family: Rahimi
+    given: A.
+  - family: Recht
+    given: B.
+  container-title:  Advances in neural information processing systems
+  type: article
+  issue: 20
+  issued:
+    year: 2007
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+set.seed(1)
+```
+
+## Introduction
+
+In this vignette we will compute timings for estimation using our rational approximation and the nearest neighbor Gaussian models.
+
+We will also compute the prediction error obtained when estimating the parameters.
+
+Our goal is to generate the data as 
+$$Y_i = u(t_i) + \varepsilon_i,\quad i=1,\ldots,N,$$
+where $u(\cdot)$ is a stationary Gaussian process with a Mat\'ern covariance function, $t_1,\ldots,t_N$ are locations on a bounded interval on the real line, and $\varepsilon_1,\ldots,\varepsilon_N$ are measurement errors, such that $\varepsilon_1,\ldots,\varepsilon_N$ are i.i.d., independent of the field $u(\cdot)$ and follow standard normal distribution. Then, we will compute the posterior mean using the exact Matérn covariance function and we will compare to the posterior means obtained by using the different approximations of the covariance function.
+
+## Computing the timings and errors
+
+Let us load all the auxiliary functions:
+
+```{r, message=FALSE}
+library(rSPDE)
+source("aux_functions/aux_functions_cov.R")
+source("aux_functions/estimation_computations.R")
+source("aux_functions/prediction_computations.R")
+```
+
+
+## Doing estimation via maximum likelihood
+
+We will now provide the settings we will be using to do estimation by maximum likelihood in this vignette. We will consider 200 locations and we will obtain predictions on 1000 equally spaced locations. We will consider several values for smoothness parameter $\nu$ and the rational order $m$ will vary from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
+
+```{r}
+range = 5
+sigma = 2
+sigma_e <- 0.2
+n <- 1000
+n.obs <- 200
+loc <- seq(0,n/100,length.out=n)
+obs_ind <- sort(sample(1:n)[1:n.obs])
+nu_vec <- c(0.3, 0.8, 1.4, 1.8, 2.2)
+m = 1:6
+
+m_nngp_fun <- function(m, alpha){
+              if(alpha<1) {
+                mn <- m
+            } else if (alpha < 2) {
+                mn <- round(m*(ceil(alpha)+1)^1.5)    
+            } else {
+                mn <- round(m*(ceil(alpha)+1)^1.5)
+            }
+            return(mn)
+} 
+```
+
+We will now compute the timings using the `compute_likelihood_rat()` and `compute_likelihood_nn()` functions.
+
+```{r}
+res <- compute_timings_likelihood(loc, obs_ind, nu_vec, kappa, sigma, sigma_e, m, m_nngp_fun)
+```
+
+## Some examples
+
+Let us look, for example, at `nu = 1.4` and `m=6`. We start by looking at the timings. First for our rational approximation:
+
+```{r}
+res[["rat"]][["1.4"]]$timings[[6]]
+```
+
+Now for the nearest neighbor Gaussian model:
+
+```{r}
+res[["nngp"]][["1.4"]]$timings[[6]]
+```
+
+Let us summarize as a `data.frame`:
+
+```{r}
+res <- data.frame(error = c(sqrt((loc[2]-loc[1])*sum((mu-res[["nngp"]][["1.4"]]$post_mean[[6]])^2)), 
+              sqrt((loc[2]-loc[1])*sum((mu-res[["rat"]][["1.4"]]$post_mean[[6]])^2))),
+                  time_optimization = c(res[["nngp"]][["1.4"]]$timings[[6]][["Optimization"]],
+                  res[["rat"]][["1.4"]]$timings[[6]][["Optimization"]]),
+                  time_posterior_mean = c(res[["nngp"]][["1.4"]]$timings[[6]][["Posterior_mean"]],
+                  res[["rat"]][["1.4"]]$timings[[6]][["Posterior_mean"]]),
+                  time_compute_precision = c(res[["nngp"]][["1.4"]]$timings[[6]][["Precision_computation"]],
+                  res[["rat"]][["1.4"]]$timings[[6]][["Precision_computation"]]),
+                  count = c(res[["nngp"]][["1.4"]]$timings[["6"]][["Optimization_counts"]],
+                  res[["rat"]][["1.4"]]$timings[["6"]][["Optimization_counts"]]),
+                  row.names = c("NN", "Rat"))
+res
+```
+
+Finally, let us plot the posterior means:
+
+```{r}
+plot(loc,mu, type = "l", main = "black true, red nn, green markov")
+points(loc[obs_ind],Y)
+lines(loc,res[["nngp"]][["1.4"]]$post_mean[[6]],col="red")
+lines(loc,res[["rat"]][["1.4"]]$post_mean[[6]],col="green")
+```
