@@ -28,284 +28,474 @@ time_run2_sample <- numeric(samples)
 }
 
 ## Predict rational markov (our method)
+# Predict on loc_full based on observations on obs_ind
 
-predict_rat_markov <- function(loc, m, nu, kappa, sigma, sigma_e, samples, print=TRUE, equally_spaced = FALSE){
-N <- length(loc)
-time_run2_sample <- list()
+predict_rat_markov <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma, sigma_e,  print=TRUE, equally_spaced = FALSE){
 time_run2_approx <- list()
+error <- list()
+
+tmp_loc <- rep(FALSE, length(loc_full))
+tmp_loc[obs_ind] <- TRUE
+
+loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
+ord_loc <- order(loc_full)
+loc_df <- loc_df[ord_loc,]
+loc_full <- loc_df[,1]
+obs_ind <- which(loc_df[,2])
+true_pred <- true_pred[ord_loc]
 
 for(i_m in m){
-    start = Sys.time()
-    if(nu < 0.5){
-        r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
-    } else if ( 0.5 < nu ){
-        r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "location")
-    } 
-        r$Q <- (r$Q + t(r$Q))/2
-        A_mat = t(r$A)
-        Q_xgiveny <-(A_mat%*% (r$A))/sigma_e^2 + r$Q
-        # for (j in (1:samples))
-        # {
-        y <- rnorm(N)
-            post_y <- (A_mat%*% y)/sigma_e^2
-            R <- Matrix::Cholesky(Q_xgiveny, perm=FALSE)
-            mu_xgiveny <- solve(R, post_y, system = "A")
-            approx_mean1 <-  r$A %*% mu_xgiveny
-
-
-        # }
-        end = Sys.time()
-        time_run2_sample[[as.character(i_m)]] = as.numeric(end-start, units = "secs")
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])
+        time_run2_approx[[as.character(i_m)]] <- list()
+        error[[as.character(i_m)]] <- list()
+        start = Sys.time()
+        if(nu < 0.5) {
+            Qrat <- matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
+        } else {
+            Qrat <- matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
+        }
+        
+        Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
+        end1 <- Sys.time()
+        A_obs <- Qrat$A[obs_ind,]
+        A_mat <- t(A_obs)
+        Q_xgiveny <- Q + (A_mat%*% A_obs)/sigma_e^2
+        post_y <- (A_mat %*% y)/sigma_e^2
+        approx_mean <-  Qrat$A%*%solve(Q_xgiveny, A_mat%*%y/sigma_e^2)
+        end2 = Sys.time()
+        time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
+        time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
+        d_loc <- diff(loc_full)
+        d_loc <- c(d_loc[1], d_loc)
+        error[[as.character(i_m)]][["L2"]] <- sqrt(sum(d_loc * (true_pred-approx_mean)^2))
+        error[[as.character(i_m)]][["Sup"]] <- max(abs(true_pred-approx_mean))
         if(print){
             print(time_run2_approx[[as.character(i_m)]])
         }
     }
-    return(time_run2_approx)
+    result <- list(error = error, timing = time_run2_approx)
+    return(result)
 }
 
 ## Predict PCA
 
-predict_PCA <- function(loc, m, nu, kappa, sigma, sigma_e, samples, print=TRUE){
-N <- length(loc)
-time_run2_sample <- list()
+predict_PCA <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma, sigma_e,  print=TRUE){
 time_run2_approx <- list()
+error <- list()
 
-for(i in m){
-  time_run2_sample[[as.character(i)]]<-rep(0, samples)
-}    
-D_loc <- dist2matR(dist(loc))
+tmp_loc <- rep(FALSE, length(loc_full))
+tmp_loc[obs_ind] <- TRUE
+
+loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
+ord_loc <- order(loc_full)
+loc_df <- loc_df[ord_loc,]
+loc_full <- loc_df[,1]
+obs_ind <- which(loc_df[,2])
+true_pred <- true_pred[ord_loc]
+
+D_loc <- dist2matR(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
+    time_run2_approx[[as.character(i_m)]] <- list()
+    error[[as.character(i_m)]] <- list()
     start = Sys.time()
     K <- eigen_cov$vec[,1:i_m]    
     D <- diag(eigen_cov$val[1:i_m])    
     cov_KL <- K%*%D%*%t(K)
+    end1 <- Sys.time()
+    cov_KL <- cov_KL[, obs_ind]
+    K <- K[obs_ind, ]
     svd_K <- svd(K%*%sqrt(D))
     cov_KL_svd_U <- cov_KL %*% svd_K$u
-    # for (j in (1:samples))
-    # {
-        y=rnorm(N)
-
-        y_new <- t(svd_K$u) %*% y
-        prec_nugget <- cov_KL_svd_U %*% Matrix::Diagonal(x = 1/(svd_K$d^2 + sigma_e^2)) 
-        post_mean = prec_nugget%*%y_new
-        end =Sys.time()
-        time_run2_sample[[as.character(i_m)]] = as.numeric(end-start, units = "secs")
-        # }
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])    
+    y_new <- t(svd_K$u) %*% y
+    prec_nugget <- cov_KL_svd_U %*% Matrix::Diagonal(x = 1/(svd_K$d^2 + sigma_e^2)) 
+    post_mean = prec_nugget%*%y_new
+    end2 =Sys.time()
+    time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
+    time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
+    d_loc <- diff(loc_full)
+    d_loc <- c(d_loc[1], d_loc)
+    error[[as.character(i_m)]][["L2"]] <- sqrt(sum(d_loc * (true_pred-post_mean)^2))
+    error[[as.character(i_m)]][["Sup"]] <- max(abs(true_pred-post_mean))
     if(print){
             print(time_run2_approx[[as.character(i_m)]])
     }
 }
-return(time_run2_approx)
+result <- list(error = error, timing = time_run2_approx)
+return(result)
 }
 
 
 
 ## Predict KL
 
-predict_KL <- function(loc, m, nu, kappa, sigma, sigma_e, samples, print=TRUE){
-N <- length(loc)
-time_run2_sample <- list()
+predict_KL <- function(true_pred, y, loc_full, obs_ind, m, N_KL, nu, kappa, sigma, sigma_e,  print=TRUE){
 time_run2_approx <- list()
+error <- list()
 
-large_KL <- seq(min(loc), max(loc), length.out = N_KL)
-kl_loc <- c(loc, large_KL)
+tmp_loc <- rep(FALSE, length(loc_full))
+tmp_loc[obs_ind] <- TRUE
+
+loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
+ord_loc <- order(loc_full)
+loc_df <- loc_df[ord_loc,]
+loc_full <- loc_df[,1]
+obs_ind <- which(loc_df[,2])
+true_pred <- true_pred[ord_loc]
+
+large_KL <- seq(min(loc_full), max(loc_full), length.out = N_KL)
+kl_loc <- c(loc_full, large_KL)
 kl_loc <- unique(kl_loc)
 
-for(i in m){
-  time_run2_sample[[as.character(i)]]<-rep(0, samples)
-}    
-D_loc <- dist2matR(dist(loc))
+D_loc <- dist2matR(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
+    time_run2_approx[[as.character(i_m)]] <- list()
+    error[[as.character(i_m)]] <- list()
+    start = Sys.time()    
     K <- eigen_cov$vec[1:N,1:i_m]    
     D <- diag(eigen_cov$val[1:i_m])    
     cov_KL <- K%*%D%*%t(K)
+    end1 <- Sys.time()
+    cov_KL <- cov_KL[, obs_ind]
+    K <- K[obs_ind, ]
     svd_K <- svd(K%*%sqrt(D))
     cov_KL_svd_U <- cov_KL %*% svd_K$u    
-    for (j in (1:samples))
-    {
-        y=rnorm(N)
-        start = Sys.time()
         y_new <- t(svd_K$u) %*% y
         prec_nugget <- cov_KL_svd_U %*% Matrix::Diagonal(x = 1/(svd_K$d^2 + sigma_e^2)) 
         post_mean = prec_nugget%*%y_new
-        end =Sys.time()
-        time_run2_sample[[as.character(i_m)]][j] = as.numeric(end-start, units = "secs")
-        }
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])/samples        
+    end2 =Sys.time()
+    time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
+    time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
+    d_loc <- diff(loc_full)
+    d_loc <- c(d_loc[1], d_loc)
+    error[[as.character(i_m)]][["L2"]] <- sqrt(sum(d_loc * (true_pred-post_mean)^2))
+    error[[as.character(i_m)]][["Sup"]] <- max(abs(true_pred-post_mean))
     if(print){
             print(time_run2_approx[[as.character(i_m)]])
     }
 }
-return(time_run2_approx)
+result <- list(error = error, timing = time_run2_approx)
+return(result)
 }
 
 
 # predict NN 
 
-predict_rat_NN <- function(loc, m, nu, kappa, sigma, sigma_e, samples, print=TRUE){
-N <- length(loc)
-time_run2_sample <- list()
+predict_rat_NN <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma, sigma_e,  print=TRUE){
 time_run2_approx <- list()
+error <- list()
 
-for(i in m){
-  time_run2_sample[[as.character(i)]]<-rep(0, samples)
-}    
-D <- dist2matR(dist(loc))     
+tmp_loc <- rep(FALSE, length(loc_full))
+tmp_loc[obs_ind] <- TRUE
+
+loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
+ord_loc <- order(loc_full)
+loc_df <- loc_df[ord_loc,]
+loc_full <- loc_df[,1]
+obs_ind <- which(loc_df[,2])
+true_pred <- true_pred[ord_loc]
+sigma.e <- sigma_e
+obs.ind <- obs_ind
+n.obs <- length(obs.ind)
+
+D <- dist2matR(dist(loc_full))     
 for(i_m in m){
         start = Sys.time()    
-        prec_mat <- get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr = i_m)
-        I <- Matrix::Diagonal(n = ncol(prec_mat), x = 1)
-        Q_xgiveny <- I * 1/sigma_e^2 + prec_mat
-        # for (j in (1:samples))
-        # {
-        y <- rnorm(N)
-              post_y <- y/sigma_e^2
-              R <- Matrix::Cholesky(Q_xgiveny, perm=FALSE)
-              mu_xgiveny <- solve(R, post_y, system = "A")
-        end = Sys.time()
-        time_run2_sample[[as.character(i_m)]] = as.numeric(end-start, units = "secs")
-        # }
-        time_run2_approx[[as.character(i_m)]] = sum(time_run2_sample[[as.character(i_m)]])
+        Qnn <- get.nnQ(loc = loc_full[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = i_m)
+        end1 <- Sys.time()
+        Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
+        mu.nn <- solve(Qhat, y/sigma.e^2)
+        Bp <- get.nn.pred(loc = loc_full, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = obs.ind)
+        mu.nn <- Bp%*%mu.nn
+        end2 <- Sys.time()
+        time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
+        time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
+        d_loc <- diff(loc_full)
+        d_loc <- c(d_loc[1], d_loc)
+        error[[as.character(i_m)]][["L2"]] <- sqrt(sum(d_loc * (true_pred-mu.nn)^2))
+        error[[as.character(i_m)]][["Sup"]] <- max(abs(true_pred-mu.nn))   
         if(print){
-            print(time_run2_approx[[as.character(i_m)]])
+                print(time_run2_approx[[as.character(i_m)]])
         }
-    }
-    return(time_run2_approx)
+}
+result <- list(error = error, timing = time_run2_approx)
+return(result)
 }
 
 
+# L is length of the interval
 
-compare_times <- function(N, m, range, sigma, samples){
+compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
-    print("Starting rational")
-    for(n_loc in N){
-        loc <- seq(0, 1, length.out = n_loc)
-        nu <- 0.3
-        kappa <- sqrt(8*nu)/range
-        timings_alpha01_rat[[as.character(n_loc)]] <- predict_rat_markov(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-        nu <- 1.2
-        kappa <- sqrt(8*nu)/range            
-        timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-    }
-    print("Starting nnGP")
+    timings_alpha23_rat <- list()
+
     timings_alpha01_nngp <- list()
     timings_alpha12_nngp <- list()
-    for(n_loc in N){
-            loc <- seq(0, 1, length.out = n_loc)
-            nu <- 0.3
-            kappa <- sqrt(8*nu)/range
-            m_nngp <- get_m(nu = nu, m = m, method = "nngp")
-            timings_alpha01_nngp[[as.character(n_loc)]] <- predict_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-            nu <- 1.2
-            kappa <- sqrt(8*nu)/range        
-            m_nngp <- get_m(nu = nu, m= m, method = "nngp")    
-            timings_alpha12_nngp[[as.character(n_loc)]] <- predict_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-    }
-    print("Starting PCA")
-    timings_alpha01_kl <- list()
-    timings_alpha12_kl <- list()
-    for(n_loc in N){
-            loc <- seq(0, 1, length.out = n_loc)
-            nu <- 0.3
-            kappa <- sqrt(8*nu)/range
-            m_kl <- get_m(nu = nu, m = m, method = "kl")
-            timings_alpha01_kl[[as.character(n_loc)]] <- predict_PCA(loc = loc, m = m_kl, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-            nu <- 1.2
-            kappa <- sqrt(8*nu)/range        
-            m_kl <- get_m(nu = nu, m = m, method = "kl")                
-            timings_alpha12_kl[[as.character(n_loc)]] <- predict_PCA(loc = loc, m = m_kl, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-    }    
-    res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, nngp01 = timings_alpha01_nngp, nngp12 = timings_alpha12_nngp, kl01 = timings_alpha01_kl, kl12 = timings_alpha12_kl)
+    timings_alpha23_nngp <- list()
 
-    res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]])), m = rep(m, length(N)))
-    res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]])), m = rep(m, length(N)))
-    res_df <- rbind(res_df, res_df_tmp)
-    res_df_tmp <- data.frame(method = "KL", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["kl01"]]), unlist(res[["kl12"]])), m = rep(m, length(N)))
-    res_df <- rbind(res_df, res_df_tmp)
-    return(res_df)
+    timings_alpha01_pca <- list()
+    timings_alpha12_pca <- list()
+    timings_alpha23_pca <- list()    
+
+
+    if(length(N) != length(n_obs)){
+        stop("N and n_obs must have the same length!")
+    }
+
+    for(ii in 1:length(N)){
+        n_loc <- N[ii]
+        n_loc_obs <- n_obs[ii]
+        loc <- seq(0, L, length.out = n_loc)
+        nu <- 0.3
+        kappa <- sqrt(8*nu)/range
+        obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
+
+        D <- as.matrix(dist(loc))
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        #
+
+        #our method
+        timings_alpha01_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        # nngp
+        m_nngp <- m_nngp_fun(m_rat, nu+0.5)
+
+        timings_alpha01_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        # PCA
+        m_pca <- m_pca_fun(m_rat, nu+0.5)        
+        timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)       
+
+        nu <- 1.2
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        kappa <- sqrt(8*nu)/range            
+        timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_nngp <- m_nngp_fun(m_rat, nu+0.5)
+        timings_alpha12_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_pca <- m_pca_fun(m_rat, nu+0.5)
+        timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)        
+
+        nu <- 2.2
+
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        kappa <- sqrt(8*nu)/range            
+        timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_nngp <- m_nngp_fun(m_rat, nu+0.5)
+        timings_alpha23_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_pca <- m_pca_fun(m_rat, nu+0.5)
+        timings_alpha23_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,  nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)  
+
+    }
+
+    res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, rational23 = timings_alpha23_rat, nngp01 = timings_alpha01_nngp, nngp12 = timings_alpha12_nngp, nngp23 = timings_alpha23_nngp, pca01 = timings_alpha01_pca, pca12 = timings_alpha12_pca, pca23 = timings_alpha23_pca)
+
+    # res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]])), m = rep(m, length(N)))
+    # res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # res_df_tmp <- data.frame(method = "KL", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["kl01"]]), unlist(res[["kl12"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # return(res_df)
+    return(res)
 }
 
 # only with nngp
 
-compare_times_nngp <- function(N, m, range, sigma, samples){
+compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
-    print("Starting rational")
-    for(n_loc in N){
-        loc <- seq(0, 1, length.out = n_loc)
-        nu <- 0.3
-        kappa <- sqrt(8*nu)/range
-        timings_alpha01_rat[[as.character(n_loc)]] <- predict_rat_markov(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-        nu <- 1.2
-        kappa <- sqrt(8*nu)/range            
-        timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-    }
-    print("Starting nnGP")
+    timings_alpha23_rat <- list()
+
     timings_alpha01_nngp <- list()
     timings_alpha12_nngp <- list()
-    for(n_loc in N){
-            loc <- seq(0, 1, length.out = n_loc)
-            nu <- 0.3
-            kappa <- sqrt(8*nu)/range
-            m_nngp <- get_m(nu = nu, m = m, method = "nngp")
-            timings_alpha01_nngp[[as.character(n_loc)]] <- predict_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-            nu <- 1.2
-            kappa <- sqrt(8*nu)/range        
-            m_nngp <- get_m(nu = nu, m = m, method = "nngp")    
-            timings_alpha12_nngp[[as.character(n_loc)]] <- predict_rat_NN(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
+    timings_alpha23_nngp <- list()
+
+
+    if(length(N) != length(n_obs)){
+        stop("N and n_obs must have the same length!")
     }
-    res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, nngp01 = timings_alpha01_nngp, nngp12 = timings_alpha12_nngp)
-    res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]])), m = rep(m, length(N)))
-    res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]])), m = rep(m, length(N)))
-    res_df <- rbind(res_df, res_df_tmp)
-    return(res_df)
+
+    for(ii in 1:length(N)){
+        n_loc <- N[ii]
+        n_loc_obs <- n_obs[ii]
+        loc <- seq(0, L, length.out = n_loc)
+        nu <- 0.3
+        kappa <- sqrt(8*nu)/range
+        obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
+
+        D <- as.matrix(dist(loc))
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        #
+
+        #our method
+
+        timings_alpha01_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        # nngp
+        m_nngp <- m_nngp_fun(m_rat, nu+0.5)
+        timings_alpha01_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+           
+        nu <- 1.2
+
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        kappa <- sqrt(8*nu)/range            
+        timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_nngp <- m_nngp_fun(m_rat, nu+0.5)
+        timings_alpha12_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)      
+
+        nu <- 2.2
+
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        kappa <- sqrt(8*nu)/range            
+        timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_nngp <- m_nngp_fun(m_rat, nu+0.5)
+        timings_alpha23_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+    }
+
+    res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, rational23 = timings_alpha23_rat, nngp01 = timings_alpha01_nngp, nngp12 = timings_alpha12_nngp, nngp23 = timings_alpha23_nngp)
+
+    # res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]])), m = rep(m, length(N)))
+    # res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # res_df_tmp <- data.frame(method = "KL", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["kl01"]]), unlist(res[["kl12"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # return(res_df)
+    return(res)
 }
 
 
-# only with PCA
 
-compare_times_pca <- function(N, m, range, sigma, samples){
+# only with KL
+
+compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
-    print("Starting rational")
-    for(n_loc in N){
-        loc <- seq(0, 1, length.out = n_loc)
+    timings_alpha23_rat <- list()
+
+    timings_alpha01_kl <- list()
+    timings_alpha12_kl <- list()
+    timings_alpha23_kl <- list()
+
+
+    if(length(N) != length(n_obs)){
+        stop("N and n_obs must have the same length!")
+    }
+
+    for(ii in 1:length(N)){
+        n_loc <- N[ii]
+        n_loc_obs <- n_obs[ii]
+        loc <- seq(0, L, length.out = n_loc)
         nu <- 0.3
         kappa <- sqrt(8*nu)/range
-        timings_alpha01_rat[[as.character(n_loc)]] <- predict_rat_markov(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
+        obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
+
+        D <- as.matrix(dist(loc))
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        #
+
+        #our method
+
+        timings_alpha01_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        # #KL
+        m_pca <- m_pca_fun(m_rat, nu+0.5)
+        timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+           
         nu <- 1.2
+
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
         kappa <- sqrt(8*nu)/range            
-        timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(loc = loc, m = m, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
+        timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_pca <- m_pca_fun(m_rat, nu+0.5)
+        timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)        
+
+        nu <- 2.2
+
+        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+        R <- chol(Sigma[obs.ind,obs.ind])
+        X <- t(R)%*%rnorm(n_loc_obs)
+        Y <- X + sigma_e*rnorm(n_loc_obs)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        kappa <- sqrt(8*nu)/range            
+        timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+
+        m_pca <- m_pca_fun(m_rat, nu+0.5)
+        timings_alpha23_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)  
+
     }
-    print("Starting PCA")
-    timings_alpha01_pca <- list()
-    timings_alpha12_pca <- list()
-    for(n_loc in N){
-            loc <- seq(0, 1, length.out = n_loc)
-            nu <- 0.3
-            kappa <- sqrt(8*nu)/range
-            m_nngp <- get_m(nu = nu, m = m, method = "kl")
-            timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-            nu <- 1.2
-            kappa <- sqrt(8*nu)/range        
-            m_nngp <- get_m(nu = nu, m = m, method = "kl")    
-            timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(loc = loc, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, samples = samples, print = FALSE)
-    }
-    res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, pca01 = timings_alpha01_pca, pca12 = timings_alpha12_pca)
-    res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]])), m = rep(m, length(N)))
-    res_df_tmp <- data.frame(method = "PCA", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["pca01"]]), unlist(res[["pca12"]])), m = rep(m, length(N)))
-    res_df <- rbind(res_df, res_df_tmp)
-    return(res_df)
+
+    res <- list(rational01 = timings_alpha01_rat, rational12 = timings_alpha12_rat, rational23 = timings_alpha23_rat, pca01 = timings_alpha01_pca, pca12 = timings_alpha12_pca, pca23 = timings_alpha23_pca)
+
+    # res_df <- data.frame(method = "rational", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["rational01"]]), unlist(res[["rational12"]])), m = rep(m, length(N)))
+    # res_df_tmp <- data.frame(method = "nnGP", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["nngp01"]]), unlist(res[["nngp12"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # res_df_tmp <- data.frame(method = "KL", alpha = c(rep("01", length(m)*length(N)),rep("12", length(m)*length(N))), N = rep(N, each = length(m)), Time = c(unlist(res[["kl01"]]), unlist(res[["kl12"]])), m = rep(m, length(N)))
+    # res_df <- rbind(res_df, res_df_tmp)
+    # return(res_df)
+    return(res)
 }
 
 

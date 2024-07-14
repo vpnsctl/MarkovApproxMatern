@@ -579,9 +579,9 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
 
 # # Example 
 
-start <- Sys.time()
-    post_mean_rat_pred <- pred_rat_markov_pred(y, loc_obs = loc_full[idx_obs], loc_pred = loc_full[idx_pred] ,m = 1:2, nu = 0.3, kappa=kappa, sigma=sigma, sigma_e = 0.1)
-end <- Sys.time()
+# start <- Sys.time()
+#     post_mean_rat_pred <- pred_rat_markov_pred(y, loc_obs = loc_full[idx_obs], loc_pred = loc_full[idx_pred] ,m = 1:2, nu = 0.3, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+# end <- Sys.time()
 
 # start <- Sys.time()
 #     post_mean_rat <- pred_rat_markov(y, loc_full = loc_full, idx_obs = idx_obs, idx_pred = idx_pred, m = 1:6, nu = 3.2,

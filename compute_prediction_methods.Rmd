@@ -79,7 +79,7 @@ Our goal is to generate the data as
 $$Y_i = u(t_i) + \varepsilon_i,\quad i=1,\ldots,N,$$
 where $u(\cdot)$ is a stationary Gaussian process with a Mat\'ern covariance function, $t_1,\ldots,t_N$ are locations on a bounded interval on the real line, and $\varepsilon_1,\ldots,\varepsilon_N$ are measurement errors, such that $\varepsilon_1,\ldots,\varepsilon_N$ are i.i.d., independent of the field $u(\cdot)$ and follow standard normal distribution. Then, we will compute the posterior mean using the exact Matérn covariance function and we will compare to the posterior means obtained by using the different approximations of the covariance function.
 
-## Preprocessing
+## Computing the timings and errors
 
 Let us load all the auxiliary functions:
 
@@ -92,25 +92,51 @@ source("aux_functions/prediction_computations.R")
 We will now provide the settings we will be computing the $L_2$ and $L_\infty$ distances for this vignette. We will consider 500 and 1000 equally spaced locations, values of the smoothness parameter $\nu$ from 0.1 to 2.9, with steps of size $0.1$, a range of 0.2, marginal standard deviation of 2, and the hyperparameter $m$ from 1 to 6 (and its corresponding calibration for the other methods according to Table 1 of [@BMS2024]).
 
 ```{r}
-N <- c(500,1000)
+N <- c(5000,8000)
+n_obs <- c(4000, 6000)
 # L - length of the interval, [0,L]
-L <- 10
-N <- 500
+L <- 30
+range <- 1
+sigma <- 1
+sigma_e <- 0.1
+m_rat <- 1:6
+m_nngp_fun <- function(m, alpha){
+              if(alpha<1) {
+                mn <- m
+            } else if (alpha < 2) {
+                mn <- round(m*(ceil(alpha)+1)^1.5)    
+            } else {
+                mn <- round(m*(ceil(alpha)+1)^1.5)
+            }
+            return(mn)
+} 
+m_pca_fun <- function(m, alpha){
+      return(pmax(9*round((m+1)*sqrt(m) * ceil(alpha)^(3/2)),2))
+}
+```
 
+We will start by comparing the times and errors for our method, NNGP and KL. We will observe in `n_obs` random locations and predict on an equally spaced grid. To this end we will use the auxiliary `compare_times()` function. We will obtain 10 samples.
+
+```{r}
+results <- list()
+samples <- 10
+for(sample in samples){
+  results[[sample]] <- compare_times(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun)
+}
+```
+
+## Computing $l_2$ and Max norms between the true posterior mean and the approximated ones
+
+```{r}
 # nu_vec=seq(0.01, 2.99, by = 0.01)
 nu_vec=seq(0.1, 1.5,  by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec <- nu_vec[idx]
-range = 1
-sigma = 1
 samples = 10
 m <- 1:6
 # Std. dev. of the measurement error
 sigma_e <- 0.01
 ```
-
-
-## Computing $l_2$ and Max norms between the true posterior mean and the approximated ones
 
 We will now compute the distances between the posterior means with the help of the auxiliary functions `compute_pred_errors`. It will provide the predictions using our method introduced in [@BMS2024], a PCA low rank approximation, the nearest neighbor method of [@DBFG], the Fourier method of [@RR] and the state-space method of [@KS]. We will set a seed for reproducibility. This function generates the response variables that consist of a stationary Gaussian process with Matérn covariance function at different locations plus independent Gaussian measurement errors.
 
