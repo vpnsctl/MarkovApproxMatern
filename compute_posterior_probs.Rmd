@@ -93,7 +93,10 @@ source("aux_functions/probability_computations.R")
 We will now consider the basic setup:
 
 ```{r}
-N <- 500
+N <- 250
+N_prob <- 4
+obs_ind <- sort(sample(1:N, N-N_prob))
+prob_ind <- which(!(1:N %in% obs_ind))
 L <- 10
 range <- 1
 sigma <- 1
@@ -131,6 +134,6 @@ m_statespace_fun <- function(m, alpha){
 We will now compute the probability estimates based on the above calibration, which is taken with respect to prediction timings.
 
 ```{r}
-prob_ests <- compute_prob_ests(loc = loc, loc_prob_idx = c(1,10), L = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
+prob_ests <- compute_prob_ests(loc_full = loc, obs_ind = obs_ind, loc_prob_idx = prob_ind, L = L, range = range, sigma = sigma, nu_vec = nu_vec, sigma_e = sigma_e, m_rat = m, m_nngp_fun = m_nngp_fun, 
 m_pca_fun = m_pca_fun, m_fourier_fun = m_fourier_fun, m_statespace_fun = m_statespace_fun)
 ```
