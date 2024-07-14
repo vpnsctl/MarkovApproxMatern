@@ -168,12 +168,21 @@ pred_rat_markov_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted
     }
     
     pred <- list()
+    if(return_timings){
+        pred[["timings"]] <- list()
+    }    
     for(i_m in m){
+        if(return_timings){
+            t1 <- Sys.time()
+        }        
             if(nu < 0.5){
                 r <- rSPDE::matern.rational.precision(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
             } else {
                 r <- rSPDE::matern.rational.precision(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
             } 
+         if(return_timings){
+            t2 <- Sys.time()
+        }            
                 A_mat = t(r$A)
                 Q_xgiveny <-(A_mat%*%r$A)/sigma_e^2 + r$Q
                 post_y <- (A_mat%*% y)/sigma_e^2
@@ -188,6 +197,11 @@ pred_rat_markov_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted
                     approx_mean1 <-  mu_xgiveny
                 }
                 pred[[as.character(i_m)]] <- approx_mean1
+                if(return_timings){
+                    t3 <- Sys.time()
+                    pred[["timings"]][[as.character(i_m)]][["build_Q"]] <- t2 - t1
+                    pred[["timings"]][[as.character(i_m)]][["get_pred"]] <- t3 - t2
+                }                     
             }
     return(pred)
 }
@@ -202,7 +216,7 @@ pred_rat_markov_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted
 
 ## Predict rational markov obs (our method) - Compute the predictions at the observations using LDL
 
-pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted = FALSE, test_equally_spaced = FALSE, equally_spaced = FALSE, return_full = FALSE){
+pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted = FALSE, test_equally_spaced = FALSE, equally_spaced = FALSE, return_full = FALSE, return_timings = FALSE){
     if(!sorted){
         ord <- order(loc_obs)
         y <- y[ord]
@@ -218,13 +232,22 @@ pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, so
     }
     
     pred <- list()
+    if(return_timings){
+        pred[["timings"]] <- list()
+    }
     for(i_m in m){
+        if(return_timings){
+            t1 <- Sys.time()
+        }
             if(nu < 0.5){
                 r <- rSPDE::matern.rational.ldl(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")          
             } else {
                 r <- rSPDE::matern.rational.ldl(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")      
             } 
                 r$Q <- t(r$L) %*% r$D %*% r$L
+         if(return_timings){
+            t2 <- Sys.time()
+        }
                 A_mat = t(r$A)
                 Q_xgiveny <-(A_mat%*%r$A)/sigma_e^2 + r$Q
                 post_y <- (A_mat%*% y)/sigma_e^2
@@ -239,6 +262,11 @@ pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, so
                     approx_mean1 <-  mu_xgiveny
                 }
                 pred[[as.character(i_m)]] <- approx_mean1
+                if(return_timings){
+                    t3 <- Sys.time()
+                    pred[["timings"]][[as.character(i_m)]][["build_Q"]] <- t2 - t1
+                    pred[["timings"]][[as.character(i_m)]][["get_pred"]] <- t3 - t2
+                }                
             }
     return(pred)
 }
@@ -251,7 +279,7 @@ pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, so
 
 ## Predict rational markov at any location based on observation predictions (our method) - Compute the predictions at any location using observation predictions
 
-pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, use_LDL = TRUE, sorted = FALSE, test_equally_spaced = FALSE, equally_spaced = FALSE){
+pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, use_LDL = TRUE, sorted = FALSE, test_equally_spaced = FALSE, equally_spaced = FALSE, return_timings = FALSE){
     ord_obs <- order(loc_obs)
     sorted_loc_obs <- loc_obs[ord_obs]
     y_sorted <- y[ord_obs]
@@ -262,15 +290,12 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
             equally_spaced <- TRUE
         }
     }
-    
-    start <- Sys.time()
 
     if(use_LDL){
-        pred_obs <- pred_rat_markov_ldl_obs(y_sorted, loc_obs = sorted_loc_obs, m = m, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, sorted = sorted, test_equally_spaced = test_equally_spaced, equally_spaced = equally_spaced, return_full = TRUE)
+        pred_obs <- pred_rat_markov_ldl_obs(y_sorted, loc_obs = sorted_loc_obs, m = m, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, sorted = sorted, test_equally_spaced = test_equally_spaced, equally_spaced = equally_spaced, return_full = TRUE, return_timings = return_timings)
     } else{
-        pred_obs <- pred_rat_markov_obs(y_sorted, loc_obs = sorted_loc_obs, m = m, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, sorted = sorted, test_equally_spaced = test_equally_spaced,  return_full = TRUE)
+        pred_obs <- pred_rat_markov_obs(y_sorted, loc_obs = sorted_loc_obs, m = m, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, sorted = sorted, test_equally_spaced = test_equally_spaced,  return_full = TRUE, return_timings = return_timings)
     }
-    end <- Sys.time()
 
     # print("getting obs predictions")
     # print(end-start)
@@ -289,15 +314,6 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
         nbrs_mat[i,] <- sort(c(which.min(abs(dists_tmp)), which.min(dists_tmp2)))
     }
 
-    ## Include conditions before the minimum or larger than max
-
-    end <- Sys.time()
-    # print(end-start)
-
-    # print("Time to get neighbors")
-
-    start <- Sys.time()    
-
     # different neighbors
     d.nbrs <- (nbrs_mat[,1] - nbrs_mat[,2])
     # Total neighbors
@@ -311,10 +327,15 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
     n_obs <- length(sorted_loc_obs)
 
     end <- Sys.time()
-    # print(end-start)    
+
+    if(return_timings){
+        pred_obs[["timings"]][["setup"]] <- end - start
+    }
     
     for(i_m in m){
-        start <- Sys.time()    
+        if(return_timings){
+            start <- Sys.time()    
+        }
 
         N <- T.nbrs *((exp_1+1) + i_m * (floor(alpha)+1))^2
         ii <- numeric(N)
@@ -327,104 +348,76 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
         counter <- 0     
         counter_A <- 0
 
-        end <- Sys.time()
-        # print(end-start)
-        
-        
-        duration <- 0
-
         coeff <- rSPDE:::interp_rational_coefficients(order = i_m, 
                                               type_rational_approx = "brasil", 
                                               type_interp = "spline", 
                                               alpha = alpha)
         r_coeff <- coeff$r
         p_coeff <- coeff$p
-        k_coeff <- coeff$k
+        k_coeff <- coeff$k  
 
         for(i in 1:k){
+
             nbrs <- unique(nbrs_mat[i,])
             n.nbr <- length(nbrs)
             po_loc <- c(loc_pred[i],sorted_loc_obs[nbrs])
             ord_po <- order(po_loc)
-            start <- Sys.time()   
-            Sigma_po <- Matrix(ncol=length(po_loc), nrow = length(po_loc))
 
                 if(length(po_loc) == 2){
-                    Sigma_po <- k_coeff*sigma^2 * rbind(cbind(rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][1], kappa = kappa, alpha = alpha), 
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][1], po_loc[ord_po][2], kappa = kappa, alpha = alpha)),
-                               cbind(rSPDE:::matern.k.joint(po_loc[ord_po][2],po_loc[ord_po][1], kappa = kappa, alpha = alpha), 
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][2],po_loc[ord_po][2], kappa = kappa, alpha = alpha)))
+                    tmp_1 <- rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][1], kappa = kappa, alpha = alpha)
+                    tmp_2 <- rSPDE:::matern.k.joint(po_loc[ord_po][1], po_loc[ord_po][2], kappa = kappa, alpha = alpha)
+
+                    Sigma_po <- k_coeff*sigma^2 * rbind(cbind(tmp_1, 
+                                     tmp_2),cbind(
+                               t(tmp_2), 
+                                     tmp_1))             
                 } else{
-                    Sigma_po <- k_coeff*sigma^2 * rbind(cbind(rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][1],kappa,alpha), 
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][2],kappa,alpha),
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][3],kappa,alpha)),
-                               cbind(rSPDE:::matern.k.joint(po_loc[ord_po][2],po_loc[ord_po][1],kappa,alpha),
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][2],po_loc[ord_po][2],kappa,alpha),
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][2],po_loc[ord_po][3],kappa,alpha)),
-                               cbind(rSPDE:::matern.k.joint(po_loc[ord_po][3],po_loc[ord_po][1],kappa,alpha),
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][3],po_loc[ord_po][2],kappa,alpha),
-                                     rSPDE:::matern.k.joint(po_loc[ord_po][3],po_loc[ord_po][3],kappa,alpha)))
+                    tmp_1 <- rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][1],kappa,alpha)
+                    tmp_2 <- rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][2],kappa,alpha)
+                    tmp_3 <- rSPDE:::matern.k.joint(po_loc[ord_po][1],po_loc[ord_po][3],kappa,alpha)
+                    tmp_4 <- rSPDE:::matern.k.joint(po_loc[ord_po][2],po_loc[ord_po][3],kappa,alpha)
+
+                    Sigma_po <- k_coeff*sigma^2 * rbind(cbind(tmp_1, 
+                                     tmp_2,
+                                     tmp_3),
+                               cbind(t(tmp_2),
+                                     tmp_1,
+                                     tmp_4),
+                               cbind(t(tmp_3),
+                                     t(tmp_4),
+                                     tmp_1))                    
                 }
             # }
 
             for(ii_p in 1:length(p_coeff)){
                 if(length(po_loc) == 2){
-                    Sigma_tmp <- r_coeff[ii_p]*sigma^2* rbind(cbind(rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][1], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha), 
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][1], po_loc[ord_po][2], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha)),
-                               cbind(rSPDE:::matern.p.joint(po_loc[ord_po][2],po_loc[ord_po][1], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha), 
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][2],po_loc[ord_po][2], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha)))
+                    tmp_1 <- rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][1], kappa = kappa,
+                                      p = p_coeff[ii_p], alpha = alpha)
+                    tmp_2 <- rSPDE:::matern.p.joint(po_loc[ord_po][1], po_loc[ord_po][2], kappa = kappa,
+                                      p = p_coeff[ii_p], alpha = alpha)
+
+                    Sigma_tmp <- r_coeff[ii_p]*sigma^2* rbind(cbind(tmp_1, 
+                                     tmp_2),
+                               cbind(t(tmp_2), 
+                                     tmp_1))                    
                 } else{
-                    Sigma_tmp <- r_coeff[ii_p]*sigma^2*rbind(cbind(rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][1],kappa,p_coeff[ii_p],alpha), 
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][2],kappa,p_coeff[ii_p],alpha),
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][3],kappa,p_coeff[ii_p],alpha)),
-                               cbind(rSPDE:::matern.p.joint(po_loc[ord_po][2],po_loc[ord_po][1],kappa,p_coeff[ii_p],alpha),
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][2],po_loc[ord_po][2],kappa,p_coeff[ii_p],alpha),
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][2],po_loc[ord_po][3],kappa,p_coeff[ii_p],alpha)),
-                               cbind(rSPDE:::matern.p.joint(po_loc[ord_po][3],po_loc[ord_po][1],kappa,p_coeff[ii_p],alpha),
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][3],po_loc[ord_po][2],kappa,p_coeff[ii_p],alpha),
-                                     rSPDE:::matern.p.joint(po_loc[ord_po][3],po_loc[ord_po][3],kappa,p_coeff[ii_p],alpha)))
+                    tmp_1 <- rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][1],kappa,p_coeff[ii_p],alpha)
+                    tmp_2 <- rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][2],kappa,p_coeff[ii_p],alpha)
+                    tmp_3 <- rSPDE:::matern.p.joint(po_loc[ord_po][1],po_loc[ord_po][3],kappa,p_coeff[ii_p],alpha)
+                    tmp_4 <- rSPDE:::matern.p.joint(po_loc[ord_po][2],po_loc[ord_po][3],kappa,p_coeff[ii_p],alpha)
+
+                    Sigma_tmp <- r_coeff[ii_p]*sigma^2*rbind(cbind(tmp_1, 
+                                     tmp_2,
+                                     tmp_3),
+                               cbind(t(tmp_2),
+                                     tmp_1,
+                                     tmp_4),
+                               cbind(t(tmp_3),
+                                     t(tmp_4),
+                                     tmp_1))                    
                 }
                 Sigma_po <- bdiag(Sigma_po, Sigma_tmp)
-            }
-            
-
-            s_loc_nbrs <- sorted_loc_obs[nbrs]
-
-            Sigma_oo <- Matrix(0,ncol=length(s_loc_nbrs), nrow = length(s_loc_nbrs))
-
-                if(length(s_loc_nbrs) == 2){
-                    Sigma_oo <- k_coeff*sigma^2* rbind(cbind(rSPDE:::matern.k.joint(s_loc_nbrs[1],s_loc_nbrs[1], kappa = kappa, alpha = alpha), 
-                                     rSPDE:::matern.k.joint(s_loc_nbrs[1], s_loc_nbrs[2], kappa = kappa, alpha = alpha)),
-                               cbind(rSPDE:::matern.k.joint(s_loc_nbrs[2],s_loc_nbrs[1], kappa = kappa, alpha = alpha), 
-                                     rSPDE:::matern.k.joint(s_loc_nbrs[2],s_loc_nbrs[2], kappa = kappa, alpha = alpha)))
-                } else{
-                    Sigma_oo <- k_coeff*sigma^2*rSPDE:::matern.k.joint( s_loc_nbrs, s_loc_nbrs,kappa,alpha)
-                }
-            # }
-
-           for(ii_p in 1:length(p_coeff)){
-                if(length(s_loc_nbrs) == 2){
-                    Sigma_tmp <- r_coeff[ii_p]*sigma^2* rbind(cbind(rSPDE:::matern.p.joint(s_loc_nbrs[1],s_loc_nbrs[1], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha), 
-                                     rSPDE:::matern.p.joint(s_loc_nbrs[1], s_loc_nbrs[2], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha)),
-                               cbind(rSPDE:::matern.p.joint(s_loc_nbrs[2],s_loc_nbrs[1], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha), 
-                                     rSPDE:::matern.p.joint(s_loc_nbrs[2],s_loc_nbrs[2], kappa = kappa,
-                                      p = p_coeff[ii_p], alpha = alpha)))
-                } else{
-                    Sigma_tmp <- r_coeff[ii_p]*sigma^2*rSPDE:::matern.p.joint( s_loc_nbrs, s_loc_nbrs,kappa,p_coeff[ii_p],alpha)
-                }
-                Sigma_oo <- bdiag(Sigma_oo, Sigma_tmp)
-            }       
-
-            end <- Sys.time()
-
-            # duration <- duration + as.numeric(end - start, unit = "secs")
+            }           
 
             idx_p <- c()
             if(length(nbrs)==1){
@@ -456,9 +449,8 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
                     }
                 }
             }
-
-            # end override
             
+            Sigma_oo <- Sigma_po[-idx_p, -idx_p]
             Sigma_po <- Sigma_po[idx_p, -idx_p]
 
             n_terms_i <-  (exp_1 + 1 + i_m * (1+floor(alpha)))*n.nbr
@@ -466,6 +458,7 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
             n.terms <- length(Sigma_po)
 
             val[counter + 1:n.terms] <- (solve(Sigma_oo,t(Sigma_po)))   
+
             if(i == 1){
                 tmp_idx <- 1
             } else{
@@ -543,9 +536,20 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
                                 j    = jj_A,
                                 x    = val_A,
                                 dims = c( k, k*(exp_1+1 + i_m * (floor(alpha)+1))))
+        if(return_timings){
+            end <- Sys.time()
+            pred_obs[["timings"]][[as.character(i_m)]][["build_pred_matrices"]] <- end-start
+        }
     }
     for(i_m in m){
+        if(return_timings){
+            start <- Sys.time()
+        }
         pred_obs[[as.character(i_m)]] <- A[[as.character(i_m)]] %*% cov_coeff[[as.character(i_m)]] %*% pred_obs[[as.character(i_m)]]
+        if(return_timings){
+            end <- Sys.time()
+            pred_obs[["timings"]][[as.character(i_m)]][["assemble_preds"]] <- end-start
+        }
     }
 
     return(pred_obs)
@@ -553,9 +557,9 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
 
 # # Example 
 
-# start <- Sys.time()
-#     post_mean_rat_pred <- pred_rat_markov_pred(y, loc_obs = loc_full[idx_obs], loc_pred = loc_full[idx_pred] ,m = 1:6, nu = 3.2, kappa=kappa, sigma=sigma, sigma_e = 0.1)
-# end <- Sys.time()
+start <- Sys.time()
+    post_mean_rat_pred <- pred_rat_markov_pred(y, loc_obs = loc_full[idx_obs], loc_pred = loc_full[idx_pred] ,m = 1:2, nu = 0.3, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+end <- Sys.time()
 
 # start <- Sys.time()
 #     post_mean_rat <- pred_rat_markov(y, loc_full = loc_full, idx_obs = idx_obs, idx_pred = idx_pred, m = 1:6, nu = 3.2,
@@ -615,9 +619,6 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
                                       kappa = kappa, nu = nu, sigma = sigma)
         Sigma.nn <- matern.covariance(h = as.matrix(dist(loc[S[nbrs]])), 
                                       kappa = kappa, nu = nu, sigma = sigma)
-        print(Sigma.in)
-        print(Sigma.nn)
-
         val[counter + (1:n.nbr)] <- t(solve(Sigma.nn,Sigma.in))
         ii[counter + (1:n.nbr)] <- rep(i,n.nbr)
         jj[counter + (1:n.nbr)] <- nbrs
