@@ -3,8 +3,8 @@ source("aux_functions/aux_functions_cov.R")
 range = 2
 sigma = 2
 sigma.e <- 0.2
-n <- 2000
-n.obs <- 1500
+n <- 1000
+n.obs <- 900
 n.rep <- 1
 loc <- seq(0,n/100,length.out=n)
 

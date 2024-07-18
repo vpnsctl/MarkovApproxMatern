@@ -185,18 +185,15 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
     ii <- numeric(N)
     jj <- numeric(N)
     val <- numeric(N)
-    Fs.d <- numeric(k)
+    Fs.d <- numeric(n.loc)
     counter <- 0
-    for(i in 1:n.loc) {
-        tmp <- which(i == S)
-        
-        if(length(tmp) > 0) {
-            val[counter + 1] <- 1
-            ii[counter + 1] <- i
-            jj[counter + 1] <- tmp
-            counter <- counter + 1    
-            Fs.d[i] <- 0 #do not compute the conditional variance
-        } else {
+    ii[1:n.S] <- S
+    jj[1:n.S] <- 1:n.S
+    val[1:n.S] <- 1
+    counter <- n.S
+    not.observed <- setdiff(1:length(loc), obs.ind)
+    reo <- c(obs.ind, not.observed)
+    for(i in not.observed) {
             dists <- abs(loc[i] - loc[S])
             nbrs <- sort(sort(dists, index.return = TRUE)$ix[1:n.nbr])
             Sigma.in <- matern.covariance(h = abs(loc[S[nbrs]]-loc[i]),
@@ -210,13 +207,12 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
             jj[counter + (1:n.nbr)] <- nbrs
             counter <- counter + n.nbr    
             Fs.d[i] <- sigma^2 - t(Sigma.in)%*%tmp
-        }
     }
     Bs <-  Matrix::sparseMatrix(i   = ii,
                                 j    = jj,
                                 x    = val,
                                 dims = c(n.loc, n.S))
-    Fs <-  Matrix::Diagonal(k,Fs.d)
+    Fs <-  Matrix::Diagonal(n.loc,Fs.d)
     return(list(B = Bs, F = Fs))
 }
 
