@@ -51,20 +51,31 @@ get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL
     }
 }
 
-posterior_constructor_cov <- function(cov_mat, y, sigma_e, obs_ind, pred_ind){
+posterior_constructor_cov <- function(cov_mat, y, sigma_e, obs_ind, pred_ind, type){
     cov_mat_nugget <-  cov_mat + Matrix::Diagonal(x=sigma_e^2, n=nrow(cov_mat))
     cov_mat_nugget <- cov_mat_nugget[obs_ind, obs_ind]
     d <- solve(cov_mat_nugget, y)    
-    post_mean <- cov_mat[pred_ind, obs_ind]%*%d
-    post_cov <- cov_mat[pred_ind,pred_ind] - cov_mat[pred_ind,obs_ind] %*% solve(cov_mat_nugget, t(cov_mat[pred_ind,obs_ind]))
+    if(type == "unobserved"){
+        post_mean <- cov_mat[pred_ind, obs_ind]%*%d
+        post_cov <- cov_mat[pred_ind,pred_ind] - cov_mat[pred_ind,obs_ind] %*% solve(cov_mat_nugget, t(cov_mat[pred_ind,obs_ind]))
+    } else{
+        post_mean <- cov_mat[, obs_ind]%*%d
+        post_cov <- cov_mat - cov_mat[,obs_ind] %*% solve(cov_mat_nugget, t(cov_mat[,obs_ind]))
+    }
+
     return(list(post_mean = post_mean, post_cov = post_cov))
 }
 
-posterior_constructor_prec <- function(prec_mat, y, sigma_e, A = NULL, idx_obs, idx_pred){
+posterior_constructor_prec <- function(prec_mat, y, sigma_e, A = NULL, idx_obs, idx_pred, type){
     if(is.null(A)){        
         A <-  Matrix::Diagonal(n = ncol(prec_mat), x = 1)
     }
-        A_pred <- A[idx_pred,]
+        if(type == "unobserved"){
+            A_pred <- A[idx_pred,]
+        } else{
+            A_pred <- A
+        }
+
         A_obs <- A[idx_obs,]
         A_mat <- t(A_obs)
         Q_xgiveny <- (A_mat%*%A_obs)/sigma_e^2 + prec_mat
@@ -75,21 +86,28 @@ posterior_constructor_prec <- function(prec_mat, y, sigma_e, A = NULL, idx_obs, 
         return(list(post_mean = mu_xgiveny, post_cov = A_pred%*%solve(Q_xgiveny, t(A_pred))))         
 }
 
-posterior_constructor_nngp <- function(prec_mat, y, sigma_e, idx_pred, obs.ind, loc, i_m, nu, kappa, sigma){ 
+posterior_constructor_nngp <- function(prec_mat, y, sigma_e, idx_pred, obs.ind, loc, i_m, nu, kappa, sigma, type){ 
     n.obs <- length(obs.ind)
     Qhat <- prec_mat + Diagonal(n.obs)/sigma_e^2        
     mu.nn <- solve(Qhat, y/sigma_e^2)
     tmp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = i_m, S = obs.ind)
     Bp <- tmp$B
     mu.nn <- Bp%*%mu.nn
-    mu.nn <- mu.nn[idx_pred]
     post_cov <- Bp %*% solve(Qhat, t(Bp))+ tmp$F
-    post_cov <- post_cov[idx_pred, idx_pred] 
+    if(type == "unobserved"){
+        mu.nn <- mu.nn[idx_pred]
+        post_cov <- post_cov[idx_pred, idx_pred] 
+    }
     return(list(post_mean = mu.nn, post_cov = post_cov))
 }
 
-compute_prob_ests <- function(loc_full, obs_ind, loc_prob_idx, L_statespace, range, sigma, nu_vec, sigma_e, m_rat, 
+
+# Type indicates which locations to obtain the posterior probabilities
+# all indicates all locations
+# unobserved indicates only the unobserved locations
+compute_prob_ests <- function(type = c("unobserved", "all"), loc_full, obs_ind, loc_prob_idx, L_statespace, range, sigma, nu_vec, sigma_e, m_rat, 
 m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, seed = 1){
+    type <- type[[1]]
     set.seed(seed)
     prob_ests <- list()
     N <- length(loc_full)
@@ -102,7 +120,7 @@ m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, se
         z <- matrix(rnorm(N-N_pred), ncol = N-N_pred, nrow = 1)
         L <- chol(true_cov[obs_ind,obs_ind])
         y <- t(L)%*%t(z) + sigma_e * rnorm(N-N_pred)
-        post_true <- posterior_constructor_cov(true_cov, y, sigma_e, obs_ind, loc_prob_idx)
+        post_true <- posterior_constructor_cov(true_cov, y, sigma_e, obs_ind, loc_prob_idx, type = type)
         post_mean_true <- as.vector(post_true$post_mean)
         post_cov_true <- as.matrix(post_true$post_cov)
         
@@ -113,15 +131,11 @@ m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, se
         prob_true <- c(prob_true)
         prob_ests[[as.character(nu)]] <- list()
         prob_ests[[as.character(nu)]][["true"]] <- prob_true
-        m_nngp <- m_nngp_fun(m_rat, alpha)
-        m_pca <- m_pca_fun(m_rat, alpha)
-        m_fourier <- m_fourier_fun(m_rat, alpha)
-        m_statespace <- m_statespace_fun(m_rat, alpha)
 
         prob_ests[[as.character(nu)]][["rat"]] <- list()
         for(i_m in m_rat){
             prec_rat <- get_cov_mat(loc = loc_full, m = i_m, method = "rat_markov", nu = nu, kappa = kappa, sigma = sigma, samples = NULL, L=NULL)
-            post_rat <- posterior_constructor_prec(prec_rat$Q, y, sigma_e, A = prec_rat$A, obs_ind, loc_prob_idx)
+            post_rat <- posterior_constructor_prec(prec_rat$Q, y, sigma_e, A = prec_rat$A, obs_ind, loc_prob_idx, type = type)
             post_mean_rat <- as.vector(post_rat$post_mean)
             post_cov_rat <- as.matrix(post_rat$post_cov)
             prob_rat <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_rat,sigma = as.matrix(post_cov_rat))
@@ -132,7 +146,7 @@ m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, se
             i_nngp <- m_nngp_fun(i_m, nu + 0.5)
 
             prec_nngp <- get_cov_mat(loc = loc_full[obs_ind], m = i_nngp, method = "nngp", nu = nu, kappa = kappa, sigma = sigma, samples = NULL, L=NULL)
-            post_nngp <- posterior_constructor_nngp(prec_mat = prec_nngp, y=y, sigma_e = sigma_e, loc_prob_idx, obs_ind, loc_full, i_nngp, nu, kappa, sigma)
+            post_nngp <- posterior_constructor_nngp(prec_mat = prec_nngp, y=y, sigma_e = sigma_e, loc_prob_idx, obs_ind, loc_full, i_nngp, nu, kappa, sigma, type = type)
             post_mean_nngp <- as.vector(post_nngp$post_mean)
             post_cov_nngp <- as.matrix(post_nngp$post_cov)
             prob_nngp <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_nngp,sigma = post_cov_nngp)
@@ -142,7 +156,7 @@ m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, se
             i_pca <- m_pca_fun(i_m, nu + 0.5)
             i_pca <- min(i_pca, length(obs_ind))
             pca_cov <- get_cov_mat(loc = loc_full, m = i_pca, method = "pca", nu = nu, kappa = kappa, sigma = sigma, samples = NULL, L=NULL)
-            post_pca <- posterior_constructor_cov(pca_cov, y, sigma_e, obs_ind, loc_prob_idx)
+            post_pca <- posterior_constructor_cov(pca_cov, y, sigma_e, obs_ind, loc_prob_idx, type = type)
             post_mean_pca <- as.vector(post_pca$post_mean)
             post_cov_pca <- as.matrix(post_pca$post_cov)
             prob_pca <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_pca,sigma = post_cov_pca)
@@ -152,7 +166,7 @@ m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, se
             i_fourier <- m_fourier_fun(i_m, nu + 0.5)
             i_fourier <- min(i_fourier, length(obs_ind))
             fourier_cov <- get_cov_mat(loc = loc_full, m = i_fourier, method = "fourier", nu = nu, kappa = kappa, sigma = sigma, samples = samples, L=NULL)
-            post_fourier <- posterior_constructor_cov(fourier_cov, y, sigma_e, obs_ind, loc_prob_idx)
+            post_fourier <- posterior_constructor_cov(fourier_cov, y, sigma_e, obs_ind, loc_prob_idx, type = type)
             post_mean_fourier <- as.vector(post_fourier$post_mean)
             post_cov_fourier <- as.matrix(post_fourier$post_cov)
             prob_fourier <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_fourier, sigma = post_cov_fourier)
@@ -161,7 +175,7 @@ m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, samples_fourier = 10, se
 
             i_statespace <- m_statespace_fun(i_m, nu + 0.5)
             statespace_cov <- get_cov_mat(loc = loc_full, m = i_statespace, method = "statespace", nu = nu, kappa = kappa, sigma = sigma, samples = NULL, L=L_statespace)
-            post_statespace <- posterior_constructor_cov(statespace_cov, y, sigma_e, obs_ind, loc_prob_idx)
+            post_statespace <- posterior_constructor_cov(statespace_cov, y, sigma_e, obs_ind, loc_prob_idx, type = type)
             post_mean_statespace <- as.vector(post_statespace$post_mean)
             post_cov_statespace <- as.matrix(post_statespace$post_cov)
             prob_statespace <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_statespace, sigma = post_cov_statespace)
