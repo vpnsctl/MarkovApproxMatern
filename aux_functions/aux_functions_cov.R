@@ -191,8 +191,8 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
     jj[1:n.S] <- 1:n.S
     val[1:n.S] <- 1
     counter <- n.S
-    not.observed <- setdiff(1:length(loc), obs.ind)
-    reo <- c(obs.ind, not.observed)
+    not.observed <- setdiff(1:length(loc), S)
+    reo <- c(S, not.observed)
     for(i in not.observed) {
             dists <- abs(loc[i] - loc[S])
             nbrs <- sort(sort(dists, index.return = TRUE)$ix[1:n.nbr])
