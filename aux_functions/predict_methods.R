@@ -414,15 +414,15 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
 
 # only with KL
 
-compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp){
+compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_fun){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
     timings_alpha23_rat <- list()
 
-    timings_alpha01_kl <- list()
-    timings_alpha12_kl <- list()
-    timings_alpha23_kl <- list()
+    timings_alpha01_pca <- list()
+    timings_alpha12_pca <- list()
+    timings_alpha23_pca <- list()
 
 
     if(length(N) != length(n_obs)){
