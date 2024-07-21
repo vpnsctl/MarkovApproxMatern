@@ -78,6 +78,8 @@ We start by defining the parameters:
 N <- c(1000,2000)
 n_obs <- c(800, 1800)
 # L - length of the interval, [0,L]
+N <- 1000
+n_obs <- 800
 L <- 30
 range <- 1
 sigma <- 1

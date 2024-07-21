@@ -11,7 +11,7 @@ compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
-            D <- dist2matR(dist(loc))            
+            D <- as.matrix(dist(loc))            
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
@@ -51,7 +51,7 @@ compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 
         loc <- seq(0, 1, length.out = n_loc+1)
         ind = 1 + fact*(0:n_loc)
         h2 = seq(from=0,to=1,length.out= fact*n_loc+1)
-        D <- dist2matR(dist(loc))
+        D <- as.matrix(dist(loc))
         for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
@@ -88,7 +88,7 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, m_nngp_fun){
     for(n_loc in N){
         l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
         loc <- seq(0, 1, length.out = n_loc+1)
-        D <- dist2matR(dist(loc))        
+        D <- as.matrix(dist(loc))        
         for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
@@ -132,7 +132,7 @@ compute_distances_pca <- function(N, m.vec, nu.vec, range, sigma, m_pca_fun){
     for(n_loc in N){
         l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
         loc <- seq(0, 1, length.out = n_loc)
-        D <- dist2matR(dist(loc))        
+        D <- as.matrix(dist(loc))        
         for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
@@ -170,7 +170,7 @@ compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, m_k
         large_KL <- seq(min(loc), max(loc), length.out = N_KL)
         kl_loc <- c(loc, large_KL)
         kl_loc <- unique(kl_loc)
-        D_loc <- dist2matR(dist(kl_loc))
+        D_loc <- as.matrix(dist(kl_loc))
         for(i in 1:length(nu.vec)) {
             nu <- nu.vec[i]
             cat(i/length(nu.vec)," ")
@@ -206,7 +206,7 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, m
     for(n_loc in N){
         l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
         loc <- seq(0, 1, length.out = n_loc+1)
-        D <- dist2matR(dist(loc))        
+        D <- as.matrix(dist(loc))        
         for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]

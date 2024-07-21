@@ -633,7 +633,7 @@ loc_full <- c(loc_pred,loc)
 N <- length(loc_full)
 method <- method[[1]]
 pred <- list()
-D_loc <- dist2matR(dist(loc_full))
+D_loc <- as.matrix(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 rat_m <- m
@@ -749,12 +749,12 @@ pred_Fourier <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e,s
 loc_full <- c(loc_pred, loc)
 N <- length(loc_full)
 pred <- list()
-D_loc <- dist2matR(dist(loc_full))
+D_loc <- as.matrix(dist(loc_full))
 rat_m <- m
 m <- m_fourier_fun(m, nu + 0.5)
 count <- 1
 for(i_m in m){
-    post_mean <- rep(0, length(y))
+    post_mean <- rep(0, length(loc_pred))
     for(jj in 1:samples){
         K <-  ff.comp(m = i_m, kappa = kappa, alpha = nu + 0.5, loc = loc_full) * sigma^2
         if(!is.null(loc_pred)){
@@ -857,7 +857,7 @@ for(i_m in m){
 # Generate complete table
 # L is the length of the interval
 
-compute_pred_errors <- function(N, range, sigma, nu.vec, m.vec, sigma_e, L = 1, seed = 123, 
+compute_pred_errors <- function(N, n_obs, range, sigma, nu.vec, m.vec, sigma_e, L = 1, seed = 123, 
 m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun,
 print = FALSE){
     post_mean_true <- list()
@@ -870,13 +870,20 @@ print = FALSE){
 
     #Rational
 
-    for(n_loc in N){
-        N_full <- 10*n_loc
-        loc_full <- seq(0,L, length.out = N_full)
-        idx_pred <- sample(1:N_full, n_loc)
-        idx_obs <- sample(1:N_full, n_loc)
-        loc_pred <- loc_full[idx_pred]
-        loc <- loc_full[idx_obs]
+    for(ii in 1:length(N)){
+        # loc_full <- seq(0,L, length.out = N_full)
+        # idx_pred <- sample(1:N_full, n_loc)
+        # idx_obs <- sample(1:N_full, n_loc)
+        # loc_pred <- loc_full[idx_pred]
+        # loc <- loc_full[idx_obs]
+
+        n_loc <- N[ii]
+        n_loc_obs <- n_obs[ii]
+        loc <- seq(0, L, length.out = n_loc)
+        loc_full <- loc_pred <- loc
+        obs.ind <- idx_obs <- sort(sample(1:n_loc)[1:n_loc_obs])
+        idx_pred <- 1:n_loc
+        loc <- loc[idx_obs]
 
         post_mean_true[[as.character(n_loc)]] <- list()
         post_mean_rat[[as.character(n_loc)]] <- list()
@@ -900,8 +907,10 @@ print = FALSE){
             if(print){
                 message("Starting rational posterior")
             }            
+
             # post_mean_rat[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e, equally_spaced = TRUE)
             post_mean_rat[[as.character(n_loc)]][[as.character(nu)]] <- pred_rat_markov(y=y, loc_full=loc_full, idx_obs=idx_obs, idx_pred = idx_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e=sigma_e, equally_spaced = TRUE)            
+            
             # if(print){
             #     message("Starting rational ldl posterior")
             # }            

@@ -425,7 +425,7 @@ KL_matern <- function(m, loc = NULL, nu = NULL, kappa = NULL, sigma = NULL, eige
         if(any(c(is.null(loc), is.null(nu),is.null(kappa),is.null(sigma)))){
             stop("if eigen_cov is null, nu, kappa, sigma and loc must be nonnull!")
         }
-        D <- dist2matR(dist(loc))
+        D <- as.matrix(dist(loc))
         return(build_KL(rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma), eigen_cov = eigen_cov))
     } else{
         return(build_KL(order = m, eigen_cov = eigen_cov))
@@ -465,7 +465,7 @@ taper_matern <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigm
         if(any(c(is.null(nu), is.null(kappa),is.null(sigma)))){
             stop("if Sigma is null, nu, kappa and sigma must be nonnull!")
         }
-        D <- dist2matR(dist(loc))
+        D <- as.matrix(dist(loc))
         Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
     } 
     if(nu < 1){

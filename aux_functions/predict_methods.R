@@ -34,16 +34,6 @@ predict_rat_markov <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, si
 time_run2_approx <- list()
 error <- list()
 
-tmp_loc <- rep(FALSE, length(loc_full))
-tmp_loc[obs_ind] <- TRUE
-
-loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
-ord_loc <- order(loc_full)
-loc_df <- loc_df[ord_loc,]
-loc_full <- loc_df[,1]
-obs_ind <- which(loc_df[,2])
-true_pred <- true_pred[ord_loc]
-
 for(i_m in m){
         time_run2_approx[[as.character(i_m)]] <- list()
         error[[as.character(i_m)]] <- list()
@@ -82,17 +72,7 @@ predict_PCA <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma, si
 time_run2_approx <- list()
 error <- list()
 
-tmp_loc <- rep(FALSE, length(loc_full))
-tmp_loc[obs_ind] <- TRUE
-
-loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
-ord_loc <- order(loc_full)
-loc_df <- loc_df[ord_loc,]
-loc_full <- loc_df[,1]
-obs_ind <- which(loc_df[,2])
-true_pred <- true_pred[ord_loc]
-
-D_loc <- dist2matR(dist(loc_full))
+D_loc <- as.matrix(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
@@ -136,18 +116,11 @@ error <- list()
 tmp_loc <- rep(FALSE, length(loc_full))
 tmp_loc[obs_ind] <- TRUE
 
-loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
-ord_loc <- order(loc_full)
-loc_df <- loc_df[ord_loc,]
-loc_full <- loc_df[,1]
-obs_ind <- which(loc_df[,2])
-true_pred <- true_pred[ord_loc]
-
 large_KL <- seq(min(loc_full), max(loc_full), length.out = N_KL)
 kl_loc <- c(loc_full, large_KL)
 kl_loc <- unique(kl_loc)
 
-D_loc <- dist2matR(dist(loc_full))
+D_loc <- as.matrix(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
@@ -187,20 +160,11 @@ predict_rat_NN <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma,
 time_run2_approx <- list()
 error <- list()
 
-tmp_loc <- rep(FALSE, length(loc_full))
-tmp_loc[obs_ind] <- TRUE
-
-loc_df <- data.frame(loc = loc_full, obs = tmp_loc)
-ord_loc <- order(loc_full)
-loc_df <- loc_df[ord_loc,]
-loc_full <- loc_df[,1]
-obs_ind <- which(loc_df[,2])
-true_pred <- true_pred[ord_loc]
 sigma.e <- sigma_e
 obs.ind <- obs_ind
 n.obs <- length(obs.ind)
 
-D <- dist2matR(dist(loc_full))     
+D <- as.matrix(dist(loc_full))     
 for(i_m in m){
         start = Sys.time()    
         Qnn <- get.nnQ(loc = loc_full[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = i_m)
@@ -254,13 +218,8 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         kappa <- sqrt(8*nu)/range
         obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
 
-        D <- as.matrix(dist(loc))
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
 
         #
 
@@ -277,12 +236,9 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)       
 
         nu <- 1.2
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
 
         kappa <- sqrt(8*nu)/range            
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -295,12 +251,8 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
 
         nu <- 2.2
 
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
 
         kappa <- sqrt(8*nu)/range            
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -349,13 +301,8 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
         kappa <- sqrt(8*nu)/range
         obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
 
-        D <- as.matrix(dist(loc))
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
 
         #
 
@@ -369,12 +316,9 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
            
         nu <- 1.2
 
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
+
 
         kappa <- sqrt(8*nu)/range            
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -384,12 +328,9 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
 
         nu <- 2.2
 
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
+
 
         kappa <- sqrt(8*nu)/range            
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -437,13 +378,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         kappa <- sqrt(8*nu)/range
         obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
 
-        D <- as.matrix(dist(loc))
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
+
 
         #
 
@@ -457,12 +394,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
            
         nu <- 1.2
 
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
+
 
         kappa <- sqrt(8*nu)/range            
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -472,12 +406,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
 
         nu <- 2.2
 
-        Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
-        R <- chol(Sigma[obs.ind,obs.ind])
-        X <- t(R)%*%rnorm(n_loc_obs)
-        Y <- X + sigma_e*rnorm(n_loc_obs)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma_e^2*diag(n_loc_obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
+
 
         kappa <- sqrt(8*nu)/range            
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)

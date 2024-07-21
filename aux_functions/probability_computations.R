@@ -14,7 +14,7 @@ get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL
     } else if(method == "nngp"){
             return(get.nnQ(loc = loc,kappa = kappa, nu = nu,sigma = sigma, n.nbr = m))
     } else if(method == "pca"){
-        D_loc <- dist2matR(dist(loc))
+        D_loc <- as.matrix(dist(loc))
         cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
         eigen_cov <- eigen(cov_mat)       
         K <- eigen_cov$vec[,1:m]    
@@ -43,7 +43,7 @@ get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL
         cov_mat <- toeplitz(acf, symmetric=TRUE)
         return(cov_mat)
     } else if(method == "true"){
-        D_loc <- dist2matR(dist(loc))
+        D_loc <- as.matrix(dist(loc))
         cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
         return(cov_mat)
     } else{
