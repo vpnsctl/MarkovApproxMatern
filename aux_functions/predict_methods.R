@@ -238,9 +238,10 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         nu <- 1.2
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        kappa <- sqrt(8*nu)/range  
+        
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
-
-        kappa <- sqrt(8*nu)/range            
+          
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_nngp <- m_nngp_fun(m_rat, nu+0.5)
@@ -252,9 +253,9 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         nu <- 2.2
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        kappa <- sqrt(8*nu)/range    
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
-
-        kappa <- sqrt(8*nu)/range            
+        
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_nngp <- m_nngp_fun(m_rat, nu+0.5)
@@ -317,10 +318,9 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
         nu <- 1.2
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        kappa <- sqrt(8*nu)/range        
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
-
-
-        kappa <- sqrt(8*nu)/range            
+    
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_nngp <- m_nngp_fun(m_rat, nu+0.5)
@@ -329,10 +329,9 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
         nu <- 2.2
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        kappa <- sqrt(8*nu)/range  
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
-
-
-        kappa <- sqrt(8*nu)/range            
+          
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_nngp <- m_nngp_fun(m_rat, nu+0.5)
@@ -395,10 +394,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         nu <- 1.2
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        kappa <- sqrt(8*nu)/range     
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
-
-
-        kappa <- sqrt(8*nu)/range            
+       
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_pca <- m_pca_fun(m_rat, nu+0.5)
@@ -407,10 +405,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         nu <- 2.2
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
+        kappa <- sqrt(8*nu)/range         
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
-
-
-        kappa <- sqrt(8*nu)/range            
+   
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_pca <- m_pca_fun(m_rat, nu+0.5)

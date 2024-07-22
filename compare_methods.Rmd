@@ -104,7 +104,7 @@ We will start by comparing the times and errors for our method, NNGP and KL. We 
 
 ```{r}
 results <- list()
-samples <- 10
+samples <- 1
 for(sample in 1:samples){
   cat(sample, '\n')
   results[[sample]] <- compare_times(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun)
