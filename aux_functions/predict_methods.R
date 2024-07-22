@@ -236,9 +236,9 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)       
 
         nu <- 1.2
+        kappa <- sqrt(8*nu)/range   
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-        kappa <- sqrt(8*nu)/range  
         
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
           
@@ -251,9 +251,9 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)        
 
         nu <- 2.2
+        kappa <- sqrt(8*nu)/range           
 
-        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-        kappa <- sqrt(8*nu)/range    
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e) 
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
         
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -316,9 +316,9 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
         timings_alpha01_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
            
         nu <- 1.2
+        kappa <- sqrt(8*nu)/range        
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-        kappa <- sqrt(8*nu)/range        
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
     
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -327,9 +327,9 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
         timings_alpha12_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)      
 
         nu <- 2.2
+        kappa <- sqrt(8*nu)/range  
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-        kappa <- sqrt(8*nu)/range  
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
           
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -392,9 +392,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
            
         nu <- 1.2
+        kappa <- sqrt(8*nu)/range   
 
-        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-        kappa <- sqrt(8*nu)/range     
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)  
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
        
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
@@ -403,9 +403,9 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)        
 
         nu <- 2.2
+        kappa <- sqrt(8*nu)/range    
 
-        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
-        kappa <- sqrt(8*nu)/range         
+        Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)     
         mu <- true_pred(y, loc=loc[obs.ind], loc_pred = loc, nu = nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e)
    
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
