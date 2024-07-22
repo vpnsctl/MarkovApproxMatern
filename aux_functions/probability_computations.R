@@ -5,9 +5,9 @@ library(mvtnorm)
 get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL){
     if(method == "rat_markov"){
         if(nu < 0.5) {
-            Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
         } else {
-            Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
         }
         Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
         return(list(A = Qrat$A, Q = Q))

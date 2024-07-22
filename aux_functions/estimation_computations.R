@@ -15,7 +15,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
             sigma_est = exp(par$par[2])
             nu_est = exp(par$par[3])
             sigma_e_est = exp(par$par[4])    
-            Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu_est, kappa = kappa_est, 
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu_est, kappa = kappa_est, 
                                     sigma = sigma_est, type_rational = "brasil", type_interp =  "spline")   
             t3 <- Sys.time()                                           
         } else{
@@ -26,7 +26,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
             sigma_e_est = exp(par$par[3])          
-            Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa_est, 
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa_est, 
                                 sigma = sigma_est, type_rational = "brasil", type_interp =  "spline")
             t3 <- Sys.time()          
         }

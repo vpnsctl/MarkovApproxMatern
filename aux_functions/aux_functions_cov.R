@@ -22,7 +22,7 @@ rat.like <- function(theta, loc, m, Y,nu = NULL) {
     } else {
         sigma.e = exp(theta[3])    
     }
-    tmp <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
+    tmp <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
                                type_rational = "brasil", type_interp =  "spline")    
     n <- length(Y)
     

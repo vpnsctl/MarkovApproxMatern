@@ -39,9 +39,9 @@ for(i_m in m){
         error[[as.character(i_m)]] <- list()
         start = Sys.time()
         if(nu < 0.5) {
-            Qrat <- matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
         } else {
-            Qrat <- matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
         }
         
         Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L

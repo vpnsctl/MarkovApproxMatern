@@ -89,9 +89,9 @@ pred_rat_markov <- function(y, loc_full, idx_obs, idx_pred, m, nu, kappa, sigma,
 pred <- list()
     for(i_m in m){
         if(nu < 0.5){
-            r <- rSPDE::matern.rational.precision(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
+            r <- rSPDE:::matern.rational.precision(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
         } else {
-            r <- rSPDE::matern.rational.precision(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
+            r <- rSPDE:::matern.rational.precision(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
         } 
                 A_obs <- r$A[idx_obs,]
                 A_pred <- r$A[idx_pred,]
@@ -123,9 +123,9 @@ pred_rat_markov_ldl <- function(y, loc_full, idx_obs,idx_pred, m, nu, kappa, sig
 pred <- list()
     for(i_m in m){
         if(nu < 0.5){
-            r <- rSPDE::matern.rational.ldl(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
+            r <- rSPDE:::matern.rational.ldl(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
         } else {
-            r <- rSPDE::matern.rational.ldl(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
+            r <- rSPDE:::matern.rational.ldl(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
         } 
             r$Q <- t(r$L) %*% r$D %*% r$L
                 A_obs <- r$A[idx_obs,]
@@ -176,9 +176,9 @@ pred_rat_markov_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, sorted
             t1 <- Sys.time()
         }        
             if(nu < 0.5){
-                r <- rSPDE::matern.rational.precision(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
+                r <- rSPDE:::matern.rational.precision(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
             } else {
-                r <- rSPDE::matern.rational.precision(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
+                r <- rSPDE:::matern.rational.precision(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
             } 
          if(return_timings){
             t2 <- Sys.time()
@@ -241,9 +241,9 @@ pred_rat_markov_ldl_obs <- function(y, loc_obs, m, nu, kappa, sigma, sigma_e, so
             t1 <- Sys.time()
         }
             if(nu < 0.5){
-                r <- rSPDE::matern.rational.ldl(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")          
+                r <- rSPDE:::matern.rational.ldl(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")          
             } else {
-                r <- rSPDE::matern.rational.ldl(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")      
+                r <- rSPDE:::matern.rational.ldl(loc_obs, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")      
             } 
                 r$Q <- t(r$L) %*% r$D %*% r$L
          if(return_timings){
