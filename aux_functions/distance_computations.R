@@ -20,10 +20,10 @@ compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
                     Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
                 } else{
                     if(nu < 0.5) {
-                        col_tmp <- rSPDE::matern.rational(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "brasil", type_interp = "spline")    
+                        col_tmp <- rSPDE:::matern.rational.cov(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "brasil", type_interp = "spline")    
                         Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
                     } else {
-                        col_tmp <- rSPDE::matern.rational(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "chebfun", type_interp = "spline")
+                        col_tmp <- rSPDE:::matern.rational.cov(h = loc, order = m, kappa = kappa, nu = nu, sigma = sigma, type_rational = "chebfun", type_interp = "spline")
                         Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
                     }
                 }
