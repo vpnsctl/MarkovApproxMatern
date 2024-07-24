@@ -1,3 +1,24 @@
+rm(list=ls())
+library(Matrix)
+range = 2
+sigma = 2
+sigma.e <- 0.2
+n <- 10000
+n.obs <- 10000
+loc <- seq(0,n/100,length.out=n)
+
+obs.ind <- sort(sample(1:n)[1:n.obs])
+
+nu = 2.4
+alpha <- nu + 1/2
+kappa = sqrt(8*nu)/range
+#Sigma <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+#R <- chol(Sigma[obs.ind,obs.ind])
+#X <- t(R)%*%rnorm(n.obs)
+#Y <- X + sigma.e*rnorm(n.obs)
+Y <- matrix(rnorm(n.obs),n.obs,1)
+
+
 m = 8
 t1 <- Sys.time()
 Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, 
