@@ -628,7 +628,7 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
 
 ## Predict PCA
 
-pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("woodbury", "approx"), m_pca_fun){
+pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("standard", "woodbury", "approx"), m_pca_fun){
 loc_full <- c(loc_pred,loc)
 N <- length(loc_full)
 method <- method[[1]]
@@ -663,8 +663,11 @@ for(i_m in m){
         solve_nugget <- diag_eps_inv - cov_mat_nugget_inv
         post_mean <- tK_obs %*% solve_nugget %*% y
         post_mean <- K_pred%*%post_mean
-    } else{
+    } else if(method == "svd"){
+        obs_ind <- (length(loc_pred)+1):length(loc_full)       
         cov_KL <- K%*%D%*%t(K)
+        cov_KL <- cov_KL[, obs_ind]        
+        K <- K[obs_ind, ]
         svd_K <- svd(K%*%sqrt(D))
         cov_KL_svd_U <- cov_KL %*% svd_K$u
         y_new <- t(svd_K$u) %*% y
@@ -673,6 +676,14 @@ for(i_m in m){
         if(!is.null(loc_pred)){
             post_mean <- post_mean[1:length(loc_pred)]
         }        
+    } else {
+        obs_ind <- (length(loc_pred)+1):length(loc_full)
+        Bo <- K[obs_ind,] 
+        Q.hat <- solve(D) + t(Bo)%*%Bo/sigma_e^2 
+        post_mean <- K%*%solve(Q.hat, t(Bo)%*%y/sigma_e^2) 
+        if(!is.null(loc_pred)){
+            post_mean <- post_mean[1:length(loc_pred)]
+        }      
     }
     pred[[as.character(rat_m[count])]] <- post_mean
     count <- count + 1
@@ -858,7 +869,7 @@ for(i_m in m){
 # L is the length of the interval
 
 compute_pred_errors <- function(N, n_obs, range, sigma, nu.vec, m.vec, sigma_e, L = 1, seed = 123, 
-m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun,
+m_nngp_fun, m_pca_fun, m_fourier_fun, m_statespace_fun, method_pca = "standard",
 print = FALSE){
     post_mean_true <- list()
     post_mean_rat <- list()
@@ -920,7 +931,7 @@ print = FALSE){
             if(print){
                 message("Starting PCA posterior")
             }
-            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, m_pca_fun = m_pca_fun)  
+            post_mean_PCA[[as.character(n_loc)]][[as.character(nu)]] <- pred_PCA(y=y, loc=loc, loc_pred = loc_pred, m=m.vec, nu=nu, kappa=kappa, sigma=sigma, sigma_e = sigma_e, m_pca_fun = m_pca_fun, method = method_pca)  
             if(print){
                 message("Starting nnGP posterior")
             }
