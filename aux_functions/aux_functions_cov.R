@@ -22,7 +22,7 @@ rat.like <- function(theta, loc, m, Y,nu = NULL) {
     } else {
         sigma.e = exp(theta[3])    
     }
-    tmp <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
+    tmp <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
                                type_rational = "brasil", type_interp =  "spline")    
     n <- length(Y)
     
@@ -191,8 +191,8 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
     jj[1:n.S] <- 1:n.S
     val[1:n.S] <- 1
     counter <- n.S
-    not.observed <- setdiff(1:length(loc), obs.ind)
-    reo <- c(obs.ind, not.observed)
+    not.observed <- setdiff(1:length(loc), S)
+    reo <- c(S, not.observed)
     for(i in not.observed) {
             dists <- abs(loc[i] - loc[S])
             nbrs <- sort(sort(dists, index.return = TRUE)$ix[1:n.nbr])
@@ -425,7 +425,7 @@ KL_matern <- function(m, loc = NULL, nu = NULL, kappa = NULL, sigma = NULL, eige
         if(any(c(is.null(loc), is.null(nu),is.null(kappa),is.null(sigma)))){
             stop("if eigen_cov is null, nu, kappa, sigma and loc must be nonnull!")
         }
-        D <- dist2matR(dist(loc))
+        D <- as.matrix(dist(loc))
         return(build_KL(rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma), eigen_cov = eigen_cov))
     } else{
         return(build_KL(order = m, eigen_cov = eigen_cov))
@@ -465,7 +465,7 @@ taper_matern <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigm
         if(any(c(is.null(nu), is.null(kappa),is.null(sigma)))){
             stop("if Sigma is null, nu, kappa and sigma must be nonnull!")
         }
-        D <- dist2matR(dist(loc))
+        D <- as.matrix(dist(loc))
         Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
     } 
     if(nu < 1){

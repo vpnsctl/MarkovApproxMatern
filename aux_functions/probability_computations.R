@@ -5,16 +5,16 @@ library(mvtnorm)
 get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL){
     if(method == "rat_markov"){
         if(nu < 0.5) {
-            Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
         } else {
-            Qrat <- matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
+            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
         }
         Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
         return(list(A = Qrat$A, Q = Q))
     } else if(method == "nngp"){
             return(get.nnQ(loc = loc,kappa = kappa, nu = nu,sigma = sigma, n.nbr = m))
     } else if(method == "pca"){
-        D_loc <- dist2matR(dist(loc))
+        D_loc <- as.matrix(dist(loc))
         cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
         eigen_cov <- eigen(cov_mat)       
         K <- eigen_cov$vec[,1:m]    
@@ -43,7 +43,7 @@ get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL
         cov_mat <- toeplitz(acf, symmetric=TRUE)
         return(cov_mat)
     } else if(method == "true"){
-        D_loc <- dist2matR(dist(loc))
+        D_loc <- as.matrix(dist(loc))
         cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
         return(cov_mat)
     } else{

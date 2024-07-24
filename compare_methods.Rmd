@@ -78,6 +78,8 @@ We start by defining the parameters:
 N <- c(1000,2000)
 n_obs <- c(800, 1800)
 # L - length of the interval, [0,L]
+N <- 1000
+n_obs <- 800
 L <- 30
 range <- 1
 sigma <- 1
@@ -102,7 +104,7 @@ We will start by comparing the times and errors for our method, NNGP and KL. We 
 
 ```{r}
 results <- list()
-samples <- 10
+samples <- 1
 for(sample in 1:samples){
   cat(sample, '\n')
   results[[sample]] <- compare_times(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun)

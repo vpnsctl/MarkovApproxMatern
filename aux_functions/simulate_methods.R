@@ -55,11 +55,11 @@ sim_list <- list()
 for(i_m in m){
     start <- Sys.time()
     if(nu < 0.5){
-        # r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
-        r <- rSPDE::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
+        # r <- rSPDE:::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
+        r <- rSPDE:::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
     } else if ( 0.5 < nu ){
-        # r <- rSPDE::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
-        r <- rSPDE::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
+        # r <- rSPDE:::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
+        r <- rSPDE:::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
     }
     prec_mat <- t(r$L)%*%r$D%*%r$L
     end1 <- Sys.time()
@@ -130,7 +130,7 @@ time_run2_approx <- list()
 sim_list <- list()
 m <- m_pca_fun(m, nu + 0.5)
 
-D_loc <- dist2matR(dist(loc))
+D_loc <- as.matrix(dist(loc))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
@@ -183,7 +183,7 @@ large_KL <- seq(min(loc), max(loc), length.out = N_KL)
 kl_loc <- c(loc, large_KL)
 kl_loc <- unique(kl_loc)
 
-D_loc <- dist2matR(dist(kl_loc))
+D_loc <- as.matrix(dist(kl_loc))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
 eigen_cov <- eigen(cov_mat)
 for(i_m in m){
@@ -233,7 +233,7 @@ time_run2_approx <- list()
 sim_list <- list()
 
 m <- m_nngp_fun(m, nu + 0.5)
-D <- dist2matR(dist(loc))
+D <- as.matrix(dist(loc))
 # perm <- comp.reo.fast(N, m = 0, alpha = 0.6)    
 for(i_m in m){
         start <- Sys.time()
