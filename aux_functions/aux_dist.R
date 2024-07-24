@@ -6,7 +6,7 @@ process_dist <- function(...){
     args <- list(...)
     possible_N <- names(args[[1]][["L2"]])
     methods <- unlist(lapply(args, function(i){attr(i, "type")}))
-    m <- attr(args[[1]], "m.vec")
+    m <- as.character(attr(args[[1]], "m.vec"))
     nu <- attr(args[[1]], "nu.vec")
     dist_df <- as.data.frame(args[[1]][["L2"]][[possible_N[1]]])
     colnames(dist_df) <- m
@@ -14,7 +14,7 @@ process_dist <- function(...){
     dist_df[["nu"]] <- nu
     dist_df[["Dist"]] <- "L2"
     dist_df[["N"]] <- possible_N[1]
-    dist_df <- pivot_longer(dist_df, all_of(m), names_to = "m", values_to = "Error")
+    dist_df <- pivot_longer(dist_df, cols = all_of(m), names_to = "m", values_to = "Error")
     if(length(args)>1){
         for(i in 2:length(args)){
             tmp_df <- as.data.frame(args[[i]][["L2"]][[possible_N[1]]])
@@ -49,7 +49,7 @@ process_dist <- function(...){
     for(i in 1:length(args)){
         for(j in 1:length(possible_N)){
             tmp_df <- as.data.frame(args[[i]][["Linf"]][[possible_N[j]]])
-            m <- attr(args[[i]], "m.vec")
+            m <- as.character(attr(args[[i]], "m.vec"))
             nu <- attr(args[[i]], "nu.vec")                
             colnames(tmp_df) <- m
             tmp_df[["Method"]] <- methods[i]
