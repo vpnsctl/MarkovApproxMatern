@@ -68,9 +68,10 @@ for(i_m in m){
 
 ## Predict PCA
 
-predict_PCA <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma, sigma_e,  print=TRUE){
+predict_PCA <- function(true_pred, y, loc_full, obs_ind, m, nu, kappa, sigma, sigma_e,  print=TRUE, method = c("standard", "svd")){
 time_run2_approx <- list()
 error <- list()
+method <- method[[1]]
 
 D_loc <- as.matrix(dist(loc_full))
 cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
@@ -78,21 +79,32 @@ eigen_cov <- eigen(cov_mat)
 for(i_m in m){
     time_run2_approx[[as.character(i_m)]] <- list()
     error[[as.character(i_m)]] <- list()
-    start = Sys.time()
-    K <- eigen_cov$vec[,1:i_m]    
-    D <- diag(eigen_cov$val[1:i_m])    
-    cov_KL <- K%*%D%*%t(K)
-    end1 <- Sys.time()
-    cov_KL <- cov_KL[, obs_ind]
-    K <- K[obs_ind, ]
-    svd_K <- svd(K%*%sqrt(D))
-    cov_KL_svd_U <- cov_KL %*% svd_K$u
-    y_new <- t(svd_K$u) %*% y
-    prec_nugget <- cov_KL_svd_U %*% Matrix::Diagonal(x = 1/(svd_K$d^2 + sigma_e^2)) 
-    post_mean = prec_nugget%*%y_new
-    end2 =Sys.time()
-    time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
-    time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
+    if(method == "svd"){
+        start = Sys.time()        
+        K <- eigen_cov$vec[,1:i_m]    
+        D <- diag(eigen_cov$val[1:i_m])    
+        cov_KL <- K%*%D%*%t(K)
+        end1 <- Sys.time()
+        cov_KL <- cov_KL[, obs_ind]
+        K <- K[obs_ind, ]
+        svd_K <- svd(K%*%sqrt(D))
+        cov_KL_svd_U <- cov_KL %*% svd_K$u
+        y_new <- t(svd_K$u) %*% y
+        prec_nugget <- cov_KL_svd_U %*% Matrix::Diagonal(x = 1/(svd_K$d^2 + sigma_e^2)) 
+        post_mean = prec_nugget%*%y_new
+        end2 =Sys.time()
+    } else{
+        start <- Sys.time() 
+        B <- eigen_cov$vec[,1:i_m] 
+        Bo <- B[obs_ind,] 
+        Sigma.w <- diag(eigen_cov$val[1:i_m]) 
+        end1 <- Sys.time()
+        Q.hat <- solve(Sigma.w) + t(Bo)%*%Bo/sigma_e^2 
+        post_mean <- B%*%solve(Q.hat, t(Bo)%*%y/sigma_e^2) 
+        end2 <- Sys.time() 
+    }
+        time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
+        time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
     d_loc <- diff(loc_full)
     d_loc <- c(d_loc[1], d_loc)
     error[[as.character(i_m)]][["L2"]] <- sqrt(sum(d_loc * (true_pred-post_mean)^2))
@@ -191,7 +203,7 @@ return(result)
 
 # L is length of the interval
 
-compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun){
+compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun, method_pca = "standard"){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
@@ -233,7 +245,7 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
 
         # PCA
         m_pca <- m_pca_fun(m_rat, nu+0.5)        
-        timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)       
+        timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,  method=method_pca, print = FALSE)       
 
         nu <- 1.2
         kappa <- sqrt(8*nu)/range   
@@ -248,7 +260,7 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         timings_alpha12_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_pca <- m_pca_fun(m_rat, nu+0.5)
-        timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)        
+        timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, method=method_pca,  print = FALSE)        
 
         nu <- 2.2
         kappa <- sqrt(8*nu)/range           
@@ -262,7 +274,7 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
         timings_alpha23_nngp[[as.character(n_loc)]] <- predict_rat_NN(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_nngp, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_pca <- m_pca_fun(m_rat, nu+0.5)
-        timings_alpha23_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,  nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)  
+        timings_alpha23_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca,  nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, method=method_pca,  print = FALSE)  
 
     }
 
@@ -354,7 +366,7 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
 
 # only with KL
 
-compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_fun){
+compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_fun, method_pca = "standard"){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
@@ -389,7 +401,7 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
 
         # #KL
         m_pca <- m_pca_fun(m_rat, nu+0.5)
-        timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
+        timings_alpha01_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, method = method_pca,  print = FALSE)
            
         nu <- 1.2
         kappa <- sqrt(8*nu)/range   
@@ -400,7 +412,7 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         timings_alpha12_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_pca <- m_pca_fun(m_rat, nu+0.5)
-        timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)        
+        timings_alpha12_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, method = method_pca,  print = FALSE)        
 
         nu <- 2.2
         kappa <- sqrt(8*nu)/range    
@@ -411,7 +423,7 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
         timings_alpha23_rat[[as.character(n_loc)]] <- predict_rat_markov(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_rat, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)
 
         m_pca <- m_pca_fun(m_rat, nu+0.5)
-        timings_alpha23_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e,   print = FALSE)  
+        timings_alpha23_pca[[as.character(n_loc)]] <- predict_PCA(true_pred = mu, y = Y, loc_full = loc, obs_ind = obs.ind, m = m_pca, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, method = method_pca,  print = FALSE)  
 
     }
 
