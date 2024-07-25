@@ -206,6 +206,7 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                     theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
                     par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m.rat)
                     t2 <- Sys.time()
+                    times.rat[i] <- times.rat[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
                     if(!only_optim){
                         kappa_est = exp(par$par[1])
                         sigma_est = exp(par$par[2])
@@ -216,13 +217,15 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
                         R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
                         mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
-                        t2 <- Sys.time()
+                        t3 <- Sys.time()
+                        times.rat[i] <- times.rat[i] + as.numeric((t3-t2), units = "secs")   
                     }
                 } else{
                     t1 <- Sys.time()
                     theta0 <- c(log(kappa), log(sigma), log(sigma_e))
                     par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m.rat, nu = nu)
                     t2 <- Sys.time()    
+                    times.rat[i] <- times.rat[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
                     if(!only_optim){
                         kappa_est = exp(par$par[1])
                         sigma_est = exp(par$par[2])
@@ -232,10 +235,11 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
                         R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)   
                         mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
-                        t2 <- Sys.time()
+                        t3 <- Sys.time()
+                        times.rat[i] <- times.rat[i] + as.numeric((t3-t2), units = "secs")         
                     }                   
                 }
-                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")         
+                
             } else{
                 stop("invalid type")
             }
@@ -281,6 +285,7 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                     theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
                     par <- optim(theta0, nn.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, n.nbr = i_m)
                     t2 <- Sys.time()
+                    times.nngp[i] <- times.nngp[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
                     if(!only_optim){
                         kappa_est = exp(par$par[1])
                         sigma_est = exp(par$par[2])
@@ -292,13 +297,15 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         mu.nn <- solve(Qhat, t(A)%*%y/sigma_e^2)
                         Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu_est, sigma = sigma_est, n.nbr = i_m, S = obs_ind)$B
                         mu.nn <- Bp%*%mu.nn
-                        t2 <- Sys.time()
+                        t3 <- Sys.time()
+                        times.nngp[i] <- times.nngp[i] + as.numeric(t3-t2, units="secs")
                     }
                 } else{
                     t1 <- Sys.time()
                     theta0 <- c(log(kappa), log(sigma), log(sigma_e))
                     par <- optim(theta0, nn.like,method = "L-BFGS-B", loc = loc[obs_ind], Y = y, n.nbr = i_m, nu = nu)
                     t2 <- Sys.time()    
+                    times.nngp[i] <- times.nngp[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
                     if(!only_optim){
                         kappa_est = exp(par$par[1])
                         sigma_est = exp(par$par[2])
@@ -309,10 +316,10 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         mu.nn <- solve(Qhat, t(A)%*%y/sigma_e^2)
                         Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu, sigma = sigma_est, n.nbr = i_m, S = obs_ind)$B
                         mu.nn <- Bp%*%mu.nn
-                        t2 <- Sys.time()
+                        t3 <- Sys.time()
+                        times.nngp[i] <- times.nngp[i] + as.numeric(t3-t2, units="secs")
                     }                   
                 }
-                times.nngp[i] <- times.nngp[i] + as.numeric(t2-t1, units="secs")
             } else{
                 stop("invalid type")
             }
@@ -336,50 +343,50 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
     return(m.cal)
 }
 
-## Example:
+# ## Example:
 
-N <- 1000
-n_obs <- 800
-m_min <- 2
-m_max <- 30
-m_step <- 1
-nu <- 1.4
-range <- 1
-sigma <- 1
-sigma_e <- 0.1
-m_rat <- 2:6
-
-
-m_cal_nngp_pred <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
-    m_step=m_step, nu=nu, range=range, sigma=sigma, 
-    sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
-
-m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
+# N <- 1000
+# n_obs <- 800
+# m_min <- 2
+# m_max <- 30
+# m_step <- 1
+# nu <- 1.4
+# range <- 1
+# sigma <- 1
+# sigma_e <- 0.1
+# m_rat <- 2:6
 
 
-N <- 100
-n_obs <- 80
-m_min <- 15
-m_max <- 50
-m_step <- 3
-nu <- 1.4
-range <- 1
-sigma <- 1
-sigma_e <- 0.1
-m_rat <- 2:6
+# m_cal_nngp_pred <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
+#     m_step=m_step, nu=nu, range=range, sigma=sigma, 
+#     sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
 
-# Estimating nu, only calibrating the optimization
+# m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
 
-m_cal_nngp_est_nu_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = TRUE, only_optim = TRUE, plot=TRUE, print=TRUE)
 
-# Estimating nu, calibrating optimization and prediction
+# N <- 100
+# n_obs <- 80
+# m_min <- 15
+# m_max <- 50
+# m_step <- 3
+# nu <- 1.4
+# range <- 1
+# sigma <- 1
+# sigma_e <- 0.1
+# m_rat <- 2:6
 
-m_cal_nngp_est_nu_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = TRUE, only_optim = FALSE, plot=TRUE, print=TRUE)
+# # Estimating nu, only calibrating the optimization
 
-# Not estimating nu, only calibrating the optimization
+# m_cal_nngp_est_nu_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = TRUE, only_optim = TRUE, plot=TRUE, print=TRUE)
 
-m_cal_nngp_est_nu_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = FALSE, only_optim = TRUE, plot=TRUE, print=TRUE)
+# # Estimating nu, calibrating optimization and prediction
 
-# Not estimating nu, calibrating optimization and prediction
+# m_cal_nngp_est_nu_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = TRUE, only_optim = FALSE, plot=TRUE, print=TRUE)
 
-m_cal_nngp_est_nu_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = FALSE, only_optim = FALSE, plot=TRUE, print=TRUE)
+# # Not estimating nu, only calibrating the optimization
+
+# m_cal_nngp_est_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = FALSE, only_optim = TRUE, plot=TRUE, print=TRUE)
+
+# # Not estimating nu, calibrating optimization and prediction
+
+# m_cal_nngp_est_only_optim <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "estimation", est_nu = FALSE, only_optim = FALSE, plot=TRUE, print=TRUE)
