@@ -38,19 +38,14 @@ for(i_m in m){
         time_run2_approx[[as.character(i_m)]] <- list()
         error[[as.character(i_m)]] <- list()
         start = Sys.time()
-        if(nu < 0.5) {
-            Qrat <-rSPDE:::matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
-        } else {
-            Qrat <-rSPDE:::matern.rational.ldl(loc = loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = equally_spaced)    
-        }
-        
-        Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
+        Qrat <- rSPDE:::matern.rational.precision(loc = loc_full, order = i_m, nu = nu, kappa = kappa, cumsum = TRUE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
         end1 <- Sys.time()
-        A_obs <- Qrat$A[obs_ind,]
-        A_mat <- t(A_obs)
-        Q_xgiveny <- Q + (A_mat%*% A_obs)/sigma_e^2
-        post_y <- (A_mat %*% y)/sigma_e^2
-        approx_mean <-  Qrat$A%*%solve(Q_xgiveny, A_mat%*%y/sigma_e^2)
+        Q2 <- Qrat$Q 
+        A2 <- Qrat$A 
+        A2o <- A2[obs_ind,] 
+        Qhat.rat2 <- Q2 + t(A2o)%*%A2o/sigma_e^2 
+        R.post <- Matrix::Cholesky(Qhat.rat2, perm = FALSE) 
+        approx_mean <- A2%*%solve(R.post, t(A2o)%*%y/sigma_e^2, system = "A")
         end2 = Sys.time()
         time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
         time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
@@ -97,14 +92,15 @@ for(i_m in m){
         start <- Sys.time() 
         B <- eigen_cov$vec[,1:i_m] 
         Bo <- B[obs_ind,] 
-        Sigma.w <- diag(eigen_cov$val[1:i_m]) 
         end1 <- Sys.time()
+        Sigma.w <- Diagonal(i_m,eigen_cov$val[1:i_m]) 
         Q.hat <- solve(Sigma.w) + t(Bo)%*%Bo/sigma_e^2 
         post_mean <- B%*%solve(Q.hat, t(Bo)%*%y/sigma_e^2) 
-        end2 <- Sys.time() 
+        end2 <- Sys.time()
     }
         time_run2_approx[[as.character(i_m)]][["Build_Q"]] <- as.numeric(end1-start, units = "secs")
         time_run2_approx[[as.character(i_m)]][["Get_pred"]] <- as.numeric(end2-end1, units = "secs")
+    
     d_loc <- diff(loc_full)
     d_loc <- c(d_loc[1], d_loc)
     error[[as.character(i_m)]][["L2"]] <- sqrt(sum(d_loc * (true_pred-post_mean)^2))
@@ -203,8 +199,7 @@ return(result)
 
 # L is length of the interval
 
-compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun, method_pca = "standard"){
-    sigma_e <- 0.1
+compare_times <- function(N, n_obs, factor=100, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun, method_pca = "standard"){
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
     timings_alpha23_rat <- list()
@@ -225,9 +220,10 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
     for(ii in 1:length(N)){
         n_loc <- N[ii]
         n_loc_obs <- n_obs[ii]
-        loc <- seq(0, L, length.out = n_loc)
+        loc <- seq(0, n_loc/factor, length.out = n_loc)
         nu <- 0.3
         kappa <- sqrt(8*nu)/range
+        set.seed(1)
         obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
 
         Y <- y <- sample_y(loc[obs.ind], nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e)
@@ -291,7 +287,7 @@ compare_times <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun,
 
 # only with nngp
 
-compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun){
+compare_times_nngp <- function(N, n_obs, factor=100, range, sigma, sigma_e, m_rat, m_nngp_fun){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
@@ -309,7 +305,7 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
     for(ii in 1:length(N)){
         n_loc <- N[ii]
         n_loc_obs <- n_obs[ii]
-        loc <- seq(0, L, length.out = n_loc)
+        loc <- seq(0, n_loc/factor, length.out = n_loc)
         nu <- 0.3
         kappa <- sqrt(8*nu)/range
         obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])
@@ -366,7 +362,7 @@ compare_times_nngp <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp
 
 # only with KL
 
-compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_fun, method_pca = "standard"){
+compare_times_pca <- function(N, n_obs, factor=100, range, sigma, sigma_e, m_rat, m_pca_fun, method_pca = "standard"){
     sigma_e <- 0.1
     timings_alpha01_rat <- list()
     timings_alpha12_rat <- list()
@@ -384,7 +380,7 @@ compare_times_pca <- function(N, n_obs, L, range, sigma, sigma_e, m_rat, m_pca_f
     for(ii in 1:length(N)){
         n_loc <- N[ii]
         n_loc_obs <- n_obs[ii]
-        loc <- seq(0, L, length.out = n_loc)
+        loc <- seq(0, n_loc/factor, length.out = n_loc)
         nu <- 0.3
         kappa <- sqrt(8*nu)/range
         obs.ind <- sort(sample(1:n_loc)[1:n_loc_obs])

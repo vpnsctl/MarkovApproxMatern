@@ -88,17 +88,14 @@ true_pred <- function(y, loc = NULL, loc_pred = NULL, loc_full = NULL, idx_obs =
 pred_rat_markov <- function(y, loc_full, idx_obs, idx_pred, m, nu, kappa, sigma, sigma_e, equally_spaced = FALSE){
 pred <- list()
     for(i_m in m){
-        if(nu < 0.5){
-            r <- rSPDE:::matern.rational.precision(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
-        } else {
-            r <- rSPDE:::matern.rational.precision(loc_full, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")            
-        } 
-                A_obs <- r$A[idx_obs,]
-                A_pred <- r$A[idx_pred,]
+            r <- rSPDE:::matern.rational.precision(loc = loc_full, order = i_m, nu = nu, kappa = kappa, cumsum = TRUE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
+            
+            A_obs <- r$A[idx_obs,]
+            A_pred <- r$A[idx_pred,]
             A_mat = t(A_obs)
             Q_xgiveny <-(A_mat%*% (A_obs))/sigma_e^2 + r$Q
             post_y <- (A_mat%*% y)/sigma_e^2
-            R <- Matrix::Cholesky(Q_xgiveny)            
+            R <- Matrix::Cholesky(Q_xgiveny, perm = FALSE)         
             mu_xgiveny <- solve(R, post_y, system = "A")
             approx_mean1 <-  A_pred %*% mu_xgiveny
             pred[[as.character(i_m)]] <- approx_mean1

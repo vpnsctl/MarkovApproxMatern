@@ -80,7 +80,6 @@ n_obs <- c(800, 1800)
 # L - length of the interval, [0,L]
 N <- 1000
 n_obs <- 800
-L <- 30
 range <- 1
 sigma <- 1
 sigma_e <- 0.1
@@ -107,7 +106,11 @@ results <- list()
 samples <- 1
 for(sample in 1:samples){
   cat(sample, '\n')
-  results[[sample]] <- compare_times(N, n_obs, L, range, sigma, sigma_e, m_rat, m_nngp_fun, m_pca_fun)
+  results[[sample]] <- compare_times(N = N, n_obs = n_obs, 
+                        range = range, sigma = sigma, 
+                        sigma_e = sigma_e, m_rat = m_rat, 
+                        m_nngp_fun = m_nngp_fun, 
+                        m_pca_fun = m_pca_fun)
 }
 ```
 
