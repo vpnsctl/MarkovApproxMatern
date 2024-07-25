@@ -216,6 +216,17 @@ get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
     return(list(B = Bs, F = Fs))
 }
 
+nn.like_wrapper <- function(theta, loc, n.nbr, Y, nu = NULL){
+      l_tmp <- tryCatch(nn.like(theta=theta, loc=loc, n.nbr=n.nbr, Y=Y, nu = nu),
+        error = function(e) {
+          return(NULL)
+        }
+      )
+      if (is.null(l_tmp)) {
+        return(10^100)
+      }
+      return(l_tmp)
+}
 
 nn.like <- function(theta, loc, n.nbr, Y,nu = NULL) {
     kappa = exp(theta[1])

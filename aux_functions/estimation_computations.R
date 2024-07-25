@@ -15,8 +15,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
             sigma_est = exp(par$par[2])
             nu_est = exp(par$par[3])
             sigma_e_est = exp(par$par[4])    
-            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu_est, kappa = kappa_est, 
-                                    sigma = sigma_est, type_rational = "brasil", type_interp =  "spline")   
+            Qrat <- rSPDE:::matern.rational.precision(loc = loc_full, order = i_m, nu = nu_est, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
             t3 <- Sys.time()                                           
         } else{
             t1 <- Sys.time()
@@ -26,12 +25,11 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
             sigma_e_est = exp(par$par[3])          
-            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa_est, 
-                                sigma = sigma_est, type_rational = "brasil", type_interp =  "spline")
+            Qrat <- rSPDE:::matern.rational.precision(loc = loc_full, order = i_m, nu = nu, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
             t3 <- Sys.time()          
         }
 
-        Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
+        Q <- Qrat$Q
 
         Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
         mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2)
@@ -60,7 +58,7 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
             sigma_est = exp(par$par[2])
             nu_est = exp(par$par[3])
             sigma_e_est = exp(par$par[4])    
-            Qnn <- get.nnQ(loc = loc,kappa = kappa_est,nu = nu_est,sigma = sigma_est, n.nbr = m, S = obs_ind)
+            Qnn <- get.nnQ(loc = loc[obs_ind],kappa = kappa_est,nu = nu_est,sigma = sigma_est, n.nbr = m)
             t3 <- Sys.time()                                           
         } else{
             t1 <- Sys.time()
@@ -70,13 +68,11 @@ compute_likelihood_nn <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sigm
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
             sigma_e_est = exp(par$par[3])          
-            Qnn <- get.nnQ(loc = loc,kappa = kappa_est,nu = nu,sigma = sigma_est, n.nbr = m, S = obs_ind) 
+            Qnn <- get.nnQ(loc = loc[obs_ind],kappa = kappa_est,nu = nu,sigma = sigma_est, n.nbr = m)
             t3 <- Sys.time()          
         }
 
-        Qnn <- get.nnQ(loc = loc[obs_ind],kappa = kappa_est,nu = nu,sigma = sigma_est, n.nbr = m)
-
-        A = Diagonal(n.obs)
+        A = Diagonal(length(obs_ind))
         Qhat <- Qnn + t(A)%*%A/sigma_e^2        
         mu.nn <- solve(Qhat, t(A)%*%y/sigma_e^2)
         Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu, sigma = sigma_est, n.nbr = m, S = obs_ind)$B
