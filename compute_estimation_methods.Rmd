@@ -99,8 +99,8 @@ We will now provide the settings we will be using to do estimation by maximum li
 range = 5
 sigma = 2
 sigma_e <- 0.2
-n <- 1000
-n.obs <- 200
+n <- 100
+n.obs <- 80
 loc <- seq(0,n/100,length.out=n)
 obs_ind <- sort(sample(1:n)[1:n.obs])
 nu_vec <- c(0.3, 0.8, 1.4)

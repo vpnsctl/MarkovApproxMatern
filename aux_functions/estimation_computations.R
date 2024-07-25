@@ -15,7 +15,7 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
             sigma_est = exp(par$par[2])
             nu_est = exp(par$par[3])
             sigma_e_est = exp(par$par[4])    
-            Qrat <- rSPDE:::matern.rational.precision(loc = loc_full, order = i_m, nu = nu_est, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
+            Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu_est, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
             t3 <- Sys.time()                                           
         } else{
             t1 <- Sys.time()
@@ -25,14 +25,15 @@ compute_likelihood_rat <- function(y, loc, obs_ind, m_vec, kappa, sigma, nu, sig
             kappa_est = exp(par$par[1])
             sigma_est = exp(par$par[2])
             sigma_e_est = exp(par$par[3])          
-            Qrat <- rSPDE:::matern.rational.precision(loc = loc_full, order = i_m, nu = nu, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
+            Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
             t3 <- Sys.time()          
         }
 
         Q <- Qrat$Q
 
-        Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
-        mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2)
+        Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2     
+        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)           
+        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
         t4 <- Sys.time()
         timings[[as.character(m)]][["Optimization"]] <- as.numeric(t2-t1, units = "secs")
         timings[[as.character(m)]][["Precision_computation"]] <- as.numeric(t3-t2, units = "secs")

@@ -214,7 +214,8 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu_est, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
                         Q <- Qrat$Q
                         Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
-                        mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2)
+                        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
+                        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
                         t2 <- Sys.time()
                     }
                 } else{
@@ -229,16 +230,20 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
                         Q <- Qrat$Q
                         Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
-                        mu.rat <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2)
+                        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)   
+                        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
                         t2 <- Sys.time()
                     }                   
                 }
-                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
+                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")         
             } else{
                 stop("invalid type")
             }
         }
         times.rat[i] <- times.rat[i]/samples
+                if(print){
+                    print(paste("time =", times.rat[i]))
+                }       
      } 
      m.nngp <- seq(from=m_min,to=m_max, by=m_step) 
      times.nngp <- rep(0, length(m.nngp)) 
@@ -300,7 +305,6 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
                         sigma_e_est = exp(par$par[3]) 
                         Qnn <- get.nnQ(loc = loc[obs_ind],kappa = kappa_est,nu = nu,sigma = sigma_est, n.nbr = i_m)
                         A = Diagonal(n.obs)
-                        A <- A[obs_ind,]
                         Qhat <- Qnn + t(A)%*%A/sigma_e^2        
                         mu.nn <- solve(Qhat, t(A)%*%y/sigma_e^2)
                         Bp <- get.nn.pred(loc = loc, kappa = kappa_est, nu = nu, sigma = sigma_est, n.nbr = i_m, S = obs_ind)$B
@@ -314,6 +318,9 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
             }
         }
         times.nngp[i] <- times.nngp[i]/samples
+        if(print){
+            print(paste("time =", times.nngp[i]))
+        }
         } 
     m.cal <- rep(0,length(m_rat)) 
     for(i in 1:length(m_rat)){ 
@@ -352,8 +359,8 @@ m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
 
 N <- 100
 n_obs <- 80
-m_min <- 2
-m_max <- 20
+m_min <- 15
+m_max <- 50
 m_step <- 3
 nu <- 1.4
 range <- 1
