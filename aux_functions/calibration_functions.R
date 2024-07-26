@@ -28,9 +28,7 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time =
     D_loc <- as.matrix(dist(loc)) 
     obs_ind <- sort(sample(1:n)[1:n.obs]) 
     cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma) 
-    R <- chol(cov_mat[obs_ind,obs_ind]) 
-    X <- t(R)%*%rnorm(n.obs) 
-    y <- X + sigma_e*rnorm(n.obs) 
+    y <- rnorm(n.obs) 
     eigen_cov <- eigen(cov_mat) 
     times.rat <- rep(0,length(m_rat))
     for(i in 1:length(m_rat)){
@@ -170,13 +168,8 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
     loc <- seq(0,N/100,length.out=N) 
     n <- N
     n.obs <- n_obs
-    D_loc <- as.matrix(dist(loc)) 
     obs_ind <- obs.ind <- sort(sample(1:n)[1:n.obs]) 
-    cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma) 
-    R <- chol(cov_mat[obs_ind,obs_ind]) 
-    X <- t(R)%*%rnorm(n.obs) 
-    y <- X + sigma_e*rnorm(n.obs) 
-    eigen_cov <- eigen(cov_mat) 
+    y <- rnorm(n.obs) 
     times.rat <- rep(0,length(m_rat))
     if(print){
         print("starting rational")
