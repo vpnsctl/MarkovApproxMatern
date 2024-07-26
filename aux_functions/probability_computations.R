@@ -4,13 +4,7 @@ library(mvtnorm)
 # ordered locations
 get_cov_mat <- function(loc, m, method, nu, kappa, sigma, samples = NULL, L=NULL){
     if(method == "rat_markov"){
-        if(nu < 0.5) {
-            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
-        } else {
-            Qrat <-rSPDE:::matern.rational.ldl(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp =  "spline", equally_spaced = FALSE)    
-        }
-        Q <- t(Qrat$L)%*%Qrat$D%*%Qrat$L
-        return(list(A = Qrat$A, Q = Q))
+        return(rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, cumsum = TRUE, ordering = "field", sigma = sigma, type_rational = "brasil", type_interp = "spline"))
     } else if(method == "nngp"){
             return(get.nnQ(loc = loc,kappa = kappa, nu = nu,sigma = sigma, n.nbr = m))
     } else if(method == "pca"){

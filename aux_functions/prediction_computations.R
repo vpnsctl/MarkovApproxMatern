@@ -625,7 +625,7 @@ pred_rat_markov_pred <- function(y, loc_obs, loc_pred = NULL, m, nu, kappa, sigm
 
 ## Predict PCA
 
-pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("standard", "woodbury", "approx"), m_pca_fun){
+pred_PCA <- function(y, loc, loc_pred = NULL, m, nu, kappa, sigma, sigma_e, method = c("standard", "woodbury", "svd"), m_pca_fun){
 loc_full <- c(loc_pred,loc)
 N <- length(loc_full)
 method <- method[[1]]
@@ -637,9 +637,8 @@ rat_m <- m
 m <- m_pca_fun(m, nu + 0.5)
 count <- 1
 for(i_m in m){
-    i_m <- min(i_m, N/2)
     K <- eigen_cov$vec[,1:i_m]    
-    D <- diag(eigen_cov$val[1:i_m])    
+    D <- Diagonal(i_m,eigen_cov$val[1:i_m]) 
     if(method == "woodbury"){
         K <- K%*%sqrt(D)
         if(!is.null(loc_pred)){

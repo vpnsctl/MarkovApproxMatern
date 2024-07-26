@@ -77,7 +77,7 @@ for(i_m in m){
     if(method == "svd"){
         start = Sys.time()        
         K <- eigen_cov$vec[,1:i_m]    
-        D <- diag(eigen_cov$val[1:i_m])    
+        D <- Diagonal(i_m,eigen_cov$val[1:i_m]) 
         cov_KL <- K%*%D%*%t(K)
         end1 <- Sys.time()
         cov_KL <- cov_KL[, obs_ind]
