@@ -38,13 +38,11 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, plot=FALSE){
         for(jj in 1:samples){ 
             if(type == "prediction"){
                 t1 <- Sys.time() 
-                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline")
-                if(!include_build_precision){
-                    t1 <- Sys.time()
-                }
+                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, cumsum = TRUE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
                 Q <- Qrat$Q 
-                Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma.e^2 
-                mu.rat1 <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma.e^2) 
+                Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e^2        
+                R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
+                mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e^2, system = "A")
                 t2 <- Sys.time() 
                 times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
             } else if(type == "sampling"){
@@ -120,13 +118,13 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, plot=FALSE){
 # N <- 1000
 # n_obs <- 800
 # m_min <- 2
-# m_max <- 700
+# m_max <- 1000
 # m_step <- 10
 # nu <- 1.4
 # range <- 1
 # sigma <- 1
 # sigma_e <- 0.1
-# m_rat <- 2:6
+# m_rat <- 1:6
 
 
 # m_cal_pca_pred <- calibration_PCA(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
@@ -184,10 +182,11 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
         for(jj in 1:samples){ 
             if(type == "prediction"){
                 t1 <- Sys.time() 
-                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline")
+                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, cumsum = TRUE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
                 Q <- Qrat$Q 
-                Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma.e^2 
-                mu.rat1 <- Qrat$A%*%solve(Qhat.rat, t(Qrat$A[obs_ind,])%*%y/sigma.e^2) 
+                Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e^2        
+                R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
+                mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e^2, system = "A")
                 t2 <- Sys.time() 
                 times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
             } else if(type == "sampling"){
