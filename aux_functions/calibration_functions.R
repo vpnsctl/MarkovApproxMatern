@@ -25,12 +25,10 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time =
     loc <- seq(0,N/100,length.out=N) 
     n <- N
     n.obs <- n_obs
-    D_loc <- as.matrix(dist(loc)) 
     obs_ind <- sort(sample(1:n)[1:n.obs]) 
-    cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma) 
     y <- rnorm(n.obs) 
-    eigen_cov <- eigen(cov_mat) 
     times.rat <- rep(0,length(m_rat))
+    eigen_cov <- list(vec = matrix(1, ncol=N, nrow=N), val = rep(1, N))
     for(i in 1:length(m_rat)){
         m.rat <- m_rat[i]
         for(jj in 1:samples){ 
@@ -137,7 +135,7 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time =
 #     sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
 
 # m_cal_pca_samp <- calibration_PCA(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, 
-    # sigma_e=sigma_e, m_rat=m_rat, samples = 10, type = "sampling", plot=TRUE, include_build_precision = FALSE)
+#     sigma_e=sigma_e, m_rat=m_rat, samples = 10, type = "sampling", plot=TRUE, include_build_precision = FALSE)
 
 
 
