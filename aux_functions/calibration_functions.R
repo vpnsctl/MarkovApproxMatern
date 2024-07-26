@@ -344,23 +344,23 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
 
 ## Example:
 
-N <- 1000
-n_obs <- 800
-m_min <- 2
-m_max <- 30
-m_step <- 1
-nu <- 1.4
-range <- 1
-sigma <- 1
-sigma_e <- 0.1
-m_rat <- 2:6
+# N <- 1000
+# n_obs <- 800
+# m_min <- 2
+# m_max <- 30
+# m_step <- 1
+# nu <- 1.4
+# range <- 1
+# sigma <- 1
+# sigma_e <- 0.1
+# m_rat <- 2:6
 
 
 # m_cal_nngp_pred <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
 #     m_step=m_step, nu=nu, range=range, sigma=sigma, 
 #     sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
 
-m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
+# m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
 
 
 # N <- 100
