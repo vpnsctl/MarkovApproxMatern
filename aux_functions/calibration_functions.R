@@ -3,7 +3,7 @@ library(Matrix)
 source("aux_functions/aux_functions_cov.R")
 
 calibration_PCA <- function(N, n_obs, m_min, m_max, m_step, factor = 100, nu, range, sigma, sigma_e, m_rat, method_pca = "standard", samples, 
-type = c("prediction", "sampling"), include_build_precision = TRUE, plot=FALSE){
+type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time = 1, plot=FALSE){
     type <- type[[1]]
     if(!(type%in%c("prediction", "sampling"))){
         stop("type must be either 'prediction' or 'sampling'.")
@@ -101,13 +101,13 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, plot=FALSE){
         } 
     m.cal <- rep(0,length(m_rat)) 
     for(i in 1:length(m_rat)){ 
-        m.cal[i] = m.pca[which.min(abs(times.rat[i]-times.pca))] 
+        m.cal[i] = m.pca[which.min(abs(multi_time*times.rat[i]-times.pca))] 
     } 
 
     if(plot){
         plot(m.pca,times.pca, xlab = "m", ylab = "time", ylim = c(0,max(times.pca)), type="l") 
         for(ii in 1:length(m_rat)){
-            lines(c(m_min,m_max),c(times.rat[ii],times.rat[ii]),col=ii+1) 
+            lines(c(m_min,m_max),c(multi_time*times.rat[ii],multi_time*times.rat[ii]),col=ii+1) 
         }
     }
     return(m.cal)
@@ -342,25 +342,25 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
     return(m.cal)
 }
 
-# ## Example:
+## Example:
 
-# N <- 1000
-# n_obs <- 800
-# m_min <- 2
-# m_max <- 30
-# m_step <- 1
-# nu <- 1.4
-# range <- 1
-# sigma <- 1
-# sigma_e <- 0.1
-# m_rat <- 2:6
+N <- 1000
+n_obs <- 800
+m_min <- 2
+m_max <- 30
+m_step <- 1
+nu <- 1.4
+range <- 1
+sigma <- 1
+sigma_e <- 0.1
+m_rat <- 2:6
 
 
 # m_cal_nngp_pred <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
 #     m_step=m_step, nu=nu, range=range, sigma=sigma, 
 #     sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
 
-# m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
+m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
 
 
 # N <- 100
