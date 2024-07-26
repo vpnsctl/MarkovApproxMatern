@@ -47,7 +47,7 @@ library(Rcpp)
 
 sourceCpp("aux_functions/sample_chol_eigen.cpp")
 
-simulate_rat_markov <- function(loc, m, nu, kappa, sigma, nsim, type_rat = "chebfun", print=TRUE, only_time = FALSE, eigen_chol = FALSE, equally_spaced = FALSE, samples = 1){
+simulate_rat_markov <- function(loc, m, nu, kappa, sigma, nsim, type_rat = "chebfun", print=TRUE, only_time = FALSE, eigen_chol = FALSE, equally_spaced = FALSE, samples = 1, build_prec = TRUE){
 N <- length(loc)
 samp_mat <- matrix(nrow = nsim, ncol = N)
 time_run2_approx <- list()
@@ -61,7 +61,12 @@ for(i_m in m){
         # r <- rSPDE:::matern.rational.precision(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
         r <- rSPDE:::matern.rational.ldl(loc, order = i_m, nu = nu, kappa = kappa, sigma = sigma, type_rational = "chebfun", type_interp = "spline", equally_spaced = equally_spaced, ordering = "field")
     }
-    prec_mat <- t(r$L)%*%r$D%*%r$L
+    if(build_prec){
+        prec_mat <- t(r$L)%*%r$D%*%r$L
+    } else{
+        R <- t(r$L)%*%sqrt(r$D)
+    }
+
     end1 <- Sys.time()
 
         # r$Q <- (r$Q + t(r$Q))/2
@@ -71,7 +76,10 @@ for(i_m in m){
         time_run2_approx[[as.character(i_m)]][["Compute_Q"]] <- as.numeric(end1 - start, units="secs")
         time_run2_approx[[as.character(i_m)]][["Compute_solve"]] <- 0
         start <- Sys.time()
-        R <- chol(prec_mat)
+        if(build_prec){
+            R <- chol(prec_mat)
+        }
+
         end2 <- Sys.time()
         time_run2_approx[[as.character(i_m)]][["Compute_chol"]] <- as.numeric(end2 - start, units="secs")
         for(ii in 1:samples){
@@ -111,7 +119,7 @@ for(i_m in m){
 # nu <- 0.3
 # kappa <- 10
 # sigma <- 2
-# sim <- simulate_rat_markov(loc = s, m=1:6, nu = nu, kappa = kappa, sigma = sigma, nsim = 10000, equally_spaced = TRUE)
+# sim <- simulate_rat_markov(loc = s, m=1:6, nu = nu, kappa = kappa, sigma = sigma, nsim = 10000, equally_spaced = TRUE, build_prec=FALSE)
 # library(rSPDE)
 # c.true <- matern.covariance(s-5, kappa=kappa, nu=nu, sigma=sigma)
 # plot(s, c.true,

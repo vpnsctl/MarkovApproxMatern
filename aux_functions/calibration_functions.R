@@ -3,7 +3,7 @@ library(Matrix)
 source("aux_functions/aux_functions_cov.R")
 
 calibration_PCA <- function(N, n_obs, m_min, m_max, m_step, factor = 100, nu, range, sigma, sigma_e, m_rat, method_pca = "standard", samples, 
-type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time = 1, plot=FALSE){
+type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time = 1, plot=FALSE, use_chol = TRUE){
     type <- type[[1]]
     if(!(type%in%c("prediction", "sampling"))){
         stop("type must be either 'prediction' or 'sampling'.")
@@ -48,11 +48,18 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time =
             } else if(type == "sampling"){
                 t1 <- Sys.time()
                 r <- rSPDE:::matern.rational.ldl(loc, order = m.rat, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", ordering = "field")
-                prec_mat <- t(r$L)%*%r$D%*%r$L
+                if(use_chol){
+                    prec_mat <- t(r$L)%*%r$D%*%r$L
+                } else{
+                    R <- t(r$L)%*%sqrt(r$D)
+                }
+
                 if(!include_build_precision){
                     t1 <- Sys.time()
                 }
-                R <- chol(prec_mat)
+                if(use_chol){
+                    R <- chol(prec_mat)
+                }
                 y <- matrix(rnorm(ncol(r$L)), ncol = ncol(r$L), nrow = 1)
                 sim_full <- solve(R, t(y), system = "Lt")                
                 sim <- (r$A)%*%sim_full
@@ -132,7 +139,7 @@ type = c("prediction", "sampling"), include_build_precision = TRUE, multi_time =
 #     sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
 
 # m_cal_pca_samp <- calibration_PCA(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, 
-#     sigma_e=sigma_e, m_rat=m_rat, samples = 10, type = "sampling", plot=TRUE, include_build_precision = FALSE)
+    # sigma_e=sigma_e, m_rat=m_rat, samples = 10, type = "sampling", plot=TRUE, include_build_precision = FALSE)
 
 
 
@@ -342,25 +349,25 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
     return(m.cal)
 }
 
-## Example:
+# ## Example:
 
-N <- 1000
-n_obs <- 800
-m_min <- 2
-m_max <- 30
-m_step <- 1
-nu <- 1.4
-range <- 1
-sigma <- 1
-sigma_e <- 0.1
-m_rat <- 2:6
+# N <- 1000
+# n_obs <- 800
+# m_min <- 2
+# m_max <- 30
+# m_step <- 1
+# nu <- 1.4
+# range <- 1
+# sigma <- 1
+# sigma_e <- 0.1
+# m_rat <- 2:6
 
 
 # m_cal_nngp_pred <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, 
 #     m_step=m_step, nu=nu, range=range, sigma=sigma, 
 #     sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "prediction", plot=TRUE)
 
-m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
+# m_cal_nngp_samp <- calibration_nngp(N=N, n_obs=n_obs, m_min=m_min, m_max=m_max, m_step=m_step, nu=nu, range=range, sigma=sigma, sigma_e=sigma_e, m_rat=m_rat, samples = 5, type = "sampling", plot=TRUE)
 
 
 # N <- 100
