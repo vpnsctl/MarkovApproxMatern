@@ -6,7 +6,7 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores=detectCores()
+cores=10
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
@@ -24,7 +24,7 @@ Dists <- as.matrix(dist(loc))
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 #nu.vec <- c(0.3,1.3,1.4)
-m.vec <- 2:6
+m.vec <- 1:6
 
 iterations <- length(nu.vec)
 pb <- txtProgressBar(max = iterations, style = 3)
