@@ -11,7 +11,7 @@ source("aux_functions/aux_dist.R")
 ## sigma = 1
 ## No calibration were carried out against the parsimonious method.
 
-nu_vec <- seq(from = 0.01, to = 2.95, by = 0.01)
+nu_vec <- seq(from = 0.01, to = 2.45, by = 0.01)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
 nu_vec_rat <- nu_vec[idx]
 sigma = 1
@@ -264,6 +264,28 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range1_calibrate
 ## Config 3:
 ## N = 10000, n_obs = 10000
 
+source("aux_functions/aux_functions_cov.R")
+source("aux_functions/predict_methods.R")
+source("aux_functions/distance_computations.R")
+source("aux_functions/aux_dist.R")
+
+
+## General setup:
+## Ranges considered are: 20%, 50% and 100% of the domain length.
+## Domain length = N/100
+## m for the different methods were calibrated by the total prediction time.
+## sigma = 1
+## No calibration were carried out against the parsimonious method.
+
+nu_vec <- seq(from = 0.01, to = 2.95, by = 0.01)
+idx <- (nu_vec + 0.5)%%1 > 1e-10
+nu_vec_rat <- nu_vec[idx]
+sigma = 1
+m <- 1:6
+m_rat <- 0:6
+
+
+
 N <- 10000
 n_obs <- 10000
 
@@ -359,6 +381,82 @@ dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_v
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_10000_range05_calibrated.RDS")
 
 ### Third range
+
+
+source("aux_functions/aux_functions_cov.R")
+source("aux_functions/predict_methods.R")
+source("aux_functions/distance_computations.R")
+source("aux_functions/aux_dist.R")
+
+
+## General setup:
+## Ranges considered are: 20%, 50% and 100% of the domain length.
+## Domain length = N/100
+## m for the different methods were calibrated by the total prediction time.
+## sigma = 1
+## No calibration were carried out against the parsimonious method.
+
+nu_vec <- seq(from = 0.01, to = 2.95, by = 0.01)
+idx <- (nu_vec + 0.5)%%1 > 1e-10
+nu_vec_rat <- nu_vec[idx]
+sigma = 1
+m <- 1:6
+m_rat <- 0:6
+
+
+
+N <- 10000
+n_obs <- 10000
+
+m_nngp_fun <- function(m, alpha){
+            if(alpha<1) {
+                mn <- m - 1
+                if(mn < 1){
+                    mn <- 1
+                }
+            } else if (alpha < 2) {
+                m_vec <- c(1, 2, 10, 18, 26, 31)
+                mn <- m_vec[m]
+            } else {
+                m_vec <- c(15, 31, 40, 48, 55, 60)
+                mn <- m_vec[m]
+            }
+            return(mn)
+} 
+
+m_pca_fun <- function(m, alpha){
+            if(alpha<1) {
+                m_vec <- c(271, 311, 367, 412, 452, 493)
+                mn <- m_vec[m]
+            } else if (alpha < 2) {
+                m_vec <- c(372, 493, 591, 672, 751, 821)
+                mn <- m_vec[m]
+            } else {
+                m_vec <- c(640, 848, 1016, 1168, 1299, 1420)
+                mn <- m_vec[m]
+            }
+            return(mn)
+}
+
+## Same as PCA, but with 100 samples
+m_fourier_fun <- function(m, alpha){
+            if(alpha<1) {
+                m_vec <- c(271, 311, 367, 412, 452, 493)
+                mn <- m_vec[m]
+            } else if (alpha < 2) {
+                m_vec <- c(372, 493, 591, 672, 751, 821)
+                mn <- m_vec[m]
+            } else {
+                m_vec <- c(640, 848, 1016, 1168, 1299, 1420)
+                mn <- m_vec[m]
+            }
+            return(mn)
+}
+
+m_statespace_fun <- function(m, alpha){
+    return(max(c(1,m - floor(alpha))))
+}
+
 
 range <- 1
 
