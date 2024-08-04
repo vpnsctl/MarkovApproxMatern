@@ -75,15 +75,12 @@ For this case we will consider that we have $N=1000$ observations, the range par
 We start by defining the parameters:
 
 ```{r}
-N <- c(1000,2000)
-n_obs <- c(800, 1800)
-# L - length of the interval, [0,L]
-N <- 1000
-n_obs <- 800
+N <- c(5000,10000,10000)
+n_obs <- c(5000,5000,10000)
 range <- 1
 sigma <- 1
 sigma_e <- 0.1
-m_rat <- 1:6
+m_rat <- 2:6
 m_nngp_fun <- function(m, alpha){
               if(alpha<1) {
                 mn <- m

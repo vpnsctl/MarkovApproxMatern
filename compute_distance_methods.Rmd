@@ -133,15 +133,15 @@ m_statespace_fun <- function(m, alpha){
 We will now compute the distances with the help of the auxiliary functions `compute_distances_rational` (our method introduced in [@BMS2024]), `compute_distances_pca` (a PCA low rank approximation), `compute_distances_nngp` (the nearest neighbor method of [@DBFG]), `compute_distances_fourier` (the Fourier method of [@RR]) and `compute_distances_statespace` (the state-space method of [@KS]).
 
 ```{r, results="hide"}
-dist_rat <- compute_distances_rational(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma)
 
-dist_nngp <- compute_distances_nngp(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
+dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
 
-dist_pca <- compute_distances_pca(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
+dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 
-dist_fourier <- compute_distances_fourier(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
+dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
 
-dist_ss <- compute_distances_statespace(N=N, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
+dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 ```
 
 ## Distance plots based on prediction calibration

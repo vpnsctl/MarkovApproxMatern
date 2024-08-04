@@ -1,17 +1,18 @@
 # Computes L2 and Linfinity distances for the rational approximation (our method)
 
-compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
+compute_distances_rational <- function(N, n_obs, m.vec, nu.vec, range, sigma){
     L2dist <- list()
     Linfdist <- list()
-    for(n_loc in N){
-        l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
-        loc <- seq(0, 1, length.out = n_loc+1)
-        for(i in 1:length(nu.vec)) {
+    N <- N[[1]]
+    n_obs <- n_obs[[1]]
+    loc <- seq(0, N/100, length.out = N)
+    D <- as.matrix(dist(loc))  
+    l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
+    for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
-            kappa <- sqrt(8*nu)/range
-            D <- as.matrix(dist(loc))            
+            kappa <- sqrt(8*nu)/range          
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
@@ -27,14 +28,16 @@ compute_distances_rational <- function(N, m.vec, nu.vec, range, sigma){
                         Sigma_rat <- toeplitz(x = drop(col_tmp), symmetric = TRUE)
                     }
                 }
-                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_rat)^2))*(loc[2]-loc[1])
-                sup.err[i,j] <- max(abs(Sigma.t-Sigma_rat))
+                if(n_obs < N){
+                    l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_rat[1:n_obs,])^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_rat[1:n_obs,]))
+                } else{
+                    l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_rat)^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t-Sigma_rat))                    
+                }
             }
-        }
-        L2dist[[as.character(n_loc)]] <- l2.err
-        Linfdist[[as.character(n_loc)]] <- sup.err
     }
-    ret <- list(L2 = L2dist, Linf = Linfdist)
+    ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "Rational"
     attr(ret, "nu.vec") <- nu.vec
     attr(ret, "m.vec") <- m.vec

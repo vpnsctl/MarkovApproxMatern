@@ -17,7 +17,7 @@ n.obs <- 5000
 n.rep <- 1
 samples.fourier <- 100
 #loc <- seq(0,n/100,length.out=n)
-loc <- seq(0,10,length.out=n)
+loc <- seq(0,n/100,length.out=n)
 
 Dists <- as.matrix(dist(loc))
 
