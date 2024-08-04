@@ -10,15 +10,15 @@ cores=10
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
-range = 2
+range = 0.2
 sigma = 1
 sigma.e <- 0.1
 n <- 5000
 n.obs <- 5000
-n.rep <- 1
+n.rep <- 100
 samples.fourier <- 100
 #loc <- seq(0,n/100,length.out=n)
-loc <- seq(0,10,length.out=n)
+loc <- seq(0,n/100,length.out=n)
 
 Dists <- as.matrix(dist(loc))
 
