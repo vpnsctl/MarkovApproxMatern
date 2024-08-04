@@ -11,14 +11,16 @@ source("aux_functions/aux_dist.R")
 ## sigma = 1
 ## No calibration were carried out against the parsimonious method.
 
+nu_vec <- seq(from = 0.01, to = 2.95, by = 0.01)
+sigma = 1
+m <- 1:6
+m_rat <- 0:6
+
+
 ## Config 1:
 ## N = n_obs = 5000
 
 N <- n_obs <- 5000
-nu_vec <- seq(from = 0.01, to = 2.49, by = 0.05)
-sigma = 1
-m <- 1:6
-m_rat <- 0:6
 
 m_nngp_fun <- function(m, alpha){
             if(alpha<1) {
@@ -140,10 +142,6 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range1_calibrated.RDS"
 
 N <- 10000
 n_obs <- 5000
-nu.vec <- seq(from = 0.01, to = 2.49, by = 0.05)
-sigma = 1
-m <- 1:6
-m_rat <- 0:6
 
 m_nngp_fun <- function(m, alpha){
             if(alpha<1) {
@@ -266,10 +264,6 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range1_calibrate
 
 N <- 10000
 n_obs <- 10000
-nu.vec <- seq(from = 0.01, to = 2.49, by = 0.05)
-sigma = 1
-m <- 1:6
-m_rat <- 0:6
 
 m_nngp_fun <- function(m, alpha){
             if(alpha<1) {
