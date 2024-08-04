@@ -32,6 +32,9 @@ progress <- function(n) setTxtProgressBar(pb, n)
 opts <- list(progress = progress)
 
 
+### Full
+
+
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
     return(res)
@@ -80,3 +83,26 @@ lines(nu.vec,err.ss[,2], col = 2,lty=5)
 lines(nu.vec,err.ss[,3], col = 3,lty=5)
 lines(nu.vec,err.ss[,4], col = 4,lty=5)
 lines(nu.vec,err.ss[,5], col = 5,lty=5)
+
+
+
+
+
+
+
+### NO PCA + No Fourier
+
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.ss <- rbind(err.ss, res[[i]]$err.ss)
+    err.nn <- rbind(err.ss, res[[i]]$err.nn)
+    err.rat <- rbind(err.ss, res[[i]]$err.rat)
+    
+}
