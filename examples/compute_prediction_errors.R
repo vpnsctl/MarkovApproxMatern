@@ -4,9 +4,9 @@ library(rSPDE)
 library(foreach)
 library(doParallel)
 
-cores=detectCores()
-cl <- makeCluster(cores[1]-1) 
-registerDoParallel(cl)
+# cores=detectCores()
+# cl <- makeCluster(cores[1]-1) 
+# registerDoParallel(cl)
 
 
 range = 2
@@ -21,7 +21,7 @@ loc <- seq(0,n/100,length.out=n)
 
 Dists <- as.matrix(dist(loc))
 
-nu.vec <- seq(from = 0.01, to = 2.49, by = 0.05)
+nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 
 m.vec <- 2:6
 err.nn <- err.rat <- err.pca <- err.fourier <- err.ss <- matrix(0,nrow= length(nu.vec), ncol = length(m.vec))
