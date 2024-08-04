@@ -170,11 +170,21 @@ get.nn <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
 }
 
 get.nnQ <- function(loc,kappa,nu,sigma, n.nbr,S=NULL) {
-    tmp <- get.nn(loc,kappa,nu,sigma,n.nbr,S)
+    tmp <- get.nn(loc = loc,kappa = kappa,nu = nu,sigma = sigma,n.nbr = n.nbr,S = S)
     
     return(t(tmp$Bs) %*% tmp$Fi %*%tmp$Bs)
 }
 
+get.nnCov <- function(loc,kappa,nu,sigma, n.nbr,S=NULL, invert_prec = TRUE) {
+    if(!invert_prec){
+        tmp <- get.nn(loc = loc,kappa = kappa,nu = nu,sigma = sigma,n.nbr = n.nbr,S = S)
+        Bsi <- solve(tmp$Bs)
+        return(Bsi %*% tmp$Fs %*%t(Bsi))
+    } else{
+        Q <- get.nnQ(loc = loc,kappa = kappa,nu = nu,sigma = sigma,n.nbr = n.nbr,S = S)
+        return(solve(Q))
+    }
+}
 
 get.nn.pred <- function(loc,kappa,nu,sigma, n.nbr, S = NULL) {
     

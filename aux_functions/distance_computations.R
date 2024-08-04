@@ -10,6 +10,11 @@ compute_distances_rational <- function(N, n_obs, m.vec, nu.vec, range, sigma){
     D <- as.matrix(dist(loc))  
     l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
     range <- range * max(loc)
+    print("Rational")
+    print(paste("N = ",N))
+    print(paste("n_obs = ", n_obs))
+    print(paste("Domain length = ", max(loc)))
+    print(paste("range = ", range))       
     for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
@@ -59,6 +64,11 @@ compute_distances_statespace <- function(N, n_obs, m.vec, nu.vec, range, sigma, 
     h2 = seq(from=0,to=max(loc),length.out= fact*(N-1)+1)
     D <- as.matrix(dist(loc))
     range <- range * max(loc)    
+    print("StateSpace")
+    print(paste("N = ",N))
+    print(paste("n_obs = ", n_obs))
+    print(paste("Domain length = ", max(loc)))
+    print(paste("range = ", range))    
     for(i in 1:length(nu.vec)) {
         cat(i/length(nu.vec)," ")
         nu <- nu.vec[i]
@@ -78,7 +88,7 @@ compute_distances_statespace <- function(N, n_obs, m.vec, nu.vec, range, sigma, 
                 } else{
                     l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
                     sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))                    
-                }
+                }         
             }
         }
     ret <- list(L2 = l2.err, Linf = sup.err)
@@ -93,13 +103,18 @@ compute_distances_statespace <- function(N, n_obs, m.vec, nu.vec, range, sigma, 
 
 # nnGP 
 
-compute_distances_nngp <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_nngp_fun){
+compute_distances_nngp <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_nngp_fun, invert_prec = TRUE){
     N <- N[[1]]
     n_obs <- n_obs[[1]]
     l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
     loc <- seq(0, N/100, length.out = N)
     D <- as.matrix(dist(loc))        
     range <- range * max(loc)    
+    print("NNGP")
+    print(paste("N = ",N))
+    print(paste("n_obs = ", n_obs))
+    print(paste("Domain length = ", max(loc)))
+    print(paste("range = ", range))
     for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
@@ -109,25 +124,19 @@ compute_distances_nngp <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_nngp
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- m_nngp_fun(m, alpha)
-                Q.nn <- tryCatch(get.nnQ(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m), error=function(e){NULL})
-                if(!is.null(Q.nn)){
-                    Sigma_nn <- tryCatch(solve(Q.nn), error=function(e){NULL})
-                    if(!is.null(Sigma_nn)){
-                        if(n_obs < N){
-                            l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,])^2))*(loc[2]-loc[1])
-                            sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,]))      
-                        } else{
-                            l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
-                            sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))                             
-                        }
+                Sigma_nn <- tryCatch(get.nnCov(loc=loc,kappa=kappa,nu=nu,sigma=sigma, n.nbr=m, invert_prec = invert_prec), error=function(e){NULL})
+                if(!is.null(Sigma_nn)){
+                    if(n_obs < N){
+                        l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,])^2))*(loc[2]-loc[1])
+                        sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,]))      
                     } else{
-                        l2.err[i,j] <- NaN
-                        sup.err[i,j] <- NaN
+                        l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
+                        sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))                             
                     }
                 } else{
                     l2.err[i,j] <- NaN
-                    sup.err[i,j] <- NaN                    
-                }
+                    sup.err[i,j] <- NaN
+                }          
             }
     }
     ret <- list(L2 = l2.err, Linf = sup.err)
@@ -147,10 +156,15 @@ compute_distances_pca <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_pca_f
     l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
     loc <- seq(0, N/100, length.out = N)
     D <- as.matrix(dist(loc))     
-    range <- range * max(loc)       
+    range <- range * max(loc)      
+    print("PCA")
+    print(paste("N = ",N))
+    print(paste("n_obs = ", n_obs))
+    print(paste("Domain length = ", max(loc)))
+    print(paste("range = ", range))        
     for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
-            nu <- nu.vec[i]
+            nu <- nu.vec[i]      
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
@@ -165,7 +179,7 @@ compute_distances_pca <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_pca_f
                 } else{
                     l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_KL)^2))*(loc[2]-loc[1])
                     sup.err[i,j] <- max(abs(Sigma.t-Sigma_KL))               
-                }
+                }          
             }
     }
     ret <- list(L2 = l2.err, Linf = sup.err)
@@ -192,7 +206,8 @@ compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, m_k
         D_loc <- as.matrix(dist(kl_loc))
         for(i in 1:length(nu.vec)) {
             nu <- nu.vec[i]
-            cat(i/length(nu.vec)," ")
+            # cat(i/length(nu.vec)," ")
+            print(paste("nu = ",nu))            
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
             cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
@@ -226,9 +241,14 @@ compute_distances_fourier <- function(N, n_obs, m.vec, nu.vec, range, sigma, sam
     loc <- seq(0, N/100, length.out = N)
     D <- as.matrix(dist(loc))        
     range <- range * max(loc)    
+    print("Fourier")
+    print(paste("N = ",N))
+    print(paste("n_obs = ", n_obs))
+    print(paste("Domain length = ", max(loc)))
+    print(paste("range = ", range))       
     for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
-            nu <- nu.vec[i]
+            nu <- nu.vec[i]         
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
@@ -246,7 +266,7 @@ compute_distances_fourier <- function(N, n_obs, m.vec, nu.vec, range, sigma, sam
                 } else{
                     l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_fou)^2))*(loc[2]-loc[1])
                     sup.err[i,j] <-max(abs(Sigma.t-Sigma_fou))
-                }
+                }            
             }
         }
     ret <- list(L2 = l2.err, Linf = sup.err)
