@@ -74,7 +74,7 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
 
     m.vec <- 1:6
     err.nn <- err.rat <- err.pca <- err.fourier <- err.ss <- matrix(0,nrow= length(nu.vec), ncol = length(m.vec))
-
+    range <- range * max(loc)
 
     
     for(i in 1:length(nu.vec)) {
