@@ -7,11 +7,11 @@ m_nngp_fun <- function(m, alpha, n, n.obs){
                 }
             } else if (alpha < 2) {
                 if(n == 5000){
-                    m_vec <- c(1, 2, 15, 23, 28, 33)
+                    m_vec <- c(1, 2, 15, 23, 28, 33) 
                 } else if(n.obs == 5000){
                     m_vec <- c(1, 2, 3, 12, 18, 23)
                 } else if(n.obs == 10000){
-                    m_vec <- c(17, 31, 39, 46, 51, 56)
+                    m_vec <- c(1, 2, 10, 18, 26, 31)
                 } else{
                     stop("not implemented")
                 }
