@@ -12,6 +12,8 @@ source("aux_functions/aux_dist.R")
 ## No calibration were carried out against the parsimonious method.
 
 nu_vec <- seq(from = 0.01, to = 2.95, by = 0.01)
+idx <- (nu_vec + 0.5)%%1 > 1e-10
+nu_vec_rat <- nu_vec[idx]
 sigma = 1
 m <- 1:6
 m_rat <- 0:6
@@ -76,7 +78,7 @@ m_statespace_fun <- function(m, alpha){
 
 range <- 0.2
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_5000_range02_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -97,7 +99,7 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range02_calibrated.RDS
 
 range <- 0.5
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_5000_range05_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -117,7 +119,7 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range05_calibrated.RDS
 
 range <- 1
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_5000_range1_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -197,7 +199,7 @@ m_statespace_fun <- function(m, alpha){
 
 range <- 0.2
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_10000_5000_range02_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -218,7 +220,7 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range02_calibrat
 
 range <- 0.5
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_10000_5000_range05_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -238,7 +240,7 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range05_calibrat
 
 range <- 1
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_10000_5000_range1_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -319,7 +321,7 @@ m_statespace_fun <- function(m, alpha){
 
 range <- 0.2
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_10000_10000_range02_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -340,7 +342,7 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_10000_range02_calibra
 
 range <- 0.5
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_10000_10000_range05_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
@@ -360,7 +362,7 @@ saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_10000_range05_calibra
 
 range <- 1
 
-dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec, range=range, sigma=sigma)
+dist_rat <- compute_distances_rational(N=N, n_obs = n_obs, m.vec=m_rat, nu.vec=nu_vec_rat, range=range, sigma=sigma)
 saveRDS(dist_rat, "distance_tables/raw_tables/dist_rational_10000_10000_range1_calibrated.RDS")
 
 dist_nngp <- compute_distances_nngp(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_nngp_fun = m_nngp_fun)
