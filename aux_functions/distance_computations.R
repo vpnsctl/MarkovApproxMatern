@@ -1,13 +1,15 @@
 # Computes L2 and Linfinity distances for the rational approximation (our method)
+# Range is percentage of domain length
+
 
 compute_distances_rational <- function(N, n_obs, m.vec, nu.vec, range, sigma){
-    L2dist <- list()
-    Linfdist <- list()
+    print("rational")
     N <- N[[1]]
     n_obs <- n_obs[[1]]
     loc <- seq(0, N/100, length.out = N)
     D <- as.matrix(dist(loc))  
     l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
+    range <- range * max(loc)
     for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
@@ -41,58 +43,64 @@ compute_distances_rational <- function(N, n_obs, m.vec, nu.vec, range, sigma){
     attr(ret, "type") <- "Rational"
     attr(ret, "nu.vec") <- nu.vec
     attr(ret, "m.vec") <- m.vec
+    attr(ret, "N") <- N
+    attr(ret, "n_obs") <- n_obs    
     return(ret)
 }
 
 # Statespace
 
-compute_distances_statespace <- function(N, m.vec, nu.vec, range, sigma, flim = 2, fact = 100, m_statespace_fun){
-    L2dist <- list()
-    Linfdist <- list()
-    for(n_loc in N){
-        l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
-        loc <- seq(0, 1, length.out = n_loc+1)
-        ind = 1 + fact*(0:n_loc)
-        h2 = seq(from=0,to=1,length.out= fact*n_loc+1)
-        D <- as.matrix(dist(loc))
-        for(i in 1:length(nu.vec)) {
-            cat(i/length(nu.vec)," ")
-            nu <- nu.vec[i]
-            alpha <- nu + 0.5  
-            kappa <- sqrt(8*nu)/range
-            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=1)
-            for(j in 1:length(m.vec)){
+compute_distances_statespace <- function(N, n_obs, m.vec, nu.vec, range, sigma, flim = 2, fact = 100, m_statespace_fun){
+    N <- N[[1]]
+    n_obs <- n_obs[[1]]
+    l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
+    loc <- seq(0, N/100, length.out = N)
+    ind = 1 + fact*(0:(N-1))
+    h2 = seq(from=0,to=max(loc),length.out= fact*(N-1)+1)
+    D <- as.matrix(dist(loc))
+    range <- range * max(loc)    
+    for(i in 1:length(nu.vec)) {
+        cat(i/length(nu.vec)," ")
+        nu <- nu.vec[i]
+        alpha <- nu + 0.5  
+        kappa <- sqrt(8*nu)/range
+        Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=1)
+        for(j in 1:length(m.vec)){
                 m = m.vec[j]
                 m <- m_statespace_fun(m, alpha)
                 coeff <- spec.coeff(kappa,alpha,m)
                 S1 <- ab2spec(coeff$a,coeff$b,h2, flim = flim)
                 r1 <- S2cov(S1,h2,flim = flim)
                 Sigma_nn <- toeplitz(r1[ind] * sigma^2)
-                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
-                sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))
+                if(n_obs < N){
+                    l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,])^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,]))
+                } else{
+                    l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))                    
+                }
             }
         }
-        L2dist[[as.character(n_loc)]] <- l2.err
-        Linfdist[[as.character(n_loc)]] <- sup.err
-    }
-    ret <- list(L2 = L2dist, Linf = Linfdist)
+    ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "State-Space"
     attr(ret, "nu.vec") <- nu.vec
     attr(ret, "m.vec") <- m.vec    
+    attr(ret, "N") <- N
+    attr(ret, "n_obs") <- n_obs
     return(ret)
 }
 
 
 # nnGP 
 
-compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, m_nngp_fun){
-    L2dist <- list()
-    Linfdist <- list()
-    for(n_loc in N){
-        l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
-        loc <- seq(0, 1, length.out = n_loc+1)
-        D <- as.matrix(dist(loc))        
-        for(i in 1:length(nu.vec)) {
+compute_distances_nngp <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_nngp_fun){
+    N <- N[[1]]
+    n_obs <- n_obs[[1]]
+    l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
+    loc <- seq(0, N/100, length.out = N)
+    D <- as.matrix(dist(loc))        
+    range <- range * max(loc)    
+    for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
@@ -105,8 +113,13 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, m_nngp_fun){
                 if(!is.null(Q.nn)){
                     Sigma_nn <- tryCatch(solve(Q.nn), error=function(e){NULL})
                     if(!is.null(Sigma_nn)){
-                        l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
-                        sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))      
+                        if(n_obs < N){
+                            l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,])^2))*(loc[2]-loc[1])
+                            sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_nn[1:n_obs,]))      
+                        } else{
+                            l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_nn)^2))*(loc[2]-loc[1])
+                            sup.err[i,j] <- max(abs(Sigma.t-Sigma_nn))                             
+                        }
                     } else{
                         l2.err[i,j] <- NaN
                         sup.err[i,j] <- NaN
@@ -116,27 +129,26 @@ compute_distances_nngp <- function(N, m.vec, nu.vec, range, sigma, m_nngp_fun){
                     sup.err[i,j] <- NaN                    
                 }
             }
-        }
-        L2dist[[as.character(n_loc)]] <- l2.err
-        Linfdist[[as.character(n_loc)]] <- sup.err
     }
-    ret <- list(L2 = L2dist, Linf = Linfdist)
+    ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "nnGP"
     attr(ret, "nu.vec") <- nu.vec
     attr(ret, "m.vec") <- m.vec    
+    attr(ret, "N") <- N
+    attr(ret, "n_obs") <- n_obs    
     return(ret)
 }
 
 # PCA
 
-compute_distances_pca <- function(N, m.vec, nu.vec, range, sigma, m_pca_fun){
-    L2dist <- list()
-    Linfdist <- list()
-    for(n_loc in N){
-        l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
-        loc <- seq(0, 1, length.out = n_loc)
-        D <- as.matrix(dist(loc))        
-        for(i in 1:length(nu.vec)) {
+compute_distances_pca <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_pca_fun){
+    N <- N[[1]]
+    n_obs <- n_obs[[1]]
+    l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
+    loc <- seq(0, N/100, length.out = N)
+    D <- as.matrix(dist(loc))     
+    range <- range * max(loc)       
+    for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
@@ -147,17 +159,21 @@ compute_distances_pca <- function(N, m.vec, nu.vec, range, sigma, m_pca_fun){
                 m = m.vec[j]
                 m <- m_pca_fun(m, alpha)
                 Sigma_KL <- KL_matern(m=m, eigen_cov = eigen_cov)    
-                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_KL)^2))*(loc[2]-loc[1])
-                sup.err[i,j] <- max(abs(Sigma.t-Sigma_KL))               
+                if(n_obs < N){
+                    l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_KL[1:n_obs,])^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_KL[1:n_obs,]))                           
+                } else{
+                    l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_KL)^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t-Sigma_KL))               
+                }
             }
-        }
-        L2dist[[as.character(n_loc)]] <- l2.err
-        Linfdist[[as.character(n_loc)]] <- sup.err
     }
-    ret <- list(L2 = L2dist, Linf = Linfdist)
+    ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "PCA"
     attr(ret, "nu.vec") <- nu.vec
     attr(ret, "m.vec") <- m.vec    
+    attr(ret, "N") <- N
+    attr(ret, "n_obs") <- n_obs    
     return(ret)
 }
 
@@ -203,14 +219,14 @@ compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, m_k
 
 
 # Fourier
-compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, m_fourier_fun){
-    L2dist <- list()
-    Linfdist <- list()
-    for(n_loc in N){
-        l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
-        loc <- seq(0, 1, length.out = n_loc+1)
-        D <- as.matrix(dist(loc))        
-        for(i in 1:length(nu.vec)) {
+compute_distances_fourier <- function(N, n_obs, m.vec, nu.vec, range, sigma, samples, m_fourier_fun){
+    N <- N[[1]]
+    n_obs <- n_obs[[1]]
+    l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
+    loc <- seq(0, N/100, length.out = N)
+    D <- as.matrix(dist(loc))        
+    range <- range * max(loc)    
+    for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]
             alpha <- nu + 0.5  
@@ -224,16 +240,20 @@ compute_distances_fourier <- function(N, m.vec, nu.vec, range, sigma, samples, m
                     Sigma_fou <- Sigma_fou + ff.approx(m=m, kappa=kappa, alpha = alpha, loc = loc) * sigma^2      
                 }
                 Sigma_fou <- Sigma_fou/samples
-                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_fou)^2))*(loc[2]-loc[1])
-                sup.err[i,j] <-max(abs(Sigma.t-Sigma_fou))
+                if(n_obs < N){
+                    l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_fou[1:n_obs,])^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <-max(abs(Sigma.t[1:n_obs,]-Sigma_fou[1:n_obs,]))                    
+                } else{
+                    l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_fou)^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <-max(abs(Sigma.t-Sigma_fou))
+                }
             }
         }
-        L2dist[[as.character(n_loc)]] <- l2.err
-        Linfdist[[as.character(n_loc)]] <- sup.err
-    }
-    ret <- list(L2 = L2dist, Linf = Linfdist)
+    ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "Fourier"
     attr(ret, "nu.vec") <- nu.vec
     attr(ret, "m.vec") <- m.vec    
+    attr(ret, "N") <- N
+    attr(ret, "n_obs") <- n_obs    
     return(ret)
 }

@@ -1,61 +1,16 @@
-## Calibrations:
-
-# NNGP (calibrations for m from 2 to 6):
-# N = n_obs = 5000 
-# (prediction) 
-# 1 < alpha < 2: 2, 17, 20, 27, 30
-# 2 < alpha < 3: 28, 37, 47, 52, 56
-# (sampling) - including build the precision
-# 1 < alpha < 2: 2,  9,  19, 22, 28
-# 2 < alpha < 3: 30, 38, ,46, 54, 59
-
-# N = 10000, n_obs = 5000
-# (prediction) 
-# (sampling) 
-# 1 < alpha < 2: 2 2 12 22 29
-# 2 < alpha < 3: 33 44 49 52 60
-
-# N = 10000, n_obs = 10000
-# (prediction) 
-# 1 < alpha < 2: 2  3  9  20 31
-# 2 < alpha < 3: 32 42 48 53 58
-# (sampling) 
-# 1 < alpha < 2: 3 3 3 16 23
-# 2 < alpha < 3: 26 38 49 55 62
-
-
 # NNGP Calibrations
 
 # N= 5000, nobs = 5000 - with 200 replicates
-# alpha01: 1 1 1 1 1 2
-# alpha12: 1 2 13 22 28 32
-# alpha12: 1 2 17 20 27 30
 # alpha12: 1 2 15 23 28 33
-# alpha23: 17 31 39 45 50 55
-# alpha23: 20 28 37 47 52 56
 # alpha23: 17 31 39 46 51 56
 
-
 # N=10000, nobs = 5000 - with 200 replicates
-# alpha01: 1 1 1 1 1 1
-# alpha12: 1  1  1  2 15 21
-# alpha12: 1  1  1  2 16 22
-# alpha12: 1  1  1  6 16 22
-# alpha12: 1  2  3  6 16 22
-# alpha12: 1  1  1 12 18 23
-# alpha23: 15 23 33 43 51 56 (descarta primeiro)
-# alpha23: 15 24 32 39 48 53
-# alpha23: 15 24 35 43 51 58
+# alpha12: 1  1  1 12 18 23 -> 1 2 3 12 18 23
+# alpha23: 15 23 33 43 50 56
 
 # N=10000, nobs = 10000 - with 200 replicates
-# alpha01: 1 1 1 1 1 1
-# alpha12: 1 2 6 18 25 30
-# alpha12: 1 2 3 9  20 31
-# alpha12: 1 2 8 18 26 31
-# alpha12: 1 1 10 18 26 31
-# alpha23: 15 29 40 46 52 57
-# alpha23: 15 31 40 46 52 56
-# alpha23: 16 30 39 47 54 60
+# alpha12: 1 1 10 18 26 31 -> 1 2 10 18 26 31
+# alpha23: 15 31 40 48 55 60
 
 # PCA Calibrations
 

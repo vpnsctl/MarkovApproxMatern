@@ -96,6 +96,7 @@ We will now provide the settings we will be computing the $L_2$ and $L_\infty$ d
 
 ```{r}
 N <- 1000
+n_obs <- 500
 
 nu_vec=seq(0.1,2.9, by = 0.1)
 idx <- (nu_vec + 0.5)%%1 > 1e-10
