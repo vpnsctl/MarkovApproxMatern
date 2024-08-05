@@ -95,9 +95,7 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
         kappa = sqrt(8*nu)/range
         Sigma <- rSPDE::matern.covariance(h=Dists,kappa=kappa,nu=nu,sigma=sigma)
         cat("Eigen expansion\n")
-        eigen_cov <- eigen(Sigma)
-        obs.ind <- 1:n.obs
-        R <- chol(Sigma[obs.ind,obs.ind])        
+        eigen_cov <- eigen(Sigma)   
         for(kk in 1:n.rep) {
             cat(i/length(nu.vec), kk, "True pred\n")
             obs.ind <- sort(sample(1:n)[1:n.obs])
