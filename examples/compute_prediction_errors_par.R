@@ -10,15 +10,15 @@ cores=10
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
-range = 2
+range = 0.2
 sigma = 1
 sigma.e <- 0.1
 n <- 5000
 n.obs <- 5000
-n.rep <- 1
+n.rep <- 100
 samples.fourier <- 100
 #loc <- seq(0,n/100,length.out=n)
-loc <- seq(0,10,length.out=n)
+loc <- seq(0,n/100,length.out=n)
 
 Dists <- as.matrix(dist(loc))
 
@@ -30,6 +30,9 @@ iterations <- length(nu.vec)
 pb <- txtProgressBar(max = iterations, style = 3)
 progress <- function(n) setTxtProgressBar(pb, n)
 opts <- list(progress = progress)
+
+
+### Full
 
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
@@ -80,3 +83,26 @@ lines(nu.vec,err.ss[,2], col = 2,lty=5)
 lines(nu.vec,err.ss[,3], col = 3,lty=5)
 lines(nu.vec,err.ss[,4], col = 4,lty=5)
 lines(nu.vec,err.ss[,5], col = 5,lty=5)
+
+
+
+
+
+
+
+### NO PCA + No Fourier
+
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.ss <- rbind(err.ss, res[[i]]$err.ss)
+    err.nn <- rbind(err.ss, res[[i]]$err.nn)
+    err.rat <- rbind(err.ss, res[[i]]$err.rat)
+    
+}
