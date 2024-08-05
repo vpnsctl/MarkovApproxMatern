@@ -20,6 +20,7 @@ Dists <- as.matrix(dist(loc))
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 #nu.vec <- c(0.3,1.3,1.4)
+nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
 
 iterations <- length(nu.vec)
@@ -105,7 +106,7 @@ sigma.e <- 0.1
 
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
-#nu.vec <- c(0.3,1.3,1.4)
+nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
 
 iterations <- length(nu.vec)
