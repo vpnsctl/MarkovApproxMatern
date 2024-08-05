@@ -323,17 +323,28 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 #########################
                 cat(kk, j, "Rational\n")
                 if((nu + 0.5)%%1 > 1e-10){
-                    Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
+                    Qrat <- tryCatch(rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
                                                              cumsum = TRUE, ordering = "location",
-                                                             type_rational = "brasil", type_interp =  "spline")    
-
-                    A_obs <- Qrat$A[obs.ind,]
-                    A_mat = Matrix::t(A_obs)
-                    Q_xgiveny <-(A_mat%*% (A_obs))/sigma.e^2 + Qrat$Q
-                    post_y <- (A_mat%*% Y)/sigma.e^2
-                    R <- Matrix::Cholesky(Q_xgiveny, perm = FALSE)         
-                    mu_xgiveny <- Matrix::solve(R, post_y, system = "A")
-                    mu.rat <-  Qrat$A %*% mu_xgiveny
+                                                             type_rational = "brasil", type_interp =  "spline"), error=function(e){NULL})
+                    if(!is.null(Qrat)){
+                        A_obs <- Qrat$A[obs.ind,]
+                        A_mat = Matrix::t(A_obs)
+                        Q_xgiveny <-(A_mat%*% (A_obs))/sigma.e^2 + Qrat$Q
+                        post_y <- (A_mat%*% Y)/sigma.e^2
+                        R <- tryCatch(Matrix::Cholesky(Q_xgiveny, perm = FALSE) , error=function(e){NULL})
+                        if(!is.null(R)){
+                            mu_xgiveny <- tryCatch(Matrix::solve(R, post_y, system = "A"), error=function(e){NULL})
+                            if(!is.null(mu_xgiveny)){
+                                mu.rat <-  Qrat$A %*% mu_xgiveny
+                            } else{
+                                mu.rat <- NaN
+                            }
+                        } else{
+                            mu.rat <- NaN
+                        }
+                    } else{
+                        mu.rat <- NaN
+                    }
 
                     err.rat[1,j] <- err.rat[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
                 }
@@ -343,12 +354,19 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 #########################
 
                 mn <- m_nngp_fun(m, alpha, n, n.obs)
-
-                Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn)
-                Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
-                mu.nn <- solve(Qhat, Y/sigma.e^2)
-                Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
-                mu.nn <- Bp%*%mu.nn
+                Qnn <- tryCatch(get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn), error=function(e){NULL})
+                if(!is.null(Qnn)){
+                    Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
+                    mu.nn <- tryCatch(solve(Qhat, Y/sigma.e^2), error=function(e){NULL})
+                    Bp <- tryCatch(get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B, error=function(e){NULL})
+                    if(!is.null(mu.nn) && !is.null(Bp)){
+                        mu.nn <- Bp%*%mu.nn
+                    } else{
+                        mu.nn <- NaN
+                    }
+                } else{
+                    mu.nn <- NaN
+                }
 
                 err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
                 
