@@ -11,7 +11,7 @@ cores=15
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
-range = 0.2
+range = 0.2 # Percentage of domain length
 sigma = 1
 sigma.e <- 0.1
 n <- 5000
@@ -37,7 +37,9 @@ opts <- list(progress = progress)
 
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
+    res <- error.computations(range = range, sigma = sigma, sigma.e = sigma.e, 
+    n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists,
+    n.rep = n.rep)
     return(res)
 }
 
@@ -95,7 +97,7 @@ lines(nu.vec,err.ss[,5], col = 5,lty=5)
 
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
+    res <- error.computations_nopca_nofourier(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
     return(res)
 }
 
@@ -108,12 +110,6 @@ for(i in 1:length(res)) {
     
 }
 
+res_5000_pred <- list(nu = nu, err.ss = err.ss, err.nn = err.nn, err.rat = err.rat)
 
-
-### test
-
-
-res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_test(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
-    return(res)
-}
+saveRDS(res_5000_pred, "pred_tables/res_5000_range02.RDS")
