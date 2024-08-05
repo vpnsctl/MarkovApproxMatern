@@ -6,12 +6,12 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores=15
+cores=14
 
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
-range = 0.2 # Percentage of domain length
+range = 0.5 # Percentage of domain length
 sigma = 1
 sigma.e <- 0.1
 n <- 5000
@@ -112,4 +112,4 @@ for(i in 1:length(res)) {
 
 res_5000_pred <- list(nu = nu, err.ss = err.ss, err.nn = err.nn, err.rat = err.rat)
 
-saveRDS(res_5000_pred, "pred_tables/res_5000_range02.RDS")
+saveRDS(res_5000_pred, "pred_tables/res_5000_range05_rat_nngp_ss.RDS")
