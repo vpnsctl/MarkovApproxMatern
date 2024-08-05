@@ -286,7 +286,7 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
 
 
 
-error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, loc, nu, m.vec, Dists, n.rep) {
+error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.obs, loc, nu, m.vec, Dists, n.rep) {
 
     m.vec <- 1:6
     err.nn <- err.rat <- err.ss <- matrix(0,nrow=1, ncol = length(m.vec))
@@ -295,39 +295,39 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
     alpha <- nu + 1/2
     kappa = sqrt(8*nu)/range
     Sigma <- rSPDE::matern.covariance(h=Dists,kappa=kappa,nu=nu,sigma=sigma)
-
+    loc2 <- loc - loc[1]
     for(kk in 1:n.rep) {
             cat(kk, "True pred\n")
             obs.ind <- sort(sample(1:n)[1:n.obs])
             t1 <- Sys.time()
             Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc)
-            t2 <- Sys.time()
-            print("sampling time")
-            print(t2 - t2)
-            t1 <- Sys.time()
-            Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
-            t2 <- Sys.time()
-            print("Subsetting time")
-            print(t2-t1)
-            mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
-            t1 <- Sys.time()
-            print("True pred time")
-            print(t1-t2)
-            loc2 <- loc - loc[1]
-            acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
+            # t2 <- Sys.time()
+            # print("sampling time")
+            # print(t2 - t2)
+            # t1 <- Sys.time()
+            # Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
+            # t2 <- Sys.time()
+            # print("Subsetting time")
+            # print(t2-t1)
+            # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+            # t1 <- Sys.time()
+            # print("True pred time")
+            # print(t1-t2)
+
+            acf = rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
             acf <- as.vector(acf)
             acf[1] = acf[1]+sigma.e^2
-            acf2 =rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
+            acf2 =rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
             acf2 =as.vector(acf2)
             Tz <- SuperGauss::Toeplitz$new(acf = acf)
             Tz2 <- SuperGauss::Toeplitz$new(acf = acf2)
             d_tmp = Tz$solve(Y)
-            mu_tmp = Tz2$prod(d_tmp)
-            t3 <- Sys.time()
-            print("Toeplitz")
-            print(t3-t1)
-            print("error toep")
-            print(sum((mu-mu_tmp)^2))
+            mu = Tz2$prod(d_tmp)
+            # t3 <- Sys.time()
+            # print("Toeplitz")
+            # print(t3-t1)
+            # print("error toep")
+            # print(sum((mu-mu_tmp)^2))
 
             for(j in 1:length(m.vec)) { 
                 
@@ -374,33 +374,33 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
                 err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
                 
 
-                ########################
-                # Statespace prediction
-                #######################
-                cat(kk, j, "Statespace\n")
-                t1 <- Sys.time()
-                ind = 1 + 100*(0:(n-1))
-                h2 = seq(from=0,to=max(loc),length.out=100*(n-1)+1)
+                # ########################
+                # # Statespace prediction
+                # #######################
+                # cat(kk, j, "Statespace\n")
+                # t1 <- Sys.time()
+                # ind = 1 + 100*(0:(n-1))
+                # h2 = seq(from=0,to=max(loc),length.out=100*(n-1)+1)
                 
-                mn <- max(c(1,m - floor(alpha)))
-                coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,mn)
-                S1 <- ab2spec(coeff$a,coeff$b,h2, flim = 2)
-                r1 <- S2cov(S1,h2,flim = 2)
-                acf <- r1[ind]
-                acf <- acf * sigma^2
-                cov_mat <- toeplitz(acf, symmetric=TRUE)
-                acf2 <- acf
-                acf2[1] <- acf2[1] + sigma.e^2
-                cov_mat_nugget <-  toeplitz(as.vector(acf2), symmetric=TRUE)
-                cov_mat_nugget <- cov_mat_nugget[obs.ind,obs.ind]
-                d <- solve(cov_mat_nugget, Y)
-                cov_mat <- cov_mat[, obs.ind]
-                mu.ss <- cov_mat%*%d
-                t2 <- Sys.time()
-                print("Statespace time")
-                print(t2 - t1)
+                # mn <- max(c(1,m - floor(alpha)))
+                # coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,mn)
+                # S1 <- ab2spec(coeff$a,coeff$b,h2, flim = 2)
+                # r1 <- S2cov(S1,h2,flim = 2)
+                # acf <- r1[ind]
+                # acf <- acf * sigma^2
+                # cov_mat <- toeplitz(acf, symmetric=TRUE)
+                # acf2 <- acf
+                # acf2[1] <- acf2[1] + sigma.e^2
+                # cov_mat_nugget <-  toeplitz(as.vector(acf2), symmetric=TRUE)
+                # cov_mat_nugget <- cov_mat_nugget[obs.ind,obs.ind]
+                # d <- solve(cov_mat_nugget, Y)
+                # cov_mat <- cov_mat[, obs.ind]
+                # mu.ss <- cov_mat%*%d
+                # t2 <- Sys.time()
+                # print("Statespace time")
+                # print(t2 - t1)
                 
-                err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
+                # err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
             }
     }
     return(list(err.nn = err.nn, 
