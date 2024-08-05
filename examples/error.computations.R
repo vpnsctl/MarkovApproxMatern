@@ -70,6 +70,17 @@ m_pca_fun <- function(m, alpha, n, n.obs){
 }
 
 
+sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc){
+    loc <- loc - loc[1]
+    acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
+    acf <- as.vector(acf)    
+    y <- matrix(rnorm(N), ncol = N, nrow = 1)
+    sim <- SuperGauss::cholZX(Z = t(y), acf = acf)
+    sim <- sim + sigma.e*rnorm(length(sim))
+    sim <- sim[obs.ind]
+    return(sim)
+}
+
 error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec, m.vec, Dists) {
 
     m.vec <- 1:6
@@ -88,9 +99,10 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
         for(kk in 1:n.rep) {
             cat(i/length(nu.vec), kk, "True pred\n")
             obs.ind <- sort(sample(1:n)[1:n.obs])
-            R <- chol(Sigma[obs.ind,obs.ind])
-            X <- t(R)%*%rnorm(n.obs)
-            Y <- X + sigma.e*rnorm(n.obs)
+            # R <- chol(Sigma[obs.ind,obs.ind])
+            # X <- t(R)%*%rnorm(n.obs)
+            # Y <- X + sigma.e*rnorm(n.obs)
+            Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc)
             Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
             mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
             
