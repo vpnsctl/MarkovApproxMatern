@@ -297,12 +297,38 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
     Sigma <- rSPDE::matern.covariance(h=Dists,kappa=kappa,nu=nu,sigma=sigma)
 
     for(kk in 1:n.rep) {
-            cat(i/length(nu.vec), kk, "True pred\n")
+            cat(kk, "True pred\n")
             obs.ind <- sort(sample(1:n)[1:n.obs])
+            t1 <- Sys.time()
             Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc)
+            t2 <- Sys.time()
+            print("sampling time")
+            print(t2 - t2)
+            t1 <- Sys.time()
             Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
+            t2 <- Sys.time()
+            print("Subsetting time")
+            print(t2-t1)
             mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
-            
+            t1 <- Sys.time()
+            print("True pred time")
+            print(t1-t2)
+            loc2 <- loc - loc[1]
+            acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
+            acf <- as.vector(acf)
+            acf[1] = acf[1]+sigma.e^2
+            acf2 =rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
+            acf2 =as.vector(acf2)
+            Tz <- SuperGauss::Toeplitz$new(acf = acf)
+            Tz2 <- SuperGauss::Toeplitz$new(acf = acf2)
+            d_tmp = Tz$solve(Y)
+            mu_tmp = Tz2$prod(d_tmp)
+            t3 <- Sys.time()
+            print("Toeplitz")
+            print(t3-t1)
+            print("error toep")
+            print(sum((mu-mu_tmp)^2))
+
             for(j in 1:length(m.vec)) { 
                 
                 m <- m.vec[j]
@@ -310,8 +336,9 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
                 #########################
                 ## Rational prediction
                 #########################
-                cat(i/length(nu.vec), kk, j, "Rational\n")
+                cat(kk, j, "Rational\n")
                 if((nu + 0.5)%%1 > 1e-10){
+                    t1 <- Sys.time()
                     Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
                                                              cumsum = TRUE, ordering = "location",
                                                              type_rational = "brasil", type_interp =  "spline")    
@@ -323,6 +350,9 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
                     R <- Matrix::Cholesky(Q_xgiveny, perm = FALSE)         
                     mu_xgiveny <- Matrix::solve(R, post_y, system = "A")
                     mu.rat <-  Qrat$A %*% mu_xgiveny
+                    t2 <- Sys.time()
+                    print("Rational time")
+                    print(t2 - t1)
 
                     err.rat[1,j] <- err.rat[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
                 }
@@ -332,20 +362,23 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
                 #########################
 
                 mn <- m_nngp_fun(m, alpha, n, n.obs)
-                
+                t1 <- Sys.time()
                 Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn)
                 Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
                 mu.nn <- solve(Qhat, Y/sigma.e^2)
                 Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
                 mu.nn <- Bp%*%mu.nn
-                
+                t2 <- Sys.time()
+                print("nngp time")
+                print(t2 -t1)
                 err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
                 
 
                 ########################
                 # Statespace prediction
                 #######################
-                cat(i/length(nu.vec), kk, j, "Statespace\n")
+                cat(kk, j, "Statespace\n")
+                t1 <- Sys.time()
                 ind = 1 + 100*(0:(n-1))
                 h2 = seq(from=0,to=max(loc),length.out=100*(n-1)+1)
                 
@@ -363,6 +396,9 @@ error.computations_nopca_nofourier <- function(range, sigma, sigma.e, n, n.obs, 
                 d <- solve(cov_mat_nugget, Y)
                 cov_mat <- cov_mat[, obs.ind]
                 mu.ss <- cov_mat%*%d
+                t2 <- Sys.time()
+                print("Statespace time")
+                print(t2 - t1)
                 
                 err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
             }
