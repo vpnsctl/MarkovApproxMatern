@@ -14,12 +14,7 @@ registerDoSNOW(cl)
 range = 0.2 # Percentage of domain length
 sigma = 1
 sigma.e <- 0.1
-n <- 5000
-n.obs <- 5000
-n.rep <- 100
-samples.fourier <- 100
-#loc <- seq(0,n/100,length.out=n)
-loc <- seq(0,n/100,length.out=n)
+
 
 Dists <- as.matrix(dist(loc))
 
@@ -93,22 +88,162 @@ lines(nu.vec,err.ss[,5], col = 5,lty=5)
 
 
 
-### NO PCA + No Fourier
+### NO PCA + No Fourier + No SS + n = n_obs (to use fast methods)
 
+n <- 5000
+n.obs <- 5000
+n.rep <- 100
+loc <- seq(0,n/100,length.out=n)
+
+range <- 0.2
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
     return(res)
 }
 
 err.ss <- err.nn <- err.rat <- nu <- NULL
 for(i in 1:length(res)) {
     nu <- c(nu, res[[i]]$nu)
-    err.nn <- rbind(err.ss, res[[i]]$err.nn)
-    err.rat <- rbind(err.ss, res[[i]]$err.rat)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
     
 }
 
 res_5000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
 
 saveRDS(res_5000_pred, "pred_tables/res_5000_range02_rat_nngp.RDS")
+
+## 
+
+n <- 5000
+n.obs <- 5000
+n.rep <- 100
+loc <- seq(0,n/100,length.out=n)
+range <- 0.5
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
+    
+}
+
+res_5000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
+
+saveRDS(res_5000_pred, "pred_tables/res_5000_range05_rat_nngp.RDS")
+
+
+
+## 
+
+n <- 5000
+n.obs <- 5000
+n.rep <- 100
+loc <- seq(0,n/100,length.out=n)
+range <- 1
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
+    
+}
+
+res_5000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
+
+saveRDS(res_5000_pred, "pred_tables/res_5000_range1_rat_nngp.RDS")
+
+
+
+
+## 
+
+n <- 10000
+n.obs <- 10000
+n.rep <- 100
+loc <- seq(0,n/100,length.out=n)
+range <- 0.2
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
+    
+}
+
+res_10000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
+
+saveRDS(res_10000_pred, "pred_tables/res_10000_10000_range02_rat_nngp.RDS")
+
+
+
+## 
+
+n <- 10000
+n.obs <- 10000
+n.rep <- 100
+loc <- seq(0,n/100,length.out=n)
+range <- 0.5
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
+    
+}
+
+res_10000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
+
+saveRDS(res_10000_pred, "pred_tables/res_10000_10000_range05_rat_nngp.RDS")
+
+
+
+## 
+
+n <- 10000
+n.obs <- 10000
+n.rep <- 100
+loc <- seq(0,n/100,length.out=n)
+range <- 1
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
+    
+}
+
+res_10000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
+
+saveRDS(res_10000_pred, "pred_tables/res_10000_10000_range1_rat_nngp.RDS")

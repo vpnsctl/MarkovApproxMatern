@@ -286,7 +286,9 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
 
 
 
-error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.obs, loc, nu, m.vec, Dists, n.rep) {
+error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, sigma.e, n, loc, nu, m.vec, n.rep) {
+
+    set.seed(123)
 
     m.vec <- 1:6
     err.nn <- err.rat <- err.ss <- matrix(0,nrow=1, ncol = length(m.vec))
@@ -294,7 +296,6 @@ error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.
 
     alpha <- nu + 1/2
     kappa = sqrt(8*nu)/range
-    Sigma <- rSPDE::matern.covariance(h=Dists,kappa=kappa,nu=nu,sigma=sigma)
     loc2 <- loc - loc[1]
     acf = rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
     acf <- as.vector(acf)
@@ -306,7 +307,8 @@ error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.
 
     for(kk in 1:n.rep) {
             cat(kk, "True pred\n")
-            obs.ind <- sort(sample(1:n)[1:n.obs])
+            # obs.ind <- sort(sample(1:n)[1:n.obs])
+            obs.ind <- 1:n
             t1 <- Sys.time()
             Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc)
             d_tmp = Tz$solve(Y)
@@ -388,4 +390,103 @@ error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.
 
 
 
+
+
+
+
+
+
+
+error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.obs, loc, nu, m.vec, Dists, n.rep) {
+
+    set.seed(123)
+    m.vec <- 1:6
+    err.nn <- err.rat <- err.ss <- matrix(0,nrow=1, ncol = length(m.vec))
+    range <- range * max(loc)
+
+    alpha <- nu + 1/2
+    kappa = sqrt(8*nu)/range
+    Sigma <- rSPDE::matern.covariance(h=Dists,kappa=kappa,nu=nu,sigma=sigma)
+
+    for(kk in 1:n.rep) {
+            cat(kk, "True pred\n")
+            obs.ind <- sort(sample(1:n)[1:n.obs])
+            Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc)
+
+            Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
+            mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)            
+
+            for(j in 1:length(m.vec)) { 
+                
+                m <- m.vec[j]
+                
+                #########################
+                ## Rational prediction
+                #########################
+                cat(kk, j, "Rational\n")
+                if((nu + 0.5)%%1 > 1e-10){
+                    Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
+                                                             cumsum = TRUE, ordering = "location",
+                                                             type_rational = "brasil", type_interp =  "spline")    
+
+                    A_obs <- Qrat$A[obs.ind,]
+                    A_mat = Matrix::t(A_obs)
+                    Q_xgiveny <-(A_mat%*% (A_obs))/sigma.e^2 + Qrat$Q
+                    post_y <- (A_mat%*% Y)/sigma.e^2
+                    R <- Matrix::Cholesky(Q_xgiveny, perm = FALSE)         
+                    mu_xgiveny <- Matrix::solve(R, post_y, system = "A")
+                    mu.rat <-  Qrat$A %*% mu_xgiveny
+
+                    err.rat[1,j] <- err.rat[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
+                }
+
+                #########################
+                ## nngp prediction
+                #########################
+
+                mn <- m_nngp_fun(m, alpha, n, n.obs)
+
+                Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn)
+                Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
+                mu.nn <- solve(Qhat, Y/sigma.e^2)
+                Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
+                mu.nn <- Bp%*%mu.nn
+
+                err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
+                
+
+                # ########################
+                # # Statespace prediction
+                # #######################
+                # cat(kk, j, "Statespace\n")
+                # t1 <- Sys.time()
+                # ind = 1 + 100*(0:(n-1))
+                # h2 = seq(from=0,to=max(loc),length.out=100*(n-1)+1)
+                
+                # mn <- max(c(1,m - floor(alpha)))
+                # coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,mn)
+                # S1 <- ab2spec(coeff$a,coeff$b,h2, flim = 2)
+                # r1 <- S2cov(S1,h2,flim = 2)
+                # acf <- r1[ind]
+                # acf <- acf * sigma^2
+                # cov_mat <- toeplitz(acf, symmetric=TRUE)
+                # acf2 <- acf
+                # acf2[1] <- acf2[1] + sigma.e^2
+                # cov_mat_nugget <-  toeplitz(as.vector(acf2), symmetric=TRUE)
+                # cov_mat_nugget <- cov_mat_nugget[obs.ind,obs.ind]
+                # d <- solve(cov_mat_nugget, Y)
+                # cov_mat <- cov_mat[, obs.ind]
+                # mu.ss <- cov_mat%*%d
+                # t2 <- Sys.time()
+                # print("Statespace time")
+                # print(t2 - t1)
+                
+                # err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
+            }
+    }
+    return(list(err.nn = err.nn, 
+                err.rat = err.rat,  
+                err.ss = err.ss,
+                nu = nu.vec))    
+}
 
