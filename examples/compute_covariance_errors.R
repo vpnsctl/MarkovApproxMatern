@@ -31,10 +31,10 @@ m_nngp_fun <- function(m, alpha){
                     mn <- 1
                 }
             } else if (alpha < 2) {
-                m_vec <- c(1, 2, 3, 12, 18, 23)
+                m_vec <- c(1, 2, 15, 23, 28, 33) 
                 mn <- m_vec[m]
             } else {
-                m_vec <- c(15, 23, 33, 43, 50, 56)
+                m_vec <- c(17, 31, 39, 46, 51, 56)
                 mn <- m_vec[m]
             }
             return(mn)

@@ -6,25 +6,26 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores=detectCores()
+cores=15
+
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
-range = 2
+range = 0.2 # Percentage of domain length
 sigma = 1
 sigma.e <- 0.1
 n <- 5000
 n.obs <- 5000
-n.rep <- 1
+n.rep <- 100
 samples.fourier <- 100
 #loc <- seq(0,n/100,length.out=n)
-loc <- seq(0,10,length.out=n)
+loc <- seq(0,n/100,length.out=n)
 
 Dists <- as.matrix(dist(loc))
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 #nu.vec <- c(0.3,1.3,1.4)
-m.vec <- 2:6
+m.vec <- 1:6
 
 iterations <- length(nu.vec)
 pb <- txtProgressBar(max = iterations, style = 3)
@@ -32,8 +33,13 @@ progress <- function(n) setTxtProgressBar(pb, n)
 opts <- list(progress = progress)
 
 
+### Full
+
+
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
+    res <- error.computations(range = range, sigma = sigma, sigma.e = sigma.e, 
+    n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists,
+    n.rep = n.rep)
     return(res)
 }
 
@@ -80,3 +86,30 @@ lines(nu.vec,err.ss[,2], col = 2,lty=5)
 lines(nu.vec,err.ss[,3], col = 3,lty=5)
 lines(nu.vec,err.ss[,4], col = 4,lty=5)
 lines(nu.vec,err.ss[,5], col = 5,lty=5)
+
+
+
+
+
+
+
+### NO PCA + No Fourier
+
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_nopca_nofourier(range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, loc = loc, nu = nu.vec[i], m.vec = m.vec, Dists = Dists, n.rep = n.rep)
+    return(res)
+}
+
+err.ss <- err.nn <- err.rat <- nu <- NULL
+for(i in 1:length(res)) {
+    nu <- c(nu, res[[i]]$nu)
+    err.ss <- rbind(err.ss, res[[i]]$err.ss)
+    err.nn <- rbind(err.ss, res[[i]]$err.nn)
+    err.rat <- rbind(err.ss, res[[i]]$err.rat)
+    
+}
+
+res_5000_pred <- list(nu = nu, err.ss = err.ss, err.nn = err.nn, err.rat = err.rat)
+
+saveRDS(res_5000_pred, "pred_tables/res_5000_range02.RDS")
