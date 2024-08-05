@@ -6,7 +6,8 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores=10
+cores=15
+
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
@@ -105,4 +106,14 @@ for(i in 1:length(res)) {
     err.nn <- rbind(err.ss, res[[i]]$err.nn)
     err.rat <- rbind(err.ss, res[[i]]$err.rat)
     
+}
+
+
+
+### test
+
+
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
+    res <- error.computations_test(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu.vec[i], m.vec, Dists)
+    return(res)
 }
