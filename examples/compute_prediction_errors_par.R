@@ -104,8 +104,8 @@ res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSP
 err.ss <- err.nn <- err.rat <- nu <- NULL
 for(i in 1:length(res)) {
     nu <- c(nu, res[[i]]$nu)
-    err.nn <- rbind(err.ss, res[[i]]$err.nn)
-    err.rat <- rbind(err.ss, res[[i]]$err.rat)
+    err.nn <- rbind(err.nn, res[[i]]$err.nn)
+    err.rat <- rbind(err.rat, res[[i]]$err.rat)
     
 }
 
