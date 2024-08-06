@@ -286,13 +286,13 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
 
 
 
-error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, sigma.e, n, loc, nu, m.vec, n.rep) {
+error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, sigma.e, n, loc, nu, m.vec, n.rep, folder_to_save) {
 
     set.seed(123)
 
     m.vec <- 1:6
     err.nn <- err.rat <- err.ss <- matrix(0,nrow=1, ncol = length(m.vec))
-    range <- range * max(loc)
+    # range <- range * max(loc)
 
     alpha <- nu + 1/2
     kappa = sqrt(8*nu)/range
@@ -304,6 +304,11 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
     acf2 =as.vector(acf2)
     Tz <- SuperGauss::Toeplitz$new(acf = acf)
     Tz2 <- SuperGauss::Toeplitz$new(acf = acf2)    
+
+    print("range")
+    print(range)
+    print("nu")
+    print(nu)
 
     for(kk in 1:n.rep) {
             cat(kk, "True pred\n")
@@ -323,6 +328,8 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 #########################
                 cat(kk, j, "Rational\n")
                 if((nu + 0.5)%%1 > 1e-10){
+
+                temp <- tryCatch({
                     Qrat <- tryCatch(rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
                                                              cumsum = TRUE, ordering = "location",
                                                              type_rational = "brasil", type_interp =  "spline"), error=function(e){NULL})
@@ -347,12 +354,21 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                     }
 
                     err.rat[1,j] <- err.rat[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
+                    1
+                }, error=function(e){NULL})
+                if(is.null(temp)){
+                    err.rat[1,j] <- NaN
                 }
+                }
+                
+                print("rational")
+                print(err.rat[1,j])
 
                 #########################
                 ## nngp prediction
                 #########################
 
+                temp2 <- tryCatch({
                 mn <- m_nngp_fun(m, alpha, n, n.obs)
                 Qnn <- tryCatch(get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn), error=function(e){NULL})
                 if(!is.null(Qnn)){
@@ -369,6 +385,14 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 }
 
                 err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
+                1
+                }, error = function(e){NULL})
+                if(is.null(temp2)){
+                    err.nn[1,j] <- NaN
+                }
+
+                print("nngp")
+                print(err.nn[1,j])
                 
 
                 # ########################
@@ -400,10 +424,19 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 # err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
             }
     }
-    return(list(err.nn = err.nn, 
+    err.nn <- as.data.frame(err.nn)
+    err.rat <- as.data.frame(err.rat)
+    err.nn[["nu"]] <- nu
+    err.rat[["nu"]] <- nu
+    colnames(err.nn) <- c(as.character(m.vec), "nu")
+    colnames(err.rat) <- c(as.character(m.vec), "nu")
+    res <- list(err.nn = err.nn, 
                 err.rat = err.rat,  
-                err.ss = err.ss,
-                nu = nu.vec))    
+                nu = nu)
+    dir.create(file.path(folder_to_save, "pred_tables"), showWarnings = FALSE)
+    dir.create(file.path(paste0(folder_to_save, "/pred_tables/"), as.character(n)), showWarnings = FALSE)
+    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"/res_",as.character(nu),"_",as.character(n),"_nngp_rat.RDS"))
+    return(res)    
 }
 
 

@@ -20,6 +20,7 @@ Dists <- as.matrix(dist(loc))
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 #nu.vec <- c(0.3,1.3,1.4)
+nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
 
 iterations <- length(nu.vec)
@@ -105,14 +106,14 @@ sigma.e <- 0.1
 
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
-#nu.vec <- c(0.3,1.3,1.4)
+nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
 
 iterations <- length(nu.vec)
 pb <- txtProgressBar(max = iterations, style = 3)
 progress <- function(n) setTxtProgressBar(pb, n)
 opts <- list(progress = progress)
-
+folder_to_save <- getwd()
 
 
 
@@ -123,10 +124,11 @@ n.obs <- 5000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-range <- 0.2
+# range <- 0.2
+range <- 5
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
 
@@ -140,7 +142,7 @@ for(i in 1:length(res)) {
 
 res_5000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
 
-saveRDS(res_5000_pred, "pred_tables/res_5000_range02_rat_nngp.RDS")
+saveRDS(res_5000_pred, "pred_tables/res_5000_range5_rat_nngp.RDS")
 
 ## 
 
@@ -148,10 +150,11 @@ n <- 5000
 n.obs <- 5000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
-range <- 0.5
+# range <- 0.5
+range <- 10
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
 
@@ -175,10 +178,11 @@ n <- 5000
 n.obs <- 5000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
-range <- 1
+# range <- 1
+range <- 20
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
 
@@ -203,10 +207,11 @@ n <- 10000
 n.obs <- 10000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
-range <- 0.2
+# range <- 0.2
+range <- 5
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
 
@@ -230,10 +235,11 @@ n <- 10000
 n.obs <- 10000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
-range <- 0.5
+# range <- 0.5
+range <- 10
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
 
@@ -257,10 +263,11 @@ n <- 10000
 n.obs <- 10000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
-range <- 1
+# range <- 1
+range <- 20
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
-    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep)
+    res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
 
