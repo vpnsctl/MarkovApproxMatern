@@ -346,7 +346,7 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
 
                 temp <- tryCatch({
                     Qrat <- tryCatch(rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
-                                                             cumsum = TRUE, ordering = "location",
+                                                             cumsum = FALSE, ordering = "location",
                                                              type_rational = "brasil", type_interp =  "spline"), error=function(e){NULL})
                     if(!is.null(Qrat)){
                         A_obs <- Qrat$A[obs.ind,]
@@ -456,7 +456,8 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 nu = nu)
     dir.create(file.path(folder_to_save, "pred_tables"), showWarnings = FALSE)
     dir.create(file.path(paste0(folder_to_save, "/pred_tables/"), as.character(n)), showWarnings = FALSE)
-    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"/res_",as.character(nu),"_",as.character(n),"_range_",as.character(range),"_nngp_rat.RDS"))
+    dir.create(file.path(paste0(folder_to_save, "/pred_tables/", as.character(n)),paste0("range_",as.character(range))), showWarnings = FALSE)
+    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"/range_",as.character(range),"/res_",as.character(nu),"_",as.character(n),"_range_",as.character(range),"_nngp_rat.RDS"))
     return(res)    
 }
 
