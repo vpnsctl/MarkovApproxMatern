@@ -435,7 +435,7 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 nu = nu)
     dir.create(file.path(folder_to_save, "pred_tables"), showWarnings = FALSE)
     dir.create(file.path(paste0(folder_to_save, "/pred_tables/"), as.character(n)), showWarnings = FALSE)
-    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"/res_",as.character(nu),"_",as.character(n),"_nngp_rat.RDS"))
+    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"/res_",as.character(nu),"_",as.character(n),"_range_",as.character(range),"_nngp_rat.RDS"))
     return(res)    
 }
 
