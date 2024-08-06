@@ -70,7 +70,7 @@ m_pca_fun <- function(m, alpha, n, n.obs){
 }
 
 
-sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc){
+sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc, Sigma){
     loc <- loc - loc[1]
     acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
     acf <- as.vector(acf)    
@@ -78,6 +78,15 @@ sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc){
     sim <- SuperGauss::cholZX(Z = t(y), acf = acf)
     sim <- sim + sigma.e*rnorm(length(sim))
     sim <- sim[obs.ind]
+    if(any(is.nan(sim))){
+            R <- tryCatch(chol(Sigma[obs.ind,obs.ind]), error=function(e){NULL})
+            if(!is.null(R)){
+                X <- t(R)%*%rnorm(length(obs.ind))
+                sim <- as.vector(X + sigma.e*rnorm(length(obs.ind)))
+            } else{
+                sim <- NULL
+            }
+    }
     return(sim)
 }
 
@@ -305,6 +314,10 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
     Tz <- SuperGauss::Toeplitz$new(acf = acf)
     Tz2 <- SuperGauss::Toeplitz$new(acf = acf2)    
 
+    Sigma <- toeplitz(acf2)
+    Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(length(obs.ind))
+
+
     print("range")
     print(range)
     print("nu")
@@ -315,9 +328,11 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
             # obs.ind <- sort(sample(1:n)[1:n.obs])
             obs.ind <- 1:n
             t1 <- Sys.time()
-            Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc)
-            d_tmp = Tz$solve(Y)
-            mu = Tz2$prod(d_tmp)
+            Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc, Sigma = Sigma)
+            # d_tmp = Tz$solve(Y)
+            # mu = Tz2$prod(d_tmp)
+            if(!is.null(Y)){
+                           mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
 
             for(j in 1:length(m.vec)) { 
                 
@@ -423,6 +438,12 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 
                 # err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
             }
+            } else{
+                err.nn[1,j] <- NaN
+                err.rat[1,j] <- NaN
+                break
+            }
+ 
     }
     err.nn <- as.data.frame(err.nn)
     err.rat <- as.data.frame(err.rat)
