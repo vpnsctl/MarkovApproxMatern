@@ -323,6 +323,8 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 #########################
                 cat(kk, j, "Rational\n")
                 if((nu + 0.5)%%1 > 1e-10){
+
+                temp <- tryCatch({
                     Qrat <- tryCatch(rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
                                                              cumsum = TRUE, ordering = "location",
                                                              type_rational = "brasil", type_interp =  "spline"), error=function(e){NULL})
@@ -347,11 +349,18 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                     }
 
                     err.rat[1,j] <- err.rat[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
+                    1
+                }, error=function(e){NULL})
+                if(is.null(temp)){
+                    err.rat[1,j] <- NaN
+                }
                 }
 
                 #########################
                 ## nngp prediction
                 #########################
+
+                temp2 <- tryCatch({
 
                 mn <- m_nngp_fun(m, alpha, n, n.obs)
                 Qnn <- tryCatch(get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn), error=function(e){NULL})
@@ -369,6 +378,11 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 }
 
                 err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep
+                1
+                }, error = function(e){NULL})
+                if(is.null(temp2)){
+                    err.nn[1,j] <- NaN
+                }
                 
 
                 # ########################
@@ -400,10 +414,15 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 # err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
             }
     }
+    err.nn <- as.data.frame(err.nn)
+    err.rat <- as.data.frame(err.rat)
+    err.nn[["nu"]] <- nu
+    err.rat[["nu"]] <- nu
+    colnames(err.nn) <- c(as.character(m.vec), "nu")
+    colnames(err.rat) <- c(as.character(m.vec), "nu")
     return(list(err.nn = err.nn, 
                 err.rat = err.rat,  
-                err.ss = err.ss,
-                nu = nu.vec))    
+                nu = nu))    
 }
 
 
