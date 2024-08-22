@@ -11,7 +11,7 @@ cores=14
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
 
-range = 0.2 # Percentage of domain length
+range = 0.5 # not relative range
 sigma = 1
 sigma.e <- 0.1
 
@@ -96,7 +96,7 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores=19
+cores=12
 
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
@@ -125,7 +125,7 @@ n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
 # range <- 0.2
-range <- 5
+range <- 0.5
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
@@ -142,7 +142,7 @@ for(i in 1:length(res)) {
 
 res_5000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
 
-saveRDS(res_5000_pred, "pred_tables/res_5000_range5_rat_nngp.RDS")
+saveRDS(res_5000_pred, paste0("pred_tables/res_5000_range",range,"_rat_nngp.RDS"))
 
 ## 
 
@@ -181,7 +181,7 @@ n.obs <- 5000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 # range <- 0.5
-range <- 10
+range <- 1
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
@@ -198,7 +198,7 @@ for(i in 1:length(res)) {
 
 res_5000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
 
-saveRDS(res_5000_pred, "pred_tables/res_5000_range10_rat_nngp.RDS")
+saveRDS(res_5000_pred, paste0("pred_tables/res_5000_range",range,"_rat_nngp.RDS"))
 
 
 
@@ -238,7 +238,7 @@ n.obs <- 5000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 # range <- 1
-range <- 20
+range <- 2
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
@@ -267,7 +267,7 @@ n.obs <- 10000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 # range <- 0.2
-range <- 5
+range <- 0.5
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
@@ -295,7 +295,7 @@ n.obs <- 10000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 # range <- 0.5
-range <- 10
+range <- 1
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
@@ -323,7 +323,7 @@ n.obs <- 10000
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 # range <- 1
-range <- 20
+range <- 2
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma')) %dopar% {
     res <- error.computations_nopca_nofourier_noss_n_equal_nobs(range = range, sigma = sigma, sigma.e = sigma.e, n = n, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)

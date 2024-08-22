@@ -144,7 +144,7 @@ timing_rat <- function(N, n_obs, nu, range, sigma, sigma_e, m_rat, samples,
             cat(jj/samples, " ")
             if(type == "prediction"){
                 t1 <- Sys.time() 
-                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, cumsum = TRUE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
+                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, cumsum = FALSE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
                 Q <- Qrat$Q 
                 Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e^2        
                 R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         

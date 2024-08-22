@@ -7,22 +7,22 @@ m_nngp_fun <- function(m, alpha, n, n.obs){
                 }
             } else if (alpha < 2) {
                 if(n == 5000){
-                    m_vec <- c(1, 2, 15, 23, 28, 33) 
+                    m_vec <- c(1, 2, 13, 21, 27, 31) 
                 } else if(n.obs == 5000){
-                    m_vec <- c(1, 2, 3, 12, 18, 23)
+                    m_vec <- c(1, 2, 3, 4, 14, 20)
                 } else if(n.obs == 10000){
-                    m_vec <- c(1, 2, 10, 18, 26, 31)
+                    m_vec <- c(1, 2, 7, 18, 24, 29)
                 } else{
                     stop("not implemented")
                 }
                 mn <- m_vec[m]
             } else {
                 if(n == 5000){
-                    m_vec <- c(17, 31, 39, 46, 51, 56)
+                    m_vec <- c(15, 30, 37, 45, 51, 54)
                 } else if(n.obs == 5000){
-                    m_vec <- c(15, 23, 33, 43, 50, 56)
+                    m_vec <- c(1, 22, 31, 39, 47, 54)
                 } else if(n.obs == 10000){
-                    m_vec <- c(15, 31, 40, 48, 55, 60)
+                    m_vec <- c(14, 28, 37, 44, 51, 57)
                 } else{
                     stop("not implemented")
                 }
@@ -108,8 +108,8 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
     acf[1] = acf[1]+sigma.e^2
     acf2 =rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
     acf2 =as.vector(acf2)
-    Tz <- SuperGauss::Toeplitz$new(acf = acf)
-    Tz2 <- SuperGauss::Toeplitz$new(acf = acf2)    
+    # Tz <- SuperGauss::Toeplitz$new(acf = acf)
+    # Tz2 <- SuperGauss::Toeplitz$new(acf = acf2)    
 
     Sigma <- toeplitz(acf2)
     Sigma.hat <- Sigma + sigma.e^2*diag(n)
@@ -148,10 +148,12 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                                                              cumsum = FALSE, ordering = "location",
                                                              type_rational = "brasil", type_interp =  "spline"), error=function(e){NULL})
                     if(!is.null(Qrat)){
+                        # Qrat$Q <- Qrat$Q + Matrix::Diagonal(n = nrow(Qrat$Q), x=1e-8)
                         A_obs <- Qrat$A[obs.ind,]
                         A_mat = Matrix::t(A_obs)
                         Q_xgiveny <-(A_mat%*% (A_obs))/sigma.e^2 + Qrat$Q
                         post_y <- (A_mat%*% Y)/sigma.e^2
+                        # Q_xgiveny <- Q_xgiveny + Matrix::Diagonal(n = nrow(Qrat$Q), x=1e-8)
                         R <- tryCatch(Matrix::Cholesky(Q_xgiveny, perm = FALSE) , error=function(e){NULL})
                         if(!is.null(R)){
                             mu_xgiveny <- tryCatch(Matrix::solve(R, post_y, system = "A"), error=function(e){NULL})
@@ -183,10 +185,10 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
                 #########################
 
                 temp2 <- tryCatch({
-                mn <- m_nngp_fun(m, alpha, n, n.obs)
+                mn <- m_nngp_fun(m, alpha, n, n)
                 Qnn <- tryCatch(get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn), error=function(e){NULL})
                 if(!is.null(Qnn)){
-                    Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
+                    Qhat <- Qnn + Diagonal(n)/sigma.e^2        
                     mu.nn <- tryCatch(solve(Qhat, Y/sigma.e^2), error=function(e){NULL})
                     Bp <- tryCatch(get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B, error=function(e){NULL})
                     if(!is.null(mu.nn) && !is.null(Bp)){
