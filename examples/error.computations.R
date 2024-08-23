@@ -113,7 +113,7 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
 
     Sigma <- toeplitz(acf2)
     Sigma.hat <- Sigma + sigma.e^2*diag(n)
-
+    chol_tmp <- NULL
 
     print("range")
     print(range)
@@ -125,7 +125,22 @@ error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, s
             # obs.ind <- sort(sample(1:n)[1:n.obs])
             obs.ind <- 1:n
             t1 <- Sys.time()
-            Y <- sample_supergauss(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, loc = loc, Sigma = Sigma)
+            y <- matrix(rnorm(length(loc)), ncol = length(loc), nrow = 1)
+            sim <- SuperGauss::cholZX(Z = t(y), acf = acf2)
+            sim <- sim + sigma.e*rnorm(length(sim))
+            sim <- sim[obs.ind]
+            if(any(is.nan(sim))){
+                if(is.null(chol_tmp)){
+                    chol_tmp <- tryCatch(chol(Sigma[obs.ind,obs.ind]), error=function(e){NULL})
+                }
+                if(!is.null(chol_tmp)){
+                    X <- t(chol_tmp)%*%rnorm(length(obs.ind))
+                    sim <- as.vector(X + sigma.e*rnorm(length(obs.ind)))
+                } else{
+                    sim <- NULL
+                }
+            }
+            Y <- sim
 
             # d_tmp = Tz$solve(Y)
             # mu = Tz2$prod(d_tmp)
