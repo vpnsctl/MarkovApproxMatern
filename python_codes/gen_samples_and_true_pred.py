@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 import time
 import tensorflow_probability as tfp
+import os
 
 # Set the seed for reproducibility
 tf.random.set_seed(123)
@@ -100,12 +101,12 @@ def compute_true_mu(Sigma_row, obs_ind, sigma_e, Y):
 sim_data_result = np.zeros((tf.size(nu_vec), n_rep, n_obs))
 true_mean_result = np.zeros((tf.size(nu_vec), n_rep, n))
 
-sim_data_nu = np.zeros(n_rep, n_obs)
-true_mean_nu = np.zeros(n_rep, n)
+sim_data_nu = np.zeros((n_rep, n_obs))
+true_mean_nu = np.zeros((n_rep, n))
 
 if(n != n_obs):
     obs_ind_result = np.zeros((tf.size(nu_vec), n_rep, n_obs))
-    obs_ind_nu = np.zeros(n_rep, n_obs)
+    obs_ind_nu = np.zeros((n_rep, n_obs))
 
 
 # Create directories for saving results
