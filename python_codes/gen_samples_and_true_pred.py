@@ -11,9 +11,6 @@ import math
 n = 10000
 n_obs = 10000
 
-n = 15
-n_obs = 15
-
 n_rep = 100
 
 range = 0.5
@@ -87,9 +84,10 @@ import tensorflow as tf
 
 def compute_true_mu(Sigma_row, obs_ind, sigma_e, Y):
     Sigma = tf.linalg.LinearOperatorToeplitz(row=Sigma_row, col=Sigma_row).to_dense()
-    Sigma = tf.gather(Sigma, obs_ind)  # Make sure Sigma is a dense matrix
+    Sigma = tf.gather(Sigma, obs_ind, axis=1)  # Make sure Sigma is a dense matrix
     Sigma_row_sigma_e = tf.tensor_scatter_nd_update(Sigma_row, [[0]], [Sigma_row[0] + sigma_e**2])
     Sigma_hat = tf.linalg.LinearOperatorToeplitz(row=Sigma_row_sigma_e, col=Sigma_row_sigma_e).to_dense()
+    Sigma_hat = tf.gather(tf.gather(Sigma_hat, obs_ind), obs_ind, axis = 1)
     
     # Solve the linear system: Sigma_hat * mu = Y
     Sigma_hat_inv_Y = tf.linalg.solve(Sigma_hat, Y)  # Equivalent to solve(Sigma.hat, Y)
@@ -106,8 +104,4 @@ obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
 
 sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e = sigma_e)
 
-print(sim_data)
-
 mu = compute_true_mu(Sigma_row = Sigma_row, obs_ind = obs_ind, sigma_e = sigma_e, Y = sim_data)
-
-print(mu)
