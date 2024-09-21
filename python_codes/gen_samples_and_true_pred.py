@@ -8,19 +8,24 @@ import tensorflow_probability as tfp   # For special functions like Bessel K and
 
 import math
 
-n = 10000
-n_obs = 10000
+import numpy as np
+
+n = 10000 # 10000, 5000
+n_obs = 10000 # 10000, 5000
 
 n_rep = 100
 
-range = 0.5
+range = 0.5 # range = 0.5 , 1 and 2
 sigma = 1
 sigma_e = 0.1
 
-nu = 0.6
+nu_vec = tf.range(0.01, 2.50, 0.01)
 
-kappa = math.sqrt(8*nu)/range
+import numpy as np
 
+def compute_kappa(nu, range_value):
+    kappa = np.sqrt(8 * nu) / range_value
+    return kappa
 
 def generate_obs_indices(n, n_obs):
     indices = tf.range(0, n, dtype = tf.int32)
@@ -98,10 +103,13 @@ def compute_true_mu(Sigma_row, obs_ind, sigma_e, Y):
     return mu
 
 
-Sigma_row = compute_matern_covariance_toeplitz(n_points = n, kappa = kappa, sigma = sigma, nu = nu, sigma_e = 0, ret_operator = False)
+sim_data_result = np.zeros((tf.size(nu_vec), n_rep, n_obs))
+true_mean_result = np.zeros((tf.size(nu_vec), n_rep, n))
 
-obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
+# Sigma_row = compute_matern_covariance_toeplitz(n_points = n, kappa = kappa, sigma = sigma, nu = nu, sigma_e = 0, ret_operator = False)
 
-sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e = sigma_e)
+# obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
 
-mu = compute_true_mu(Sigma_row = Sigma_row, obs_ind = obs_ind, sigma_e = sigma_e, Y = sim_data)
+# sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e = sigma_e)
+
+# mu = compute_true_mu(Sigma_row = Sigma_row, obs_ind = obs_ind, sigma_e = sigma_e, Y = sim_data)
