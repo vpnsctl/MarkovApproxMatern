@@ -11,6 +11,9 @@ import math
 n = 10000
 n_obs = 10000
 
+n = 15
+n_obs = 15
+
 n_rep = 100
 
 range = 0.5
@@ -68,10 +71,8 @@ def simulate_from_covariance(Sigma_row, obs_ind, sigma_e, ret_numpy = False):
                                 
         X = tf.matmul(R, random_normal)
         
-        noise = sigma_e * tf.random.normal(shape=(len(obs_ind),), dtype=tf.float64)
+        noise = sigma_e * tf.random.normal(shape=(len(obs_ind),1), dtype=tf.float64)
         sim = tf.add(X, noise)
-        
-        sim = X
         
         if(ret_numpy):
             return sim.numpy()
@@ -105,10 +106,8 @@ obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
 
 sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e = sigma_e)
 
+print(sim_data)
+
 mu = compute_true_mu(Sigma_row = Sigma_row, obs_ind = obs_ind, sigma_e = sigma_e, Y = sim_data)
 
-print("First 15 entries of sim_data (as NumPy):")
-print(sim_data[:15].numpy())
-
-print("First 15 entries of mu (as NumPy):")
-print(mu[:15].numpy())
+print(mu)
