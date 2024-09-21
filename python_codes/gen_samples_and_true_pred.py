@@ -45,25 +45,22 @@ def matern_covariance(h, kappa, nu, sigma):
         C = tf.where(h == 0, sigma**2, C)  # Ensuring the value at h == 0 is sigma^2
     return C
 
-def compute_matern_covariance_toeplitz(n_points, kappa, sigma, nu, sigma_e, ret_dense):
+def compute_matern_covariance_toeplitz(n_points, kappa, sigma, nu, sigma_e, ret_operator = False):
     loc = tf.linspace(0.0, n_points / 100.0, n_points)
-    C_row = matern_covariance(loc, kappa=kappa, nu=nu, sigma=sigma)
-    C_row = tf.tensor_scatter_nd_update(C_row, [[0]], [C_row[0] + sigma_e**2])
+    Sigma_row = matern_covariance(loc, kappa=kappa, nu=nu, sigma=sigma)
+    Sigma_row = tf.tensor_scatter_nd_update(Sigma_row, [[0]], [Sigma_row[0] + sigma_e**2])
     
-    toeplitz_operator = tf.linalg.LinearOperatorToeplitz(row=C_row, col=C_row)
-    
-    C_full = toeplitz_operator.to_dense()
-    if(ret_dense):
-        return C_full
+    if(ret_operator):
+        return tf.linalg.LinearOperatorToeplitz(row=Sigma_row, col=Sigma_row)
     else:
-        return toeplitz_operator
+        return Sigma_row
 
-def simulate_from_covariance(Sigma, obs_ind, sigma_e, ret_numpy = False):
+def simulate_from_covariance(Sigma_row, obs_ind, sigma_e, ret_numpy = False):
     try:
         obs_ind = tf.convert_to_tensor(obs_ind, dtype=tf.int32)
         
-        Sigma_dense = Sigma.to_dense()
-        Sigma_sub = tf.gather(Sigma_dense, obs_ind) 
+        Sigma = tf.linalg.LinearOperatorToeplitz(row=Sigma_row, col=Sigma_row).to_dense()
+        Sigma_sub = tf.gather(Sigma, obs_ind) 
         Sigma_sub = tf.gather(Sigma_sub, obs_ind, axis=1)
         R = tf.linalg.cholesky(Sigma_sub) # This is the transpose of the Cholesky we obtain in R
         
@@ -84,8 +81,34 @@ def simulate_from_covariance(Sigma, obs_ind, sigma_e, ret_numpy = False):
     except tf.errors.InvalidArgumentError:
         return None
 
-Sigma = compute_matern_covariance_toeplitz(n_points = n, kappa = kappa, sigma = sigma, nu = nu, sigma_e = 0, ret_dense = False)
+
+import tensorflow as tf
+
+def compute_true_mu(Sigma_row, obs_ind, sigma_e, Y):
+    Sigma = tf.linalg.LinearOperatorToeplitz(row=Sigma_row, col=Sigma_row).to_dense()
+    Sigma = tf.gather(Sigma, obs_ind)  # Make sure Sigma is a dense matrix
+    Sigma_row_sigma_e = tf.tensor_scatter_nd_update(Sigma_row, [[0]], [Sigma_row[0] + sigma_e**2])
+    Sigma_hat = tf.linalg.LinearOperatorToeplitz(row=Sigma_row_sigma_e, col=Sigma_row_sigma_e).to_dense()
+    
+    # Solve the linear system: Sigma_hat * mu = Y
+    Sigma_hat_inv_Y = tf.linalg.solve(Sigma_hat, Y)  # Equivalent to solve(Sigma.hat, Y)
+    
+    # Compute mu: Sigma[,obs.ind] %*% solve(Sigma.hat, Y)
+    mu = tf.matmul(Sigma, Sigma_hat_inv_Y)
+    
+    return mu
+
+
+Sigma_row = compute_matern_covariance_toeplitz(n_points = n, kappa = kappa, sigma = sigma, nu = nu, sigma_e = 0, ret_operator = False)
 
 obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
 
-sim_data = simulate_from_covariance(Sigma, obs_ind, sigma_e = sigma_e)
+sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e = sigma_e)
+
+mu = compute_true_mu(Sigma_row = Sigma_row, obs_ind = obs_ind, sigma_e = sigma_e, Y = sim_data)
+
+print("First 15 entries of sim_data (as NumPy):")
+print(sim_data[:15].numpy())
+
+print("First 15 entries of mu (as NumPy):")
+print(mu[:15].numpy())
