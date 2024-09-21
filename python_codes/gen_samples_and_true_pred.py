@@ -140,13 +140,13 @@ for idx, nu in enumerate(nu_vec):
         if(n != n_obs):
             obs_ind_nu[i, :] = obs_ind_result[idx, i, :] = obs_ind.numpy().flatten()        
         
-        filename = f"{output_dir}/simulation_results_n{n}_nobs{n_obs}_range{range_value}_nu{nu.numpy():.2f}.h5"
+    filename = f"{output_dir}/simulation_results_n{n}_nobs{n_obs}_range{range_value}_nu{nu.numpy():.2f}.h5"
     
-        with h5py.File(filename, 'w') as f:
-            f.create_dataset('sim_data_nu', data=sim_data_nu)
-            f.create_dataset('true_mean_nu', data=true_mean_nu)
-            if(n != n_obs):
-                f.create_dataset('obs_ind_nu', data=obs_ind_nu)
+    with h5py.File(filename, 'w') as f:
+        f.create_dataset('sim_data_nu', data=sim_data_nu)
+        f.create_dataset('true_mean_nu', data=true_mean_nu)
+        if(n != n_obs):
+            f.create_dataset('obs_ind_nu', data=obs_ind_nu)
 
     nu_elapsed_time = time.time() - nu_start_time
     print(f"Time for nu = {nu:.2f}: {nu_elapsed_time:.2f} seconds")
