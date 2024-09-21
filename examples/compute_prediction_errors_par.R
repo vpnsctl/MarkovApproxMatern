@@ -262,6 +262,38 @@ saveRDS(res_5000_pred, "pred_tables/res_5000_range20_rat_nngp.RDS")
 
 ## 
 
+
+
+rm(list=ls())
+source("aux_functions/aux_functions_cov.R")
+source("examples/error.computations.R")
+library(rSPDE)
+library(foreach)
+library(doParallel)
+library(doSNOW)
+
+cores=12
+
+cl <- makeCluster(cores[1]-1) 
+registerDoSNOW(cl)
+
+sigma = 1
+sigma.e <- 0.1
+
+
+nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
+nu.vec <- nu.vec[length(nu.vec):1]
+m.vec <- 1:6
+
+iterations <- length(nu.vec)
+pb <- txtProgressBar(max = iterations, style = 3)
+progress <- function(n) setTxtProgressBar(pb, n)
+opts <- list(progress = progress)
+folder_to_save <- getwd()
+
+
+
+
 n <- 10000
 n.obs <- 10000
 n.rep <- 100
@@ -284,7 +316,7 @@ for(i in 1:length(res)) {
 
 res_10000_pred <- list(nu = nu, err.nn = err.nn, err.rat = err.rat)
 
-saveRDS(res_10000_pred, "pred_tables/res_10000_10000_range02_rat_nngp.RDS")
+saveRDS(res_10000_pred, paste0("pred_tables/res_10000_10000_range",range,"_rat_nngp.RDS"))
 
 
 
