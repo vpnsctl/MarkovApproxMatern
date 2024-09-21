@@ -6,9 +6,9 @@ import time
 
 import tensorflow_probability as tfp   # For special functions like Bessel K and gamma
 
-import math
-
 import numpy as np
+
+import h5py
 
 n = 10000 # 10000, 5000
 n_obs = 10000 # 10000, 5000
@@ -105,6 +105,42 @@ def compute_true_mu(Sigma_row, obs_ind, sigma_e, Y):
 
 sim_data_result = np.zeros((tf.size(nu_vec), n_rep, n_obs))
 true_mean_result = np.zeros((tf.size(nu_vec), n_rep, n))
+
+start_time = time.time()
+
+for idx, nu in enumerate(nu_vec):
+    nu_start_time = time.time() 
+
+    kappa = compute_kappa(nu, range_value=range_value)
+    Sigma_row = compute_matern_covariance_toeplitz(n_points=n, kappa=kappa, sigma=sigma, nu=nu, sigma_e=0, ret_operator=False)
+
+    for i in range(n_rep):
+        obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
+        sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e=sigma_e)
+        mu = compute_true_mu(Sigma_row=Sigma_row, obs_ind=obs_ind, sigma_e=sigma_e, Y=sim_data)
+
+        sim_data_result[idx, i, :] = sim_data.numpy().flatten()
+        true_mean_result[idx, i, :] = mu.numpy().flatten()
+
+    nu_elapsed_time = time.time() - nu_start_time
+    print(f"Time for nu = {nu:.2f}: {nu_elapsed_time:.2f} seconds")
+
+# Print total computation time
+total_time = time.time() - start_time
+print(f"Total computation time: {total_time:.2f} seconds")
+
+
+filename = f'simulation_results_n{n}_nobs{n_obs}_range{range_value}.h5'
+
+with h5py.File(filename, 'w') as f:
+    f.create_dataset('sim_data_result', data=sim_data_result)
+    f.create_dataset('true_mean_result', data=true_mean_result)
+
+print(f"Results saved to {filename}")
+
+  
+        
+
 
 # Sigma_row = compute_matern_covariance_toeplitz(n_points = n, kappa = kappa, sigma = sigma, nu = nu, sigma_e = 0, ret_operator = False)
 
