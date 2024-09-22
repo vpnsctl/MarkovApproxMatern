@@ -106,8 +106,11 @@ for idx, nu in enumerate(nu_vec):
     Sigma_row = compute_matern_covariance_toeplitz(n_points=n, kappa=kappa, sigma=sigma, nu=nu, sigma_e=0, ret_operator=False)
 
     for i in range(n_rep):
-        obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
-        if(n != n_obs):
+        if(n == 10000 and n_obs == 5000):
+            obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
+        else if (n == 5000):
+            obs_ind = tf.range(0, n, dtype=tf.int32)
+        if(n_obs == 5000):
             sim_data = sim_data_result[idx, i, obs_ind] 
         else:
             sim_data = sim_data_result[idx, i, :]
