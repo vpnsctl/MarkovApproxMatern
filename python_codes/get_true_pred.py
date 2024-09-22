@@ -9,10 +9,10 @@ import os
 tf.random.set_seed(123)
 
 # Define your parameters
-n = 10000
-n_obs = 10000
+n = 5000
+n_obs = 5000
 n_rep = 100
-range_value = 1
+range_value = 2
 sigma = 1
 sigma_e = 0.1
 # Reversed order for nu_vec
@@ -83,7 +83,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 
 directory = 'python_codes/results'
-filename = f'simulation_results_n{n}_nobs{n_obs}_range{range_value}.h5'
+filename = f'simulation_results_n10000_nobs10000_range{range_value}.h5'
 file_path = os.path.join(directory, filename)
 
 # Ensure the file exists before attempting to read
@@ -108,7 +108,7 @@ for idx, nu in enumerate(nu_vec):
     for i in range(n_rep):
         if(n == 10000 and n_obs == 5000):
             obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
-        else if (n == 5000):
+        elif (n == 5000):
             obs_ind = tf.range(0, n, dtype=tf.int32)
         if(n_obs == 5000):
             sim_data = sim_data_result[idx, i, obs_ind] 
@@ -116,6 +116,7 @@ for idx, nu in enumerate(nu_vec):
             sim_data = sim_data_result[idx, i, :]
              
         sim_data = tf.convert_to_tensor(sim_data.flatten(), dtype=tf.float64)
+        sim_data = tf.reshape(sim_data, (-1, 1))
         mu = compute_true_mu(Sigma_row=Sigma_row, obs_ind=obs_ind, sigma_e=sigma_e, Y=sim_data)
 
         true_mean_nu[i, :] = true_mean_result[idx, i, :] = mu.numpy().flatten()
