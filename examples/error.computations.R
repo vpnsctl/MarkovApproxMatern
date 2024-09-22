@@ -1,4 +1,5 @@
 
+
 m_nngp_fun <- function(m, alpha, n, n.obs){
             if(alpha<1) {
                 mn <- m - 1
@@ -346,7 +347,7 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
                 cat(i/length(nu.vec), kk, j, "Rational\n")
                 if((nu + 0.5)%%1 > 1e-10){
                     Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
-                                                         cumsum = TRUE, ordering = "location",
+                                                         cumsum = FALSE, ordering = "location",
                                                          type_rational = "brasil", type_interp =  "spline")    
                 
                     A_obs <- Qrat$A[obs.ind,]
@@ -623,6 +624,32 @@ error.computations_norat_nonngp <- function(range, sigma, sigma.e, n, n.obs, sam
 
 error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu, m.vec, n.rep, folder_to_save) {
 
+    sim_data_name <- "sim_data_result"
+    true_mean_name <- "true_mean_result"
+    nu_vec_python <- "nu_vec"
+    obs_ind_python <- "obs_ind_result"
+
+    full_sim_data <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), sim_data_name)
+    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), true_mean_name)
+
+    nu_vec_python <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), nu_vec_python)
+
+    ind_nu <- which.min((nu-nu_vec_python)^2)
+
+    full_sim_data <- full_sim_data[,,ind_nu]
+    full_true_pred <- full_true_pred[,,ind_nu]
+
+    if(n == 10000 && n.obs == 5000){
+        obs.ind <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
+        obs.ind <- obs.ind[,,ind_nu]
+    } else{
+        obs.ind <- 1:n
+    }
+
+    if(n == 5000){
+        full_sim_data <- full_sim_data[obs.ind,]
+        full_true_pred <- full_true_pred[obs.ind,]
+    }
 
     # method options: "rational", "pca", "fourier", "statespace", "nngp"
 
@@ -632,25 +659,33 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     
     alpha <- nu + 1/2
     kappa = sqrt(8*nu)/range
-    loc2 <- loc - loc[1]
-    acf = rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
-    acf <- as.vector(acf)
-    acf[1] = acf[1]+sigma.e^2
-    acf2 =rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
-    acf2 =as.vector(acf2)
-    Sigma <- toeplitz(acf2)
-    Sigma.hat <- Sigma + sigma.e^2*diag(n)
-    if(method == "pca"){
-        eigen_cov <- eigen(Sigma)   
-    }
+    # loc2 <- loc - loc[1]
+    # acf = rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
+    # acf <- as.vector(acf)
+    # acf[1] = acf[1]+sigma.e^2
+    # acf2 =rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
+    # acf2 =as.vector(acf2)
+    # Sigma <- toeplitz(acf2)
+    # Sigma.hat <- Sigma + sigma.e^2*diag(n)
+    # if(method == "pca"){
+    #     eigen_cov <- eigen(Sigma)   
+    # }
     for(kk in 1:n.rep) {
         time1 <- Sys.time()
-        cat(kk, "True pred\n")
-        obs.ind <- sort(sample(1:n)[1:n.obs])
+        cat(kk, "Getting True pred\n")
+        # obs.ind <- sort(sample(1:n)[1:n.obs])
 
-        Y <- sample_supergauss_v2(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, acf = acf, Sigma = Sigma)
-        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
-        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        # Y <- sample_supergauss_v2(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, acf = acf, Sigma = Sigma)
+        # Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
+        # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+
+        if(n == 10000 && n.obs == 5000){
+            obs.ind <- obs.ind[,kk]
+        }
+
+        Y <- full_sim_data[,kk]
+        mu <- full_true_pred[,kk]
+
         
         for(j in 1:length(m.vec)) { 
             timem1 <- Sys.time()
@@ -662,7 +697,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
             cat(kk, j, "Rational\n")
             if((nu + 0.5)%%1 > 1e-10){
                 Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
-                                                         cumsum = TRUE, ordering = "location",
+                                                         cumsum = FALSE, ordering = "location",
                                                          type_rational = "brasil", type_interp =  "spline")    
                 A_obs <- Qrat$A[obs.ind,]
                 A_mat = Matrix::t(A_obs)
@@ -883,7 +918,7 @@ error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.
                 cat(kk, j, "Rational\n")
                 if((nu + 0.5)%%1 > 1e-10){
                     Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
-                                                             cumsum = TRUE, ordering = "location",
+                                                             cumsum = FALSE, ordering = "location",
                                                              type_rational = "brasil", type_interp =  "spline")    
 
                     A_obs <- Qrat$A[obs.ind,]
