@@ -332,6 +332,10 @@ error.computations <- function(range, sigma, sigma.e, n, n.obs, samples.fourier,
             Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
             mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
             
+            time <- Sys.time()
+                        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+            time2 <- Sys.time()
+
             for(j in 1:length(m.vec)) { 
                 
                 m <- m.vec[j]
@@ -812,6 +816,39 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
 
 
+sample_predict_save <- function(n, range, sigma, sigma.e, nu_vec, n_rep){
+    sim_data_result <- list()
+    true_mu_result <- list()
+    loc <- seq(0,n/100,length.out=n)
+    for(nu in nu_vec){
+        sim_data_result[[as.character(nu)]] <- matrix(ncol=n_rep, nrow=n)
+        true_mu_result[[as.character(nu)]] <- matrix(ncol=n_rep, nrow=n)
+
+        time1 <- Sys.time()
+
+        kappa = sqrt(8*nu)/range
+        acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
+        acf <- as.vector(acf)
+        Sigma <- toeplitz(acf)
+        Sigma.hat <- Sigma + sigma.e^2*diag(n)
+        R <- chol(Sigma)
+        for(i in 1:n_rep){
+            X <- t(R)%*%rnorm(length(loc))
+            sim <- as.vector(X + sigma.e*rnorm(length(loc)))
+            mu <- Sigma%*%solve(Sigma.hat,sim)
+            sim_data_result[[as.character(nu)]][,i] <- sim
+            true_mu_result[[as.character(nu)]][,i] <- mu
+        }
+        tmp_list <- list(sim_data = sim_data_result[[as.character(nu)]], true_mu = true_mu_result[[as.character(nu)]], nu = nu)
+        saveRDS(tmp_list, paste0("python_codes/partial_results_R/simulation_results_n",n,"_range",range,"_nu",nu,".RDS"))
+
+        time2 <- Sys.time()
+        print(paste("Time for nu = ",nu))
+        print(time2-time1)
+    }
+    result <- list(sim_data_result = sim_data_result, true_mu_result = true_mu_result, nu_vec = nu_vec)
+    saveRDS(result, paste0("python_codes/simulation_results_n",n,"_range",range,".RDS"))
+}
 
 
 
@@ -909,4 +946,6 @@ error.computations_nopca_nofourier_noss <- function(range, sigma, sigma.e, n, n.
                 err.ss = err.ss,
                 nu = nu.vec))    
 }
+
+
 
