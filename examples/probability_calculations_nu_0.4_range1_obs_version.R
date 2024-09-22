@@ -86,7 +86,7 @@ range = 1
 sigma = 1
 sigma.e <- 0.1
 n <- seq(from=500,to=1000,by=250)
-n <- c(1250, 1500, 1750, 2000)
+n <- c(1750, 2000, 2250, 2500)
 n.obs <- 500
 # n.rep <- 10
 n.rep <- 1
@@ -154,6 +154,8 @@ for(i in 1:length(n)) {
                 prob_rat <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=mu.rat,sigma = Sigma.rat)
             }
             err_rat[k,i] <- err_rat[k,i] + prob_rat-prob_true
+
+            cat("prob rat: ", prob_rat, '\n')
             
             # nngp
             mn <- mn_vec[k]
@@ -168,6 +170,8 @@ for(i in 1:length(n)) {
             } else {
                 prob_nngp <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_nngp,sigma = post_cov_nngp)
             }
+
+            cat("prob nngp: ", prob_nngp, '\n')
             
             err_nngp[k,i] <- err_nngp[k,i] + prob_nngp-prob_true
             
