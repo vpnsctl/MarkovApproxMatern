@@ -6,7 +6,7 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores=14
+cores=23
 
 cl <- makeCluster(cores[1]-1) 
 registerDoSNOW(cl)
