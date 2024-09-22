@@ -6,14 +6,14 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 23
+cores <- 15
 
 cl <- makeCluster(cores[1], outfile = "log_rational.out") 
 registerDoSNOW(cl)
 
 
 range <- 2
-n <- 10000
+n <- 5000
 n.obs <- 5000
 
 sigma = 1

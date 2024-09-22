@@ -941,7 +941,6 @@ error.computations_norat_nonngp <- function(range, sigma, sigma.e, n, n.obs, sam
                 err.ss = err.ss,
                 nu = nu))    
 }
-
 error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu, m.vec, n.rep, folder_to_save) {
 
     sim_data_name <- "sim_data_result"
@@ -950,7 +949,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     obs_ind_python <- "obs_ind_result"
 
     full_sim_data <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), sim_data_name)
-    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), true_mean_name)
+    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), true_mean_name)
 
     nu_vec_python <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), nu_vec_python)
 
@@ -1004,7 +1003,6 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
         } 
         
         Y <- full_sim_data[obs.ind, kk]
-
         mu <- full_true_pred[, kk]
 
         
