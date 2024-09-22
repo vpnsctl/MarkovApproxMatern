@@ -4,6 +4,9 @@ inst/doc
 # Vscode
 .vscode
 
+# python virtual environments
+.venv
+
 # Pkgdown
 docs
 
