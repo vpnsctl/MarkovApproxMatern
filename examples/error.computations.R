@@ -680,7 +680,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
         # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
 
         if(n == 10000 && n.obs == 5000){
-            obs.ind <- obs.ind[,kk]
+            obs.ind <- obs.ind[,kk] + 1
         }
 
         Y <- full_sim_data[,kk]

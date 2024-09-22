@@ -8,13 +8,13 @@ library(doSNOW)
 
 cores <- 23
 
-cl <- makeCluster(cores[1]) 
+cl <- makeCluster(cores[1], outfile = "log_rational.out") 
 registerDoSNOW(cl)
 
 
 range <- 2
 n <- 10000
-n.obs <- 10000
+n.obs <- 5000
 
 sigma = 1
 sigma.e <- 0.1
