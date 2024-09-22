@@ -640,8 +640,8 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     full_true_pred <- full_true_pred[,,ind_nu]
 
     if(n == 10000 && n.obs == 5000){
-        obs.ind <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
-        obs.ind <- obs.ind[,,ind_nu]
+        obs.ind_full <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
+        obs.ind_full <- obs.ind_full[,,ind_nu]
     } else{
         obs.ind <- 1:n
     }
@@ -680,11 +680,12 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
         # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
 
         if(n == 10000 && n.obs == 5000){
-            obs.ind <- obs.ind[,kk] + 1
-        }
+            obs.ind <- obs.ind_full[,kk] + 1
+        } 
+        
+        Y <- full_sim_data[obs.ind, kk]
 
-        Y <- full_sim_data[,kk]
-        mu <- full_true_pred[,kk]
+        mu <- full_true_pred[, kk]
 
         
         for(j in 1:length(m.vec)) { 
