@@ -109,24 +109,6 @@ sample_supergauss_v2 <- function(kappa, sigma, sigma.e, obs.ind, nu, acf, Sigma)
     return(sim)
 }
 
-sample_supergauss_v2 <- function(kappa, sigma, sigma.e, obs.ind, nu, acf, Sigma){
-    acf <- as.vector(acf)    
-    y <- matrix(rnorm(length(acf)), ncol = length(acf), nrow = 1)
-    sim <- SuperGauss::cholZX(Z = t(y), acf = acf)
-    sim <- sim + sigma.e*rnorm(length(sim))
-    sim <- sim[obs.ind]
-    if(any(is.nan(sim))){
-            R <- tryCatch(chol(Sigma[obs.ind,obs.ind]), error=function(e){NULL})
-            if(!is.null(R)){
-                X <- t(R)%*%rnorm(length(obs.ind))
-                sim <- as.vector(X + sigma.e*rnorm(length(obs.ind)))
-            } else{
-                sim <- NULL
-            }
-    }
-    return(sim)
-}
-
 
 ## Assumes equally spaced.
 error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, sigma.e, n, loc, nu, m.vec, n.rep, folder_to_save) {
@@ -756,7 +738,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     obs_ind_python <- "obs_ind_result"
 
     full_sim_data <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), sim_data_name)
-    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), true_mean_name)
+    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), true_mean_name)
 
     nu_vec_python <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), nu_vec_python)
 
@@ -766,8 +748,8 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     full_true_pred <- full_true_pred[,,ind_nu]
 
     if(n == 10000 && n.obs == 5000){
-        obs.ind_full <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
-        obs.ind_full <- obs.ind_full[,,ind_nu]
+        obs.ind <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
+        obs.ind <- obs.ind[,,ind_nu]
     } else{
         obs.ind <- 1:n
     }
@@ -806,11 +788,11 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
         # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
 
         if(n == 10000 && n.obs == 5000){
-            obs.ind <- obs.ind_full[,kk] + 1
-        } 
-        
-        Y <- full_sim_data[obs.ind, kk]
-        mu <- full_true_pred[, kk]
+            obs.ind <- obs.ind[,kk]
+        }
+
+        Y <- full_sim_data[,kk]
+        mu <- full_true_pred[,kk]
 
         
         for(j in 1:length(m.vec)) { 

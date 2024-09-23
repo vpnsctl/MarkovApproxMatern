@@ -8,7 +8,7 @@ library(doSNOW)
 
 cores <- 15
 
-cl <- makeCluster(cores[1], outfile = "log_rational.out") 
+cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
 registerDoSNOW(cl)
 
 
@@ -80,4 +80,4 @@ if(method == "rational"){
         res_pred <- list(nu = nu, err.ss = err.ss)  
     }
 
-saveRDS(res_pred, paste0("markov_approx/pred_tables/res_",as.character(n),"_",as.character(n.obs),"_range",range,"_",as.character(method),".RDS"))
+saveRDS(res_pred, paste0("pred_tables/res_",as.character(n),"_",as.character(n.obs),"_range",range,"_",as.character(method),".RDS"))
