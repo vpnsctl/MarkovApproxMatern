@@ -9,10 +9,10 @@ import os
 tf.random.set_seed(123)
 
 # Define your parameters
-n = 5000
+n = 10000
 n_obs = 5000
 n_rep = 100
-range_value = 2
+range_value = 1
 sigma = 1
 sigma_e = 0.1
 # Reversed order for nu_vec
@@ -103,7 +103,7 @@ for idx, nu in enumerate(nu_vec):
     nu_start_time = time.time()
 
     kappa = compute_kappa(nu, range_value=range_value)
-    Sigma_row = compute_matern_covariance_toeplitz(n_points=n, kappa=kappa, sigma=sigma, nu=nu, sigma_e=0, ret_operator=False)
+    Sigma_row = compute_matern_covariance_toeplitz(n_points=10000, kappa=kappa, sigma=sigma, nu=nu, sigma_e=0, ret_operator=False)
 
     for i in range(n_rep):
         if(n == 10000 and n_obs == 5000):
