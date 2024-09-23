@@ -1,14 +1,14 @@
 rm(list=ls())
-source("aux_functions/aux_functions_cov.R")
-source("examples/error.computations.R")
+source("markov_approx/aux_functions/aux_functions_cov.R")
+source("markov_approx/examples/error.computations.R")
 library(rSPDE)
 library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 15
+cores <- parallelly::freeConnections()
 
-cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
+cl <- makeCluster(cores[1], outfile = "statespace_range1_5000.out")
 registerDoSNOW(cl)
 
 
@@ -28,17 +28,17 @@ iterations <- length(nu.vec)
 pb <- txtProgressBar(max = iterations, style = 3)
 progress <- function(n) setTxtProgressBar(pb, n)
 opts <- list(progress = progress)
-folder_to_save <- getwd()
+folder_to_save <- "markov_approx"
 
 
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "statespace"
 
 fourier_samples <- 100
 
-res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma', 'SuperGauss','rhdf5')) %dopar% {
+res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma', 'SuperGauss')) %dopar% {
     res <- error.computations_general(method = method, range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, samples.fourier = fourier_samples, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
     return(res)
 }
@@ -80,4 +80,4 @@ if(method == "rational"){
         res_pred <- list(nu = nu, err.ss = err.ss)  
     }
 
-saveRDS(res_pred, paste0("pred_tables/res_",as.character(n),"_",as.character(n.obs),"_range",range,"_",as.character(method),".RDS"))
+saveRDS(res_pred, paste0("markov_approx/pred_tables/res_",as.character(n),"_",as.character(n.obs),"_range",range,"_",as.character(method),".RDS"))
