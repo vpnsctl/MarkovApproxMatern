@@ -6,13 +6,13 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 15
+cores <- 23
 
 cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
 registerDoSNOW(cl)
 
 
-range <- 2
+range <- 1
 n <- 5000
 n.obs <- 5000
 
@@ -34,7 +34,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "rational"
+method <- "nngp"
 
 fourier_samples <- 100
 

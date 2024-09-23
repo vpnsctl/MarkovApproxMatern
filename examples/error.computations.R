@@ -711,7 +711,6 @@ error.computations_norat_nonngp <- function(range, sigma, sigma.e, n, n.obs, sam
                 nu = nu))    
 }
 
-
 error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu, m.vec, n.rep, folder_to_save) {
 
     sim_data_name <- "sim_data_result"
@@ -937,7 +936,6 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"_",as.character(n.obs),"/range_",as.character(range),"/",as.character(method),"/res_",as.character(nu),"_",as.character(n),"_",as.character(n.obs),"_range_",as.character(range),"_",as.character(method),".RDS"))
     return(res)
 }
-
 
 
 
