@@ -85,9 +85,8 @@ folder_to_save <- "markov_approx"
 range = 1
 sigma = 1
 sigma.e <- 0.1
-n <- seq(from=500,to=1000,by=250)
-n <- c(1750, 2000, 2250, 2500)
-n.obs <- 500
+n <- seq(from=2500,to=250,by=-250)
+n.obs <- 250
 # n.rep <- 10
 n.rep <- 1
 nu <- 0.9 - 1/2
@@ -159,6 +158,7 @@ for(i in 1:length(n)) {
             
             # nngp
             mn <- mn_vec[k]
+            cat("mn_nngp: ", mn, '\n')
             cat(i,j,k, 'nngp\n')
             prec_nngp <- get_cov_mat(loc = loc[obs.ind], m = mn, method = "nngp", nu = nu, kappa = kappa, sigma = sigma, samples = NULL, L=NULL)
             post_nngp <- posterior_constructor_nngp(prec_mat = prec_nngp, y=y, sigma_e = sigma.e, 1:n, obs.ind, loc, mn, nu, kappa, sigma, type = "full")

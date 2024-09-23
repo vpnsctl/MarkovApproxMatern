@@ -10,6 +10,10 @@ inst/doc
 # Pkgdown
 docs
 
+# h5 files, too big
+
+*.h5
+
 #mac
 .DS_store
 

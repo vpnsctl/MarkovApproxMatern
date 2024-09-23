@@ -31,6 +31,6 @@ assemble_results <- function(input_dir, method) {
 }
 
 # Example
-input_dir <- "pred_tables//10000_10000//range_2//nngp"
-method <- "nngp"
+input_dir <- "pred_tables//10000_10000//range_2//rational"
+method <- "rational"
 res_pred <- assemble_results(input_dir, method)
