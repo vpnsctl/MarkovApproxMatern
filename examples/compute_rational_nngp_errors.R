@@ -6,7 +6,7 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 15
+cores <- 23
 
 cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
 registerDoSNOW(cl)
