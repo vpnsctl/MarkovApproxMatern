@@ -729,7 +729,6 @@ error.computations_norat_nonngp <- function(range, sigma, sigma.e, n, n.obs, sam
                 nu = nu))    
 }
 
-
 error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu, m.vec, n.rep, folder_to_save) {
 
     sim_data_name <- "sim_data_result"
@@ -738,7 +737,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     obs_ind_python <- "obs_ind_result"
 
     full_sim_data <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), sim_data_name)
-    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), true_mean_name)
+    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), true_mean_name)
 
     nu_vec_python <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), nu_vec_python)
 
@@ -748,8 +747,8 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     full_true_pred <- full_true_pred[,,ind_nu]
 
     if(n == 10000 && n.obs == 5000){
-        obs.ind <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
-        obs.ind <- obs.ind[,,ind_nu]
+        obs.ind_full <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
+        obs.ind_full <- obs.ind_full[,,ind_nu]
     } else{
         obs.ind <- 1:n
     }
@@ -788,11 +787,11 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
         # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
 
         if(n == 10000 && n.obs == 5000){
-            obs.ind <- obs.ind[,kk]
-        }
-
-        Y <- full_sim_data[,kk]
-        mu <- full_true_pred[,kk]
+            obs.ind <- obs.ind_full[,kk] + 1
+        } 
+        
+        Y <- full_sim_data[obs.ind, kk]
+        mu <- full_true_pred[, kk]
 
         
         for(j in 1:length(m.vec)) { 
@@ -955,7 +954,6 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"_",as.character(n.obs),"/range_",as.character(range),"/",as.character(method),"/res_",as.character(nu),"_",as.character(n),"_",as.character(n.obs),"_range_",as.character(range),"_",as.character(method),".RDS"))
     return(res)
 }
-
 
 
 
