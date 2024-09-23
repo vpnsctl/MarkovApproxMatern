@@ -604,6 +604,114 @@ error.computations_norat_nonngp <- function(range, sigma, sigma.e, n, n.obs, sam
                 nu = nu))    
 }
 
+
+error.computations_norat_nonngp <- function(range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu, m.vec, n.rep, folder_to_save) {
+
+    set.seed(123)
+    m.vec <- 1:6
+   err.nn <- err.rat <- err.pca <- err.fourier <- err.ss <- matrix(0,nrow= 1, ncol = length(m.vec))
+    
+    alpha <- nu + 1/2
+    kappa = sqrt(8*nu)/range
+    loc2 <- loc - loc[1]
+    acf = rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
+    acf <- as.vector(acf)
+    acf[1] = acf[1]+sigma.e^2
+    acf2 =rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
+    acf2 =as.vector(acf2)
+    Sigma <- toeplitz(acf2)
+    Sigma.hat <- Sigma + sigma.e^2*diag(n)
+
+    eigen_cov <- eigen(Sigma)   
+    for(kk in 1:n.rep) {
+        cat(kk, "True pred\n")
+        obs.ind <- sort(sample(1:n)[1:n.obs])
+
+        Y <- sample_supergauss_v2(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, acf = acf, Sigma = Sigma)
+        Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
+        mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+        
+        for(j in 1:length(m.vec)) { 
+            
+            m <- m.vec[j]
+            
+            mn <- m_pca_fun(m, alpha, n, n.obs)
+            
+            K <- eigen_cov$vec[,1:mn]    
+            D <- Diagonal(mn,eigen_cov$val[1:mn]) 
+            
+            Bo <- K[obs.ind,] 
+            Q.hat <- solve(D) + t(Bo)%*%Bo/sigma.e^2 
+            mu.pca <- K%*%solve(Q.hat, t(Bo)%*%Y/sigma.e^2) 
+            
+            err.pca[i,j] <- err.pca[i,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.pca)^2))/n.rep
+
+                print("PCA")
+                print(err.pca[1,j])            
+            
+            #######################
+            # Fourier prediction
+            #####################
+            cat(kk, j, "Fourier\n")
+
+            err.tmp <- 0
+            for(jj in 1:samples.fourier){
+                K <-  ff.comp(m = mn, kappa = kappa, alpha = nu + 0.5, loc = loc) * sigma^2
+                D <- Matrix::Diagonal(x = 1, n = ncol(K))
+                Bo <- K[obs.ind,]
+                Q.hat <- solve(D) + t(Bo)%*%Bo/sigma.e^2
+                mu.fourier <- K%*%solve(Q.hat, t(Bo)%*%Y/sigma.e^2)
+                err.tmp <-  err.tmp + sqrt((loc[2]-loc[1])*sum((mu-mu.fourier)^2))/(n.rep*samples.fourier)
+            }
+            err.fourier[i,j] <- err.tmp
+
+                print("fourier")
+                print(err.fourier[1,j])
+
+            ########################
+            # Statespace prediction
+            #######################
+            cat(kk, j, "Statespace\n")
+            ind = 1 + 100*(0:(n-1))
+            h2 = seq(from=0,to=max(loc),length.out=100*(n-1)+1)
+            
+            mn <- max(c(1,m - floor(alpha)))
+            coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,mn)
+            S1 <- ab2spec(coeff$a,coeff$b,h2, flim = 2)
+            r1 <- S2cov(S1,h2,flim = 2)
+            acf <- r1[ind]
+            acf <- acf * sigma^2
+            cov_mat <- toeplitz(acf, symmetric=TRUE)
+            acf2 <- acf
+            acf2[1] <- acf2[1] + sigma.e^2
+            cov_mat_nugget <-  toeplitz(as.vector(acf2), symmetric=TRUE)
+            cov_mat_nugget <- cov_mat_nugget[obs.ind,obs.ind]
+            d <- solve(cov_mat_nugget, Y)
+            cov_mat <- cov_mat[, obs.ind]
+            mu.ss <- cov_mat%*%d
+            
+            err.ss[i,j] <- err.ss[i,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
+
+                print("ss")
+                print(err.ss[1,j])
+
+        }
+        }
+
+    dir.create(file.path(folder_to_save, "pred_tables"), showWarnings = FALSE)
+    dir.create(file.path(paste0(folder_to_save, "/pred_tables/"), as.character(n)), showWarnings = FALSE)
+    dir.create(file.path(paste0(folder_to_save, "/pred_tables/", as.character(n)),paste0("range_",as.character(range))), showWarnings = FALSE)
+    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"/range_",as.character(range),"/res_",as.character(nu),"_",as.character(n),"_range_",as.character(range),"_ss_pca_fourier.RDS"))
+
+    return(list(err.nn = err.nn, 
+                err.rat = err.rat, 
+                err.pca = err.pca, 
+                err.fourier = err.fourier, 
+                err.ss = err.ss,
+                nu = nu))    
+}
+
+
 error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, samples.fourier, loc, nu, m.vec, n.rep, folder_to_save) {
 
     sim_data_name <- "sim_data_result"
