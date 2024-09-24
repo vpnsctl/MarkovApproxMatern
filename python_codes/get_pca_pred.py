@@ -102,8 +102,6 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
     nu_vec = np.arange(2.49, 0.01, -0.01)
 
-    alpha = nu_vec + 0.5
-
     loc = tf.linspace(0.0, n / 100.0, n)
 
     for nu in nu_vec:
@@ -116,7 +114,8 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
         full_true_pred_nu = tf.convert_to_tensor(full_true_pred_nu)
 
         if n == 10000 and n_obs == 5000:
-            obs_ind_full = load_hdf5_data(true_pred_file_path, obs_ind_python)[:, :, ind_nu]
+            obs_ind_full = load_hdf5_data(true_pred_file_path, obs_ind_python)[ind_nu, :, :]
+            obs_ind_full = tf.convert_to_tensor(obs_ind_full, dtype=tf.int32)
         else:
             obs_ind = tf.range(0, n, dtype=tf.int32)
 
@@ -142,7 +141,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
         for kk in range(n_rep):
 
             if n == 10000 and n_obs == 5000:
-                obs_ind = tf.gather(obs_ind_full, kk)
+                obs_ind = obs_ind_full[kk]
 
             Y = tf.gather(full_sim_data_nu[kk], obs_ind)
             Y = tf.reshape(Y, [-1, 1])
@@ -183,7 +182,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
     return final_df
 
 n = 10000
-n_obs = 10000
+n_obs = 5000
 range_val = 2
 sigma = 1.0
 sigma_e = 0.1
