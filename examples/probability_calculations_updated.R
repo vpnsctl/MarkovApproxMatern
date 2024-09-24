@@ -22,7 +22,7 @@ if (!dir.exists("prob_tables/partial_results")) {
 use.excursions <- TRUE
 folder_to_save <- "markov_approx"
 
-range = 1
+range = 0.5
 sigma = 1
 sigma.e <- 0.1
 n <- c(0, 25, 50, 100, 150, 250,  300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
@@ -31,7 +31,7 @@ n.obs <- 250
 n.rep <- 10
 max_it_per_m <- 20 # for calibration
 samples_calibration <- 50
-nu <- 1.9 - 1/2 # 0.4, 1, 2 -> alpha = 0.9, 1.5 and 2.5
+nu <- 1 # 0.4, 1, 2 -> alpha = 0.9, 1.5 and 2.5
 alpha <- nu + 1/2
 coverage <- 0.9
 m_vec = 1:6   # rational order
