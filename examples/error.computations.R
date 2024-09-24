@@ -91,24 +91,6 @@ sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc, Sigma){
     return(sim)
 }
 
-sample_supergauss_v2 <- function(kappa, sigma, sigma.e, obs.ind, nu, acf, Sigma){
-    acf <- as.vector(acf)    
-    y <- matrix(rnorm(length(acf)), ncol = length(acf), nrow = 1)
-    sim <- SuperGauss::cholZX(Z = t(y), acf = acf)
-    sim <- sim + sigma.e*rnorm(length(sim))
-    sim <- sim[obs.ind]
-    if(any(is.nan(sim))){
-            R <- tryCatch(chol(Sigma[obs.ind,obs.ind]), error=function(e){NULL})
-            if(!is.null(R)){
-                X <- t(R)%*%rnorm(length(obs.ind))
-                sim <- as.vector(X + sigma.e*rnorm(length(obs.ind)))
-            } else{
-                sim <- NULL
-            }
-    }
-    return(sim)
-}
-
 
 ## Assumes equally spaced.
 error.computations_nopca_nofourier_noss_n_equal_nobs <- function(range, sigma, sigma.e, n, loc, nu, m.vec, n.rep, folder_to_save) {
