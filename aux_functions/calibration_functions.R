@@ -97,7 +97,9 @@ search_PCA <- function(N, n_obs, m_min, m_max, times, samples,
                 t.mid <- calcTimePCA(samples, n.obs, type, eigen_cov, include_build_precision, m.mid, obs_ind)    
                 times.pca[ind.mid] = t.mid
             }
-            cat("prog = ", i/length(times),", t.target = ", t.target, ", m.mid = ", m.mid, ", t.mid = ",t.mid, "\n")
+            if(print){
+                cat("prog = ", i/length(times),", t.target = ", t.target, ", m.mid = ", m.mid, ", t.mid = ",t.mid, "\n")
+            }
             if(t.mid > t.target){
                 ind.up <- ind.mid
                 m.up <- m.mid
@@ -115,111 +117,6 @@ search_PCA <- function(N, n_obs, m_min, m_max, times, samples,
     return(list(m.cal = m.cal, m.pca = m.pca, times.pca = times.pca))
 }
 
-timing_rat <- function(N, n_obs, nu, range, sigma, sigma_e, m_rat, samples, 
-                            type = c("prediction", "sampling", "estimation"), 
-                            include_build_precision = TRUE, 
-                            multi_time = 1, 
-                            plot=FALSE, use_chol = TRUE, est_nu = FALSE, only_optim = TRUE, factor = 100){
-    type <- type[[1]]
-    if(!(type%in%c("prediction", "sampling", "estimation"))){
-        stop("type must be either 'prediction', 'sampling' or 'estimation'.")
-    }
-    if(n_obs > N){
-        stop("n_obs needs to be less or equal to N")
-    }
-    
-    kappa <- sqrt(8*nu)/range
-    sigma.e <- sigma_e
-    loc <- seq(0,N/factor,length.out=N) 
-    n <- N
-    n.obs <- n_obs
-    obs_ind <- sort(sample(1:n)[1:n.obs]) 
-    y <- rnorm(n.obs) 
-    times.rat <- rep(0,length(m_rat))
-    eigen_cov <- list(vec = matrix(1, ncol=N, nrow=N), val = rep(1, N))
-    for(i in 1:length(m_rat)){
-        m.rat <- m_rat[i]
-        cat("compute rational times, m = ", m.rat, "\n")
-        for(jj in 1:samples){ 
-            cat(jj/samples, " ")
-            if(type == "prediction"){
-                t1 <- Sys.time() 
-                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, cumsum = FALSE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
-                Q <- Qrat$Q 
-                Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e^2        
-                R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
-                mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e^2, system = "A")
-                t2 <- Sys.time() 
-                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
-            } else if(type == "sampling"){
-                t1 <- Sys.time()
-                r <- rSPDE:::matern.rational.ldl(loc, order = m.rat, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", ordering = "field")
-                if(use_chol){
-                    prec_mat <- t(r$L)%*%r$D%*%r$L
-                } else{
-                    R <- t(r$L)%*%sqrt(r$D)
-                }
-                
-                if(!include_build_precision){
-                    t1 <- Sys.time()
-                }
-                if(use_chol){
-                    R <- chol(prec_mat)
-                }
-                y <- matrix(rnorm(ncol(r$L)), ncol = ncol(r$L), nrow = 1)
-                sim_full <- solve(R, t(y), system = "Lt")                
-                sim <- (r$A)%*%sim_full
-                t2 <- Sys.time()
-                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
-            } else if(type == "estimation"){
-                t1 <- Sys.time()
-                if(est_nu){
-                    theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
-                    par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m.rat)
-                    t2 <- Sys.time()
-                    times.rat[i] <- times.rat[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
-                    if(!only_optim){
-                        kappa_est = exp(par$par[1])
-                        sigma_est = exp(par$par[2])
-                        nu_est = exp(par$par[3])
-                        sigma_e_est = exp(par$par[4])    
-                        Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu_est, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
-                        Q <- Qrat$Q
-                        Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
-                        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
-                        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
-                        t3 <- Sys.time()
-                        times.rat[i] <- times.rat[i] + as.numeric((t3-t2), units = "secs")   
-                    }
-                } else{
-                    t1 <- Sys.time()
-                    theta0 <- c(log(kappa), log(sigma), log(sigma_e))
-                    par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m.rat, nu = nu)
-                    t2 <- Sys.time()    
-                    times.rat[i] <- times.rat[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
-                    if(!only_optim){
-                        kappa_est = exp(par$par[1])
-                        sigma_est = exp(par$par[2])
-                        sigma_e_est = exp(par$par[3]) 
-                        Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
-                        Q <- Qrat$Q
-                        Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
-                        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)   
-                        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
-                        t3 <- Sys.time()
-                        times.rat[i] <- times.rat[i] + as.numeric((t3-t2), units = "secs")         
-                    }                   
-                }
-                
-            } else{
-                stop("invalid type")
-            }
-        }
-        cat("\n")
-        times.rat[i] <- times.rat[i]/samples
-    } 
-    return(times.rat)
-}
 
 timing_PCA <- function(N, n_obs, m_min, m_max, m_step, max.time = Inf, samples, 
                        type = c("prediction", "sampling"), 
@@ -821,6 +718,128 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
 
 
 
+
+
+
+
+
+
+
+
+
+timing_rat <- function(N, n_obs, nu, range, sigma, sigma_e, m_rat, samples, 
+                            type = c("prediction", "sampling", "estimation"), 
+                            include_build_precision = TRUE, 
+                            multi_time = 1, 
+                            plot=FALSE, use_chol = TRUE, est_nu = FALSE, only_optim = TRUE, factor = 100, print=FALSE){
+    type <- type[[1]]
+    if(!(type%in%c("prediction", "sampling", "estimation"))){
+        stop("type must be either 'prediction', 'sampling' or 'estimation'.")
+    }
+    if(n_obs > N){
+        stop("n_obs needs to be less or equal to N")
+    }
+    
+    kappa <- sqrt(8*nu)/range
+    sigma.e <- sigma_e
+    loc <- seq(0,N/factor,length.out=N) 
+    n <- N
+    n.obs <- n_obs
+    obs_ind <- sort(sample(1:n)[1:n.obs]) 
+    y <- rnorm(n.obs) 
+    times.rat <- rep(0,length(m_rat))
+    eigen_cov <- list(vec = matrix(1, ncol=N, nrow=N), val = rep(1, N))
+    for(i in 1:length(m_rat)){
+        m.rat <- m_rat[i]
+        if(print){
+            cat("compute rational times, m = ", m.rat, "\n")
+        }
+        for(jj in 1:samples){ 
+            if(print){
+                cat(jj/samples, " ")
+            }
+            if(type == "prediction"){
+                t1 <- Sys.time() 
+                Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa, cumsum = FALSE, ordering = "location", sigma = sigma, type_rational = "brasil", type_interp = "spline")
+                Q <- Qrat$Q 
+                Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e^2        
+                R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
+                mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e^2, system = "A")
+                t2 <- Sys.time() 
+                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
+            } else if(type == "sampling"){
+                t1 <- Sys.time()
+                r <- rSPDE:::matern.rational.ldl(loc, order = m.rat, nu = nu, kappa = kappa, sigma = sigma, type_rational = "brasil", type_interp = "spline", ordering = "field")
+                if(use_chol){
+                    prec_mat <- t(r$L)%*%r$D%*%r$L
+                } else{
+                    R <- t(r$L)%*%sqrt(r$D)
+                }
+                
+                if(!include_build_precision){
+                    t1 <- Sys.time()
+                }
+                if(use_chol){
+                    R <- chol(prec_mat)
+                }
+                y <- matrix(rnorm(ncol(r$L)), ncol = ncol(r$L), nrow = 1)
+                sim_full <- solve(R, t(y), system = "Lt")                
+                sim <- (r$A)%*%sim_full
+                t2 <- Sys.time()
+                times.rat[i] <- times.rat[i] + as.numeric(t2-t1, units = "secs")
+            } else if(type == "estimation"){
+                t1 <- Sys.time()
+                if(est_nu){
+                    theta0 <- c(log(kappa), log(sigma), log(nu), log(sigma_e))
+                    par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m.rat)
+                    t2 <- Sys.time()
+                    times.rat[i] <- times.rat[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
+                    if(!only_optim){
+                        kappa_est = exp(par$par[1])
+                        sigma_est = exp(par$par[2])
+                        nu_est = exp(par$par[3])
+                        sigma_e_est = exp(par$par[4])    
+                        Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu_est, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
+                        Q <- Qrat$Q
+                        Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
+                        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)         
+                        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
+                        t3 <- Sys.time()
+                        times.rat[i] <- times.rat[i] + as.numeric((t3-t2), units = "secs")   
+                    }
+                } else{
+                    t1 <- Sys.time()
+                    theta0 <- c(log(kappa), log(sigma), log(sigma_e))
+                    par <- optim(theta0, rat.like, method = "L-BFGS-B", loc = loc[obs_ind], Y = y, m = m.rat, nu = nu)
+                    t2 <- Sys.time()    
+                    times.rat[i] <- times.rat[i] + as.numeric((t2-t1)/par$counts[1], units = "secs") 
+                    if(!only_optim){
+                        kappa_est = exp(par$par[1])
+                        sigma_est = exp(par$par[2])
+                        sigma_e_est = exp(par$par[3]) 
+                        Qrat <- rSPDE:::matern.rational.precision(loc = loc, order = m.rat, nu = nu, kappa = kappa_est, cumsum = TRUE, ordering = "location", sigma = sigma_est, type_rational = "brasil", type_interp = "spline")
+                        Q <- Qrat$Q
+                        Qhat.rat <- Q + t(Qrat$A[obs_ind,])%*%Qrat$A[obs_ind,]/sigma_e_est^2        
+                        R <- Matrix::Cholesky(Qhat.rat, perm = FALSE)   
+                        mu.rat <- Qrat$A%*%solve(R, t(Qrat$A[obs_ind,])%*%y/sigma_e_est^2, system = "A")
+                        t3 <- Sys.time()
+                        times.rat[i] <- times.rat[i] + as.numeric((t3-t2), units = "secs")         
+                    }                   
+                }
+                
+            } else{
+                stop("invalid type")
+            }
+        }
+        if(print){
+            cat("\n")
+        }
+        times.rat[i] <- times.rat[i]/samples
+    } 
+    return(times.rat)
+}
+
+
 timing_nngp_m_vec <- function(N, n_obs, m.nngp, factor = 100, nu, range, sigma, sigma_e, samples, 
 type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE, print=FALSE){
     type <- type[[1]]
@@ -851,7 +870,9 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
             print(paste("m =", i_m))
         }
         for(jj in 1:samples){
-            cat(jj/samples, " ")
+            if(print){
+                cat(jj/samples, " ")
+            }
             if(type == "prediction"){
                 t1 <- Sys.time()                 
                 Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = i_m)
@@ -921,3 +942,91 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
         } 
     return(times.nngp)
 }
+
+
+auto_calibration_nngp_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samples, m_rat, previous_calibration = NULL, max_it_per_m = 20, print=FALSE){
+    ret_m <- numeric(length(m_rat))
+    if(is.null(previous_calibration)){
+        # get rational times
+        if(print){
+            print("Computing rational times")
+        }
+        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction")
+        if(print){
+            print("Calibrating nngp")
+        }
+        m_tmp <- 1
+        times_tmp <- timing_nngp_m_vec(N = n, n_obs = n_obs, m.nngp = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+        for(i in 1:length(m_rat)){
+            if(print){
+                print(paste("Starting calibration for m =",m_rat[i]))
+            }
+            count <- 0
+            if(times_tmp >= times_rat[i]){
+                ret_m[i] <- m_tmp
+            } else{
+                while((times_tmp < times_rat[i]) && (count < max_it_per_m)){
+                    m_tmp <- m_tmp + 1
+                    times_tmp <- timing_nngp_m_vec(N = n, n_obs = n_obs, m.nngp = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+                    count <- count + 1
+                }
+                ret_m[i] <- m_tmp
+            }
+            if(print){
+                print("Calibration found:")
+                print(paste("m_nngp =", ret_m[i]))
+            }
+        }
+    } else{
+        if(print){
+            print("Computing rational times")
+        }
+        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction")
+        if(print){
+            print("Calibrating nngp")
+        }
+        for(i in 1:length(m_rat)){
+            if(print){
+                print(paste("Starting calibration for m =",m_rat[i]))
+            }
+            count <- 0
+            m_tmp <- previous_calibration[i]
+            times_tmp <- timing_nngp_m_vec(N = n, n_obs = n_obs, m.nngp = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+
+            if(times_tmp > times_rat[i]){
+                while((times_tmp > times_rat[i]) &&  (count < max_it_per_m) && (m_tmp > 1)){
+                    m_tmp <- m_tmp - 1
+                    times_tmp <- timing_nngp_m_vec(N = n, n_obs = n_obs, m.nngp = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+                    count <- count + 1
+                }
+                if(times_tmp < times_rat[i]){
+                    m_tmp <- m_tmp + 1
+                }
+            } else{
+                while((times_tmp < times_rat[i]) &&  (count < max_it_per_m)){
+                    m_tmp <- m_tmp + 1
+                    times_tmp <- timing_nngp_m_vec(N = n, n_obs = n_obs, m.nngp = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+                    count <- count + 1
+                }
+            }
+
+            ret_m[i] <- m_tmp
+
+            if(print){
+                print("Calibration found:")
+                print(paste("m_nngp =", ret_m[i]))
+            }
+        }
+    }
+    return(ret_m)
+}
+
+# time1 <- Sys.time()
+# m_tmp <- auto_calibration_nngp_rat(n=250, n_obs=250, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
+# time2 <- Sys.time()
+# print(time2-time1)
+
+# time1 <- Sys.time()
+# m_tmp2 <- auto_calibration_nngp_rat(n=500, n_obs=250, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE)
+# time2 <- Sys.time()
+# print(time2-time1)
