@@ -39,7 +39,7 @@ m_nngp_fun <- function(m, alpha = NULL, n, m_vec = NULL){
     # return(mn)
 }
 
-
+devtools::install_github("davidbolin/excursions", ref="devel")
 source("aux_functions/aux_functions_cov.R")
 source("aux_functions/probability_computations.R")
 library(rSPDE)
@@ -57,7 +57,7 @@ n.obs <- 250
 n.rep <- 10
 max_it_per_m <- 20 # for calibration
 samples_calibration <- 50
-nu <- 1.9 - 1/2
+nu <- 2.9 - 1/2
 alpha <- nu + 1/2
 coverage <- 0.9
 m_vec = 1:6   # rational order
