@@ -150,8 +150,8 @@ for(j in 1:n.rep){
             
             cat("rat: ", err_rat[k,i]/j, '\n')
             cat("nngp: ", err_nngp[k,i]/j, '\n')
-
-            # Save partial results
+        }
+        # Save partial results
             partial_res_list <- list(
                 err_rat = err_rat[,i],
                 err_nngp = err_nngp[,i],
@@ -160,7 +160,6 @@ for(j in 1:n.rep){
                 m = m_vec
             )
             saveRDS(partial_res_list, file = paste0("prob_tables/partial_results/partial_result_rep", j, "_n", n[i], "_range",range,"_nu",nu,".RDS"))
-        }
     }
 }
 err_rat <- err_rat/n.rep
