@@ -182,6 +182,10 @@ for(j in 1:n.rep){
 err_rat <- err_rat/n.rep
 err_nngp <- err_nngp/n.rep
 
+res_list <- list(err_rat = err_rat, err_nngp = err_nngp, nu = nu, range = range)
+
+saveRDS(res_list, paste0("prob_errors_range",range,"_nu",nu,".RDS"))
+
 
 plot(n,abs(err_rat[1,]), type="l", ylim = c(0.00001,1), log="y", ylab = "Absolute error")
 lines(n,abs(err_rat[2,]),col=2)
