@@ -31,7 +31,7 @@ n.obs <- 250
 n.rep <- 10
 max_it_per_m <- 20 # for calibration
 samples_calibration <- 50
-nu <- 1.9 - 1/2 # 0.4, 1, 2 -> alpha = 0.9, 1.5 and 2.5
+nu <- 1 # 0.4, 1, 2 -> alpha = 0.9, 1.5 and 2.5
 alpha <- nu + 1/2
 coverage <- 0.9
 m_vec = 1:6   # rational order
@@ -54,6 +54,9 @@ calibrated_m <- list()
 
 for(j in 1:n.rep){
     obs_loc <- sort(domain_upper_limit*runif(n.obs))
+    while(min(diff(obs_loc)) < 1e-4){
+        obs_loc <- sort(domain_upper_limit*runif(n.obs))
+    }
     obs_cov <- get_cov_mat(loc = obs_loc, m = NULL, method = "true", nu = nu, kappa = kappa, sigma = sigma, 
                             samples = NULL, L=NULL)
     z <- matrix(rnorm(n.obs), ncol = n.obs, nrow = 1)
@@ -63,12 +66,23 @@ for(j in 1:n.rep){
     for(i in 1:length(n)) {
         if(n[i]>0){ 
             loc <- c(obs_loc, locs[[i]])
+
             obs.ind <- 1:length(loc)
             tmp <- sort(loc, index.return = TRUE)
             obs.ind[tmp$ix] <- 1:length(loc)
-            
             loc <- tmp$x
-            obs.ind <- obs.ind[1:n.obs]    
+            obs.ind <- obs.ind[1:n.obs]                
+
+            if(any(diff(loc)<1e-4)){
+                ind_remove <- which(diff(loc)<1e-4)
+                ind_remove <- c(ind_remove, ind_remove+1)
+                ind_remove <- setdiff(ind_remove, obs.ind)
+            }            
+
+            loc <- loc[-ind_remove]
+            tolerance <- 1e-4  
+            obs.ind <- sapply(obs_loc, function(x) which(abs(loc - x) < tolerance)[1])     
+
         } else {
             loc <- obs_loc
             obs.ind <- 1:n.obs
