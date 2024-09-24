@@ -58,6 +58,41 @@ calibration(m.rat = m.rat, times.rat = timings_rat_10000_5000_23, m.other = m.nn
 calibration(m.rat = m.rat, times.rat = timings_rat_10000_10000_12, m.other = m.nngp12, times.other = timings_nngp_10000_10000_12)
 calibration(m.rat = m.rat, times.rat = timings_rat_10000_10000_23, m.other = m.nngp23, times.other = timings_nngp_10000_10000_23)
 
+N <- 250
+n_obs <- 250
+nu <- 0.4
+range <- 1
+sigma <- 1
+sigma_e <- 0.1
+m_rat <- 1:6
+samples = 200
+
+times.rat01 <- timing_rat(N, n_obs, nu = 0.4, range, sigma, sigma_e, m_rat, samples, type = "prediction")
+times.rat12 <- timing_rat(N, n_obs, nu = 1.4, range, sigma, sigma_e, m_rat, samples, type = "prediction")
+times.rat23 <- timing_rat(N, n_obs, nu = 2.4, range, sigma, sigma_e, m_rat, samples, type = "prediction")
+saveRDS(times.rat01, "times_rat_250_01.RDS")
+saveRDS(times.rat12, "times_rat_250_12.RDS")
+saveRDS(times.rat23, "times_rat_250_23.RDS")
+
+m.nngp_pred_01 <- 1:15
+times.nngp01_pred <- timing_nngp_m_vec(N = N, n_obs = n_obs, m.nngp = m.nngp_pred_01, nu = 1.4, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+saveRDS(times.nngp01_pred, "times_nngp_250_01.RDS")
+
+m.nngp_pred_12 <- 1:20
+times.nngp12_pred <- timing_nngp_m_vec(N = N, n_obs = n_obs, m.nngp = m.nngp_pred_12, nu = 1.4, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+saveRDS(times.nngp12_pred, "times_nngp_250_12.RDS")
+
+m.nngp_pred_23 <- 1:30
+times.nngp23_pred <- timing_nngp_m_vec(N = N, n_obs = n_obs, m.nngp = m.nngp_pred_23, nu = 2.4, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, type = "prediction")
+saveRDS(times.nngp23_pred, "times_nngp_250_23.RDS")
+
+
+m.rat <- 1:6
+
+calibration(m.rat = m.rat, times.rat = times.rat12, m.other = m.nngp_pred_12, times.other = times.nngp12_pred)
+calibration(m.rat = m.rat, times.rat = times.rat23, m.other = m.nngp_pred_23, times.other = times.nngp23_pred)
+
+
 
 
 ## Tabulating rational timings - prediction
