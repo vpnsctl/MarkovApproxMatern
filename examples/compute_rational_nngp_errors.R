@@ -13,7 +13,7 @@ registerDoSNOW(cl)
 
 
 range <- 1
-n <- 5000
+n <- 10000
 n.obs <- 5000
 
 sigma = 1
@@ -34,7 +34,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "rational"
 
 fourier_samples <- 100
 
