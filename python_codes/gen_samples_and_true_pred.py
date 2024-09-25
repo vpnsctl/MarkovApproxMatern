@@ -12,14 +12,14 @@ tf.random.set_seed(123)
 n = 10000
 n_obs = 10000
 n_rep = 100
-range_value = 0.5
+range_value = 2
 sigma = 1
 sigma_e = 0.1
 
 if(n == n_obs and range_value == 2):
-    jitter = 1e-5 # To stabilize Cholesky (needed for high nu, but we will add for all of them for simplicity, as they can be considered measurement error)
+    jitter = 0 # To stabilize Cholesky (needed for high nu, but we will add for all of them for simplicity, as they can be considered measurement error)
 else:
-    jitter = 1e-6
+    jitter = 0
 
 # Reversed order for nu_vec
 nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
