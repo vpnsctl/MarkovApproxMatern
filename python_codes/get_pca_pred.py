@@ -183,7 +183,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
 n = 10000
 n_obs = 5000
-range_val = 2
+range_val = 0.5
 sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
