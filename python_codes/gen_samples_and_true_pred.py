@@ -12,17 +12,14 @@ tf.random.set_seed(123)
 n = 10000
 n_obs = 10000
 n_rep = 100
-range_value = 0.5
+range_value = 1
 sigma = 1
 sigma_e = 0.1
 
-if(n == n_obs and range_value == 2):
-    jitter = 1e-5 # To stabilize Cholesky (needed for high nu, but we will add for all of them for simplicity, as they can be considered measurement error)
-else:
-    jitter = 1e-6
+jitter = 0 # Can be set to nonzero if needed to stabilize the Cholesky for sampling
 
 # Reversed order for nu_vec
-nu_vec = tf.range(2.49, 0.00, -0.01)
+nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
 
 # Function to compute kappa
 def compute_kappa(nu, range_value):
@@ -38,10 +35,10 @@ def generate_obs_indices(n, n_obs):
 
 # Matern covariance function
 def matern_covariance(h, kappa, nu, sigma):
-    h = tf.cast(h, tf.float64)
-    kappa = tf.cast(kappa, tf.float64)
-    nu = tf.cast(nu, tf.float64)
-    sigma = tf.cast(sigma, tf.float64)
+    h = tf.convert_to_tensor(h, tf.float64)
+    kappa = tf.convert_to_tensor(kappa, tf.float64)
+    nu = tf.convert_to_tensor(nu, tf.float64)
+    sigma = tf.convert_to_tensor(sigma, tf.float64)
 
     if nu == 0.5:
         C = sigma**2 * tf.exp(-kappa * tf.abs(h))
@@ -53,7 +50,8 @@ def matern_covariance(h, kappa, nu, sigma):
 
 # Function to compute the covariance matrix
 def compute_matern_covariance_toeplitz(n_points, kappa, sigma, nu, sigma_e, ret_operator=False):
-    loc = tf.linspace(0.0, n_points / 100.0, n_points)
+    loc = np.linspace(0.0, n_points / 100.0, n_points, dtype='float64')
+    loc = tf.convert_to_tensor(loc)
     Sigma_row = matern_covariance(loc, kappa=kappa, nu=nu, sigma=sigma)
     Sigma_row = tf.tensor_scatter_nd_update(Sigma_row, [[0]], [Sigma_row[0] + sigma_e**2])
     
