@@ -44,7 +44,6 @@ def load_hdf5_data(file_path, dataset_name):
 
 def mat_spec(x, kappa, alpha):
     A = gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5)) / (2 * np.pi * gamma(alpha - 0.5))
-    
     return A / ((kappa**2 + x**2)**alpha)
 
 def sample_mat(n, kappa, alpha):
@@ -69,7 +68,7 @@ def ff_comp(m, kappa, alpha, loc):
     b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
     ZX = tf.TensorArray(dtype=tf.float64, size=m)
     for i in range(m):
-        row_value = tf.sqrt(tf.cast(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.cast(m, tf.float64))
+        row_value = tf.sqrt(tf.convert_to_tensor(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.convert_to_tensor(m, tf.float64))
         ZX = ZX.write(i, row_value)
     ZX_matrix = ZX.stack()
     return tf.transpose(ZX_matrix)
@@ -78,11 +77,10 @@ def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
     sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
     sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
     K = ff_comp(m=mn, kappa=kappa, alpha=nu + 0.5, loc=loc) * sigma**2
-    D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.cast(1, dtype=tf.float64)))
+    D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.convert_to_tensor(1, dtype=tf.float64)))
     Bo = tf.gather(K, obs_ind, axis=0)
     # D is identity, so no need to invert
     Q_hat = D + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
-    print(sigma_e)
     mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
     
     return mu_fourier

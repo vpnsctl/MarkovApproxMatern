@@ -12,11 +12,11 @@ tf.random.set_seed(123)
 n = 10000
 n_obs = 5000
 n_rep = 100
-range_value = 1
+range_value = 2
 sigma = 1
 sigma_e = 0.1
 # Reversed order for nu_vec
-nu_vec = tf.range(2.49, 0.00, -0.01)
+nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
 
 # Function to compute kappa
 def compute_kappa(nu, range_value):
@@ -47,7 +47,8 @@ def matern_covariance(h, kappa, nu, sigma):
 
 # Function to compute the covariance matrix
 def compute_matern_covariance_toeplitz(n_points, kappa, sigma, nu, sigma_e, ret_operator=False):
-    loc = tf.linspace(0.0, n_points / 100.0, n_points)
+    loc = np.linspace(0.0, n_points / 100.0, n_points, dtype='float64')
+    loc = tf.convert_to_tensor(loc)
     Sigma_row = matern_covariance(loc, kappa=kappa, nu=nu, sigma=sigma)
     Sigma_row = tf.tensor_scatter_nd_update(Sigma_row, [[0]], [Sigma_row[0] + sigma_e**2])
     
