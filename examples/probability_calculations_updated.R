@@ -22,6 +22,8 @@ if (!dir.exists("prob_tables/partial_results")) {
 use.excursions <- TRUE
 folder_to_save <- "markov_approx"
 
+set.seed(123)
+
 range = 0.5
 sigma = 1
 sigma.e <- 0.1
@@ -31,7 +33,7 @@ n.obs <- 250
 n.rep <- 10
 max_it_per_m <- 20 # for calibration
 samples_calibration <- 50
-nu <- 1 # 0.4, 1, 2 -> alpha = 0.9, 1.5 and 2.5
+nu <- 2 # 0.4, 1, 2 -> alpha = 0.9, 1.5 and 2.5
 alpha <- nu + 1/2
 coverage <- 0.9
 m_vec = 1:6   # rational order
@@ -112,7 +114,7 @@ for(j in 1:n.rep){
         conf <- simconf(alpha = 1-coverage, mu = post_mean_true, Q = Q.true, vars  = diag(post_cov_true), n.iter=1e5)
         lb_prob <- conf$a
         ub_prob <- conf$b
-        if(use.excursions) {
+        if(use.excursions && n[i] > 999) {
             prob_true <- gaussint(a=lb_prob,b=ub_prob,mu=post_mean_true,Q = Q.true, n.iter = 1e5)$P        
         } else {
             prob_true <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_true,sigma = post_cov_true)
@@ -133,7 +135,7 @@ for(j in 1:n.rep){
             mu.rat <-  as.vector(Qrat$A %*% mu_xgiveny)
             Sigma.rat <- as.matrix(Qrat$A%*%solve(Q_xgiveny, t(Qrat$A)))
             
-            if(use.excursions) {
+            if(use.excursions && n[i] > 999) {
                 prob_rat <- gaussint(a=lb_prob,b=ub_prob,mu=mu.rat,Q = solve(Sigma.rat), n.iter = 1e5)$P
             } else {
                 prob_rat <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=mu.rat,sigma = Sigma.rat)
@@ -152,7 +154,7 @@ for(j in 1:n.rep){
             post_mean_nngp <- as.vector(post_nngp$post_mean)
             post_cov_nngp <- as.matrix(post_nngp$post_cov)
             
-            if(use.excursions) {
+            if(use.excursions && n[i] > 999) {
                 prob_nngp <-  gaussint(a=lb_prob,b=ub_prob,mu=post_mean_nngp,Q = solve(post_cov_nngp), n.iter = 1e5)$P
             } else {
                 prob_nngp <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_nngp,sigma = post_cov_nngp)
