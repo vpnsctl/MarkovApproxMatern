@@ -32,10 +32,10 @@ def generate_obs_indices(n, n_obs):
 
 # Matern covariance function
 def matern_covariance(h, kappa, nu, sigma):
-    h = tf.cast(h, tf.float64)
-    kappa = tf.cast(kappa, tf.float64)
-    nu = tf.cast(nu, tf.float64)
-    sigma = tf.cast(sigma, tf.float64)
+    h = tf.convert_to_tensor(h, tf.float64)
+    kappa = tf.convert_to_tensor(kappa, tf.float64)
+    nu = tf.convert_to_tensor(nu, tf.float64)
+    sigma = tf.convert_to_tensor(sigma, tf.float64)
 
     if nu == 0.5:
         C = sigma**2 * tf.exp(-kappa * tf.abs(h))

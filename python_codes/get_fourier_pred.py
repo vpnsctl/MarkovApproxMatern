@@ -1,43 +1,11 @@
 import h5py
 import numpy as np
 import tensorflow as tf
-import tensorflow_probability as tfp
 import os
 import time
 import pandas as pd
-
-def matern_covariance(h, kappa, nu, sigma):
-    h = tf.convert_to_tensor(h, tf.float64)
-    kappa = tf.convert_to_tensor(kappa, tf.float64)
-    nu = tf.convert_to_tensor(nu, tf.float64)
-    sigma = tf.convert_to_tensor(sigma, tf.float64)
-    if nu == 0.5:
-        C = sigma**2 * tf.exp(-kappa * tf.abs(h))
-    else:
-        C = (sigma**2 / (2**(nu - 1) * tf.exp(tf.math.lgamma(nu)))) * \
-            (kappa * tf.abs(h))**nu * tfp.math.bessel_kve(nu, kappa * tf.abs(h)) / tf.exp(kappa * tf.abs(h))
-        C = tf.where(h == 0, sigma**2, C)
-    return C
-
-def compute_matern_covariance_toeplitz(loc, kappa, sigma, nu, sigma_e, ret_operator=False):
-    Sigma_row = matern_covariance(loc, kappa=kappa, nu=nu, sigma=sigma)
-    Sigma_row = tf.tensor_scatter_nd_update(Sigma_row, [[0]], [Sigma_row[0] + sigma_e**2])
-    
-    if ret_operator:
-        return tf.linalg.LinearOperatorToeplitz(row=Sigma_row, col=Sigma_row)
-    else:
-        return Sigma_row
-
-def compute_eigen_cov(Sigma):
-    eigenvalues, eigenvectors = tf.linalg.eigh(Sigma)
-    eigenvectors = tf.reverse(eigenvectors, axis=[1])
-    eigenvalues = tf.reverse(eigenvalues, axis=[0])
-    
-    eigen_cov = {
-        "val": eigenvalues,
-        "vec": eigenvectors
-    }
-    return eigen_cov
+from scipy.special import gamma
+from scipy.stats import cauchy
 
 def m_pca_fun(m, alpha, n, n_obs):
     if alpha < 1:
@@ -74,16 +42,52 @@ def load_hdf5_data(file_path, dataset_name):
         data = f[dataset_name][:]
     return data
 
-def pca_prediction(Y, obs_ind, eigen_cov, sigma_e, m):
-    K = eigen_cov['vec'][:, :m]
-    reciprocals_eigenval = tf.math.reciprocal(eigen_cov['val'][:m])
-    Di = tf.linalg.diag(reciprocals_eigenval)
-    Bo = tf.gather(K, obs_ind , axis=0)
-    Q_hat = Di + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
-    mu_pca = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
-    return mu_pca
+def mat_spec(x, kappa, alpha):
+    A = gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5)) / (2 * np.pi * gamma(alpha - 0.5))
+    
+    return A / ((kappa**2 + x**2)**alpha)
 
-def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
+def sample_mat(n, kappa, alpha):
+    c = mat_spec(0.0, kappa=kappa, alpha=alpha) / cauchy.pdf(0.0, loc=0, scale=kappa)
+    k = 0
+    out = np.zeros(n)
+    while k < n:
+        X = cauchy.rvs(loc=0, scale=kappa)
+        U1 = np.random.uniform(0, 1)
+        fx = cauchy.pdf(X, loc=0, scale=kappa)
+        fy = mat_spec(X, kappa=kappa, alpha=alpha)
+       
+        Y = c * fx * U1
+        if Y < fy:
+            out[k] = X
+            k += 1
+    return tf.convert_to_tensor(out, dtype=tf.float64)
+
+def ff_comp(m, kappa, alpha, loc):
+    loc = tf.cast(loc, tf.float64)
+    w = sample_mat(m, kappa, alpha)
+    b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
+    ZX = tf.TensorArray(dtype=tf.float64, size=m)
+    for i in range(m):
+        row_value = tf.sqrt(tf.cast(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.cast(m, tf.float64))
+        ZX = ZX.write(i, row_value)
+    ZX_matrix = ZX.stack()
+    return tf.transpose(ZX_matrix)
+
+def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
+    sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
+    sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
+    K = ff_comp(m=mn, kappa=kappa, alpha=nu + 0.5, loc=loc) * sigma**2
+    D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.cast(1, dtype=tf.float64)))
+    Bo = tf.gather(K, obs_ind, axis=0)
+    # D is identity, so no need to invert
+    Q_hat = D + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
+    print(sigma_e)
+    mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
+    
+    return mu_fourier
+
+def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fourier, folder_to_save):
     sim_data_name = "sim_data_result"
     true_mean_name = "true_mean_result"
     nu_vec_python = "nu_vec"
@@ -98,7 +102,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
     np.random.seed(123)
     m_vec = np.arange(1, 7)
-    all_err_pca = []
+    all_err_fourier = []
 
     nu_vec = np.arange(2.49, 0.01, -0.01)
 
@@ -124,16 +128,12 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
             full_true_pred_nu = tf.gather(full_true_pred_nu, obs_ind)
 
         m_vec = np.arange(1, 7)
-        err_pca = np.zeros((1, len(m_vec)))
+        err_fourier = np.zeros((1, len(m_vec)))
 
         alpha = nu + 0.5
         kappa_val = np.sqrt(8 * nu) / range_val
 
         loc = tf.linspace(0.0, n / 100.0, n)
-        
-        Sigma = compute_matern_covariance_toeplitz(loc=loc, kappa=kappa_val, sigma=sigma, nu=nu, sigma_e=0, ret_operator=True).to_dense()
-        
-        eigen_cov = compute_eigen_cov(Sigma)
         
         print(f"Getting True pred for nu = {nu:.2f}")
 
@@ -150,43 +150,47 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
             for j, m in enumerate(m_vec):
                 mn = m_pca_fun(m, alpha, n, n_obs)
-                mu_pca = pca_prediction(Y, obs_ind, eigen_cov, sigma_e, mn)
-
+                err_tmp = 0 
                 loc_diff = loc[1] - loc[0]
-                err_pca[0, j] += np.sqrt(loc_diff * np.sum((mu - mu_pca)**2)) / n_rep
+
+                for jj in range(samples_fourier): 
+                    mu_fourier = fourier_prediction(Y, obs_ind, mn, kappa_val, nu, loc, sigma, sigma_e)
+                    err_tmp += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_fourier))) / (n_rep * samples_fourier)
+                err_fourier[0, j] += err_tmp.numpy() 
 
             
         print(f"Time: {time.time() - time1}")
-        print("PCA Error :", err_pca[0])
-        all_err_pca.append((nu, err_pca[0]))
+        print("Fourier Error :", err_fourier[0])
+        all_err_fourier.append((nu, err_fourier[0])) 
 
         # Save partial results
-        partial_save_path = os.path.join(folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "pca")
+        partial_save_path = os.path.join(folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "fourier")
         os.makedirs(partial_save_path, exist_ok=True)
         
-        np.savez(os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz"), errors=err_pca[0])
+        np.savez(os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz"), errors=err_fourier[0])
 
     # Save final results
     final_save_path = os.path.join(folder_to_save, "pred_tables")
     os.makedirs(final_save_path, exist_ok=True)
     
     final_results = {"nu": [], "errors": []}
-    for nu, errors in all_err_pca:
+    for nu, errors in all_err_fourier:  
         final_results["nu"].append(nu)
         final_results["errors"].append(errors)
 
     # Convert to DataFrame for saving
     final_df = pd.DataFrame(final_results)
-    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_pca.RDS"))
+    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_fourier.RDS"))
 
     return final_df
 
-n = 5000
-n_obs = 5000
-range_val = 0.5
+n = 10000
+n_obs = 10000
+range_val = 2
 sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
 n_rep = 100
+samples_fourier = 100
 
-get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save)
+get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fourier, folder_to_save)
