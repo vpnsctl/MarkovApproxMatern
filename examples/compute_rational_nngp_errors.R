@@ -14,7 +14,7 @@ registerDoSNOW(cl)
 
 range <- 0.5
 n <- 10000
-n.obs <- 5000
+n.obs <- 10000
 
 sigma = 1
 sigma.e <- 0.1
