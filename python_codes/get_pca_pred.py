@@ -181,7 +181,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
     return final_df
 
-n = 10000
+n = 5000
 n_obs = 5000
 range_val = 2
 sigma = 1.0
