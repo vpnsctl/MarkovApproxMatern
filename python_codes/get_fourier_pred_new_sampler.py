@@ -1,12 +1,20 @@
 import h5py
 import numpy as np
 import tensorflow as tf
+import math
 import os
 import time
 import pandas as pd
 from scipy.special import gamma
 from scipy.stats import cauchy
 import concurrent.futures
+from scipy.interpolate import UnivariateSpline
+from scipy.special import gamma, hyp2f1
+from scipy.optimize import brentq
+import numpy as np
+import tensorflow as tf
+from scipy.stats import cauchy
+max_workers = 24
 
 def m_pca_fun(m, alpha, n, n_obs):
     if alpha < 1:
@@ -43,36 +51,20 @@ def load_hdf5_data(file_path, dataset_name):
         data = f[dataset_name][:]
     return data
 
-# def mat_spec(x, kappa, alpha):
-#     A = gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5)) / (2 * np.pi * gamma(alpha - 0.5))
-#     return A / ((kappa**2 + x**2)**alpha)
-
-# def sample_mat(n, kappa, alpha):
-#     c = mat_spec(0.0, kappa=kappa, alpha=alpha) / cauchy.pdf(0.0, loc=0, scale=kappa)
-#     k = 0
-#     out = np.zeros(n)
-#     while k < n:
-#         X = cauchy.rvs(loc=0, scale=kappa)
-#         U1 = np.random.uniform(0, 1)
-#         fx = cauchy.pdf(X, loc=0, scale=kappa)
-#         fy = mat_spec(X, kappa=kappa, alpha=alpha)
-       
-#         Y = c * fx * U1
-#         if Y < fy:
-#             out[k] = X
-#             k += 1
-#     return tf.convert_to_tensor(out, dtype=tf.float64)
-
-import numpy as np
-import tensorflow as tf
-from scipy.stats import cauchy
-max_workers = 24
+# CDF obtained from mathematica
+# def mat_spec_cdf(x, kappa, alpha):
+#     A = (gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5))) / (2 * np.pi * gamma(alpha - 0.5))
+#     term1 = x * (1 + (x**2 / kappa**2))**alpha
+#     term2 = (x**2 + kappa**2)**(-alpha)
+#     hypergeo = hyp2f1(0.5, alpha, 1.5, -x**2 / kappa**2)
+#     result = A * term1 * term2 * hypergeo + 0.5
+#     return result
 
 def mat_spec(x, kappa, alpha):
-    A = (gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5))) / (2 * np.pi * gamma(alpha - 0.5))
-    return A / ((kappa**2 + x**2) ** alpha)
+    A = gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5)) / (2 * np.pi * gamma(alpha - 0.5))
+    return A / ((kappa**2 + x**2)**alpha)
 
-def sample_single(kappa, alpha):
+def sample_single_rejection(kappa, alpha):
     c = mat_spec(0.0, kappa=kappa, alpha=alpha) / cauchy.pdf(0.0, loc=0, scale=kappa)
     while True:
         X = cauchy.rvs(loc=0, scale=kappa)
@@ -84,40 +76,40 @@ def sample_single(kappa, alpha):
         if Y < fy:
             return X
 
-def sample_mat_parallel(n, kappa, alpha):
+def sample_mat_rejection_parallel(n, kappa, alpha):
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(sample_single, kappa, alpha) for _ in range(n)]
+        futures = [executor.submit(sample_single_rejection, kappa, alpha) for _ in range(n)]
         results = [future.result() for future in concurrent.futures.as_completed(futures)]
-    
     return tf.convert_to_tensor(results, dtype=tf.float64)
 
-def ff_comp(m, kappa, alpha, loc):
-    print("starting parallel sampling")
-    w = sample_mat_parallel(m, kappa, alpha)
-    print("Finished parallel sampling")
-    print("Assembling result")
+def ff_comp_rejection(m, kappa, alpha, loc):
+    w = sample_mat_rejection_parallel(m, kappa, alpha)
     b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
     ZX = tf.TensorArray(dtype=tf.float64, size=m)
     for i in range(m):
         row_value = tf.sqrt(tf.convert_to_tensor(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.convert_to_tensor(m, tf.float64))
         ZX = ZX.write(i, row_value)
     ZX_matrix = ZX.stack()
-    print("Finished assembling")
     return tf.transpose(ZX_matrix)
 
-def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
-    sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
-    sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
-    print("starting ff_comp")
-    K = ff_comp(m=mn, kappa=kappa, alpha=nu + 0.5, loc=loc) * sigma**2
-    D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.convert_to_tensor(1, dtype=tf.float64)))
-    Bo = tf.gather(K, obs_ind, axis=0)
-    # D is identity, so no need to invert
-    print("mult and solve part")
-    Q_hat = D + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
-    mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
-    print("mult and solve done")
-    return mu_fourier
+def mat_spec_cdf(x, kappa, alpha):
+    A = (gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5))) / (2 * np.pi * gamma(alpha - 0.5))
+    term1 = x * (1 + (x**2 / kappa**2))**alpha
+    term2 = (x**2 + kappa**2)**(-alpha)
+    hypergeo = np.array([hyp2f1(0.5, alpha, 1.5, -xi**2 / kappa**2) for xi in np.atleast_1d(x)])
+    result = A * term1 * term2 * hypergeo + 0.5
+    return result
+
+def quant_spec(prob, kappa, alpha):
+    def func_to_solve(x):
+        return mat_spec_cdf(x, kappa=kappa, alpha=alpha) - prob
+    sol = brentq(func_to_solve, 0,200000)
+    return sol
+
+def mat_spec_cdf_parallel(x_vals, kappa, alpha):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        results = list(executor.map(lambda x: mat_spec_cdf(x, kappa, alpha), x_vals))
+    return np.array(results)
 
 def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fourier, folder_to_save):
     sim_data_name = "sim_data_result"
@@ -142,6 +134,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
     loc = tf.convert_to_tensor(loc)
 
     for nu in nu_vec:
+        nu = 0.4
         ind_nu = np.argmin((nu - nu_vec_loaded)**2)
 
         full_sim_data_nu = full_sim_data[ind_nu,:, :]
@@ -166,6 +159,95 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
         alpha = nu + 0.5
         kappa_val = np.sqrt(8 * nu) / range_val        
         
+        print("Tabulating")
+        # print("Getting upper bound and lower bound")
+        # First step getting a good resolution around the mode:
+        ub_mode = quant_spec(prob = 0.75, kappa = kappa_val, alpha = alpha)
+        lb_mode = -ub_mode
+        factor = 1000
+        n_terms_x_vals = min(math.ceil((ub_mode - lb_mode) * factor), 100000)
+        x_vals = np.linspace(lb_mode, ub_mode, n_terms_x_vals, dtype="float64")
+        
+        # Taking this, due to numerical instability for small nu
+        ub = 4*quant_spec(prob = 0.9, kappa = kappa_val, alpha = alpha)
+        lb = -ub
+        
+        pub = mat_spec_cdf(ub, kappa = kappa_val, alpha = alpha)
+        plb = mat_spec_cdf(lb, kappa = kappa_val, alpha = alpha)
+        
+        # print(f"Upper bound: {ub:.2f} Lower bound: {lb:.2f}")
+        
+        n_terms_away_mode = 200
+        x_vals_away_modelb = np.linspace(lb, lb_mode, n_terms_away_mode, dtype="float64")
+        x_vals_away_modeub = np.linspace(ub_mode, ub, n_terms_away_mode, dtype="float64")
+        x_vals = np.concatenate([x_vals, x_vals_away_modelb, x_vals_away_modeub])
+        x_vals = np.sort(np.unique(x_vals))
+        
+        # Compute CDF values on the grid
+        # print("Tabulating the spectral density")
+        cdf_vals = mat_spec_cdf_parallel(x_vals, kappa_val, alpha)
+        print("Done")
+        
+        spline_interp = UnivariateSpline(x_vals, cdf_vals, s=0) # s=0 means interpolate
+        
+        
+        # alpha > 0.7
+        
+        def find_root(prob):
+            def func_to_solve(x):
+                return spline_interp(x) - prob
+            sol = brentq(func_to_solve, lb,ub)
+            return sol
+
+        def sample_single(lb, ub, plb, pub):
+            U1 = np.random.uniform(0, 1)
+
+            if U1 <= plb:
+                return lb
+            elif U1 >= pub:
+                return ub
+            else:
+                return find_root(U1)  
+
+
+        def sample_mat_parallel(n,lb,ub,plb,pub):
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = [executor.submit(sample_single,lb,ub,plb,pub) for _ in range(n)]
+                results = [future.result() for future in concurrent.futures.as_completed(futures)]    
+            return tf.convert_to_tensor(results, dtype=tf.float64)        
+        
+        def ff_comp(m, lb, ub, plb, pub, loc):
+            # print("starting parallel sampling")
+            w = sample_mat_parallel(m, lb, ub, plb, pub)
+            # print("Finished parallel sampling")
+            # print("Assembling result")
+            b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
+            ZX = tf.TensorArray(dtype=tf.float64, size=m)
+            for i in range(m):
+                row_value = tf.sqrt(tf.convert_to_tensor(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.convert_to_tensor(m, tf.float64))
+                ZX = ZX.write(i, row_value)
+            ZX_matrix = ZX.stack()
+            # print("Finished assembling")
+            return tf.transpose(ZX_matrix)
+
+        def fourier_prediction(Y, obs_ind, mn, lb, ub, plb, pub, loc, sigma, sigma_e, kappa, alpha):
+            sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
+            sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
+            if(alpha > 0.9):
+                # print("starting ff_comp")
+                K = ff_comp(m=mn, lb=lb, ub=ub, plb=plb, pub=pub, loc=loc) * sigma**2
+                
+            else:
+                K = ff_comp_rejection(m=mn, kappa=kappa, alpha=alpha, loc=loc) * sigma**2
+            D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.convert_to_tensor(1, dtype=tf.float64)))
+            Bo = tf.gather(K, obs_ind, axis=0)
+            # D is identity, so no need to invert
+            # print("mult and solve part")
+            Q_hat = D + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
+            mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
+            # print("mult and solve done")                
+            return mu_fourier        
+        
         print(f"Getting True pred for nu = {nu:.2f}")
 
         time1 = time.time()
@@ -188,7 +270,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
 
                 for jj in range(samples_fourier): 
                     print(f"Fourier Sample = {jj}")
-                    mu_fourier = fourier_prediction(Y, obs_ind, mn, kappa_val, nu, loc, sigma, sigma_e)
+                    mu_fourier = fourier_prediction(Y, obs_ind, mn, lb, ub, plb, pub, loc, sigma, sigma_e, kappa_val, alpha)
                     err_tmp += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_fourier))) / (n_rep * samples_fourier)
                 err_fourier[0, j] += err_tmp.numpy() 
 
