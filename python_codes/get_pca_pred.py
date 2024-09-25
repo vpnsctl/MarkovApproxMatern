@@ -7,10 +7,10 @@ import time
 import pandas as pd
 
 def matern_covariance(h, kappa, nu, sigma):
-    h = tf.cast(h, tf.float64)
-    kappa = tf.cast(kappa, tf.float64)
-    nu = tf.cast(nu, tf.float64)
-    sigma = tf.cast(sigma, tf.float64)
+    h = tf.convert_to_tensor(h, tf.float64)
+    kappa = tf.convert_to_tensor(kappa, tf.float64)
+    nu = tf.convert_to_tensor(nu, tf.float64)
+    sigma = tf.convert_to_tensor(sigma, tf.float64)
     if nu == 0.5:
         C = sigma**2 * tf.exp(-kappa * tf.abs(h))
     else:
@@ -100,9 +100,10 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
     m_vec = np.arange(1, 7)
     all_err_pca = []
 
-    nu_vec = np.arange(2.49, 0.01, -0.01)
+    nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
 
-    loc = tf.linspace(0.0, n / 100.0, n)
+    loc = np.linspace(0.0, n / 100.0, n, dtype='float64')
+    loc = tf.convert_to_tensor(loc)
 
     for nu in nu_vec:
         ind_nu = np.argmin((nu - nu_vec_loaded)**2)
@@ -128,8 +129,6 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
         alpha = nu + 0.5
         kappa_val = np.sqrt(8 * nu) / range_val
-
-        loc = tf.linspace(0.0, n / 100.0, n)
         
         Sigma = compute_matern_covariance_toeplitz(loc=loc, kappa=kappa_val, sigma=sigma, nu=nu, sigma_e=0, ret_operator=True).to_dense()
         

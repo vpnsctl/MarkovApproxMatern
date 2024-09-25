@@ -63,7 +63,6 @@ def sample_mat(n, kappa, alpha):
     return tf.convert_to_tensor(out, dtype=tf.float64)
 
 def ff_comp(m, kappa, alpha, loc):
-    loc = tf.cast(loc, tf.float64)
     w = sample_mat(m, kappa, alpha)
     b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
     ZX = tf.TensorArray(dtype=tf.float64, size=m)
@@ -102,9 +101,10 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
     m_vec = np.arange(1, 7)
     all_err_fourier = []
 
-    nu_vec = np.arange(2.49, 0.01, -0.01)
+    nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
 
-    loc = tf.linspace(0.0, n / 100.0, n)
+    loc = np.linspace(0.0, n / 100.0, n, dtype='float64')
+    loc = tf.convert_to_tensor(loc)
 
     for nu in nu_vec:
         ind_nu = np.argmin((nu - nu_vec_loaded)**2)
@@ -129,9 +129,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
         err_fourier = np.zeros((1, len(m_vec)))
 
         alpha = nu + 0.5
-        kappa_val = np.sqrt(8 * nu) / range_val
-
-        loc = tf.linspace(0.0, n / 100.0, n)
+        kappa_val = np.sqrt(8 * nu) / range_val        
         
         print(f"Getting True pred for nu = {nu:.2f}")
 
