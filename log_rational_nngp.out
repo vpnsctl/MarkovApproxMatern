@@ -2052,93 +2052,138 @@ Time difference of 3.519675 secs
 [1] 8.335127e-07
 [1] "Time for m = 2"
 Time difference of 5.822078 secs
-cs
 [1] "nn"
-[1] 7.105024e-07
+[1] 1.63335e-07
 [1] "Time for m = 3"
-Time difference of 8.590464 secs
-
+Time difference of 8.798131 secs
 [1] "nn"
-[1] 1.561159e-08
+[1] 5.146587e-08
 [1] "Time for m = 4"
-Time difference of 8.79[1] "nn"
-[[1] "nn"
-[1] 5.215743e-09
+Time difference of 9.834298 secs
+[1] "nn"
+[1] 1.732929e-08
 [1] "Time for m = 5"
-Time difference of 13.3[1] "nn"
-[1] 3.632847e-08
+Time difference of 10.6009 secs
+[1] "nn"
+[1] 7.101242e-09
 [1] "Time for m = 6"
-Time difference of 13.76389 secs
+Time difference of 12.1264 secs
 [1] "time for replicate"
-Time difference of 50.15575 secs
+Time difference of 50.70464 secs
 80 Getting True pred
 [1] "nn"
-[1] 7.83088e-05
+[1] 2.118514e-05
 [1] "Time for m = 1"
-Time difference of 3.905129 secs
-5 secs
-e-06[1] "nn"
-[1] 4.159774e-06
+Time difference of 3.107008 secs
+[1] "nn"
+[1] 8.445775e-07
 [1] "Time for m = 2"
-Time dif[1] "nn"
-[1] 8.162075e-07
+Time difference of 5.022046 secs
+[1] "nn"
+[1] 1.654983e-07
 [1] "Time for m = 3"
-Time difference of 5.885481 secs
-rence of 6.007219 secs
+Time difference of 6.155026 secs
+[1] "nn"
+[1] 5.213682e-08
+[1] "Time for m = 4"
+Time difference of 7.603897 secs
+ secs
+[1] "nn"
+[1] 8.184074e-08
+[1] "Time for m = 5"
+Time difference of 9.959489 secs
+[1] "nn"
+[1] 2.142107e-09
+[1] "Time for m = 6"
+Time difference of 14.53041 secs
+[1] "time for replicate"
+Time difference of 50.58281 secs
+81 Getting True pred
+[1] "nn"
+[1] 8.182234e-06
+[1] "Time for m = 1"
+Time difference of 2.920019 secs
+[1] "nn"
+[1] 2.647749e-07
+[1] "Time for m = 2"
+Time difference of 4.832602 secs
+[1] "nn"
+[1] 5.128801e-08
+[1] "Time for m = 3"
+Time difference of 6.201516 secs
+n[1] "nn"
+[1] 2.883546e-07
+[1] "Time for m = 4"
+Time difference of 7.783733 secs
+"nn"
+[1] 3.687691e-08
+[1] "Time for m = 5"
+Time difference of 10.23205 secs
 cs
-[1] "nn"
-[1] 1.319631e-07
-[1] "Time for m = 4"
-Time difference of 7.33118 secs
-] 2.82751e-08
-[1] "Time for m = 5"
-Time difference of 9.356077 secs
-[1] "nn"
-[1] 1.174102e-08
+.188194e-08
 [1] "Time for m = 6"
-Time difference of 12.35382 secs
+Time difference of 12.00997 secs
 [1] "time for replicate"
-Time difference of 44.67637 secs
-81 Getting True pred
-81 Getting True pred
-[1] "nn"
-[1] 6.322206e-05
-[1] "Time for m = 1"
-Time difference of 2.852469 secs
-6337e-06
-[1] "Time for m = 2"
-Time difference of 4.579518 secs
-ence of 4.[1] "nn"
-[1] 7.789998e-08
-[1] "Time for m = 3"
-Time difference of 7.369658 secs
-e-08
-[1] "Time for m = 4"
-Time difference of 7.4488 secs
-ifference of 8.628766 secs
--08
-[1] "Time for m = 5"
-Time difference of 9.642743 secs
-[1] "nn"
-[1] 8.750653e-09
-[1] "Time for m = 6"
-Time difference of 11.83178 secs
-[1] "time for replicate"
-Time difference of 44.03578 secs
+Time difference of 46.20651 secs
 82 Getting True pred
- Getting Tru[1] "nn[1] "nn"
-[1] 2.896456e-05
+[1] "nn"
+[1] 3.2414e-05
 [1] "Time for m = 1"
-Time difference of 3.72981[1] "nn"
-[1] 1.90608e-06
+Time difference of 2.96616 secs
+[1] "nn"
+[1] 1.359687e-06
 [1] "Time for m = 2"
-Time difference of 4.637749 secs
-secs
+Time difference of 5.469778 secs
+[1] "nn"
+[1] 2.695522e-07
+[1] "Time for m = 3"
+Time difference of 6.6722 secs
+[1] "nn"
+[1] 8.566769e-08
+[1] "Time for m = 4"
+Time difference of 7.128797 secs
+ifference of 9.905354[1][1] "nn"
+[1] 5.096407e-08
+[1] "Time for m = 5"
+Time difference of 13.7435[1] "nn"
+[1] 1.063845e-09
+[1] "Time for m = 6"
+Time difference of 12.30528 secs
+[1] "time for replicate"
+Time difference of 53.58598 secs
+83 Getting True pred
+3e-05
+[1] "Time for m = 1"
+Time difference of 2.847397 secs
 secs
 [1] "nn"
-[1] 6.873963e-07
+[1] 1.037083e-06
+[1] "Time for m = 2"
+Time difference of 4.593033 secs
+[1] "nn"
+[1] 2.039376e-07
 [1] "Time for m = 3"
-Time difference of 7.480628 secs
- 9.712183e-08
+Time difference of 6.200478 secs
+[1] "nn"
+[1] 6.44045[1] "nn"
+[1] 7.552169e-08
 [1] "Time for m = 4"
-Time difference of 8.476791 secs
+Time difference of 10.2[1] "nn"
+[1] 4.220655e-08
+[1] "Time for m = 5"
+Time difference of 9.697804 secs
+[1] "nn"
+[1] [1] "nn"
+[1] 3.313557e-08
+[1] "Time for m = 6"
+Time difference of 13.57929 secs
+[1] "time for replicate"
+Time difference of 44.79855 secs
+84 Getting True pred
+3.69203e-05
+[1] "Time for m = 1"
+Time difference of 2.916234 secs
+[1] "nn"
+[1] 1.57312e-06
+[1] "Time for m = 2"
+Time difference of 5.465559 secs

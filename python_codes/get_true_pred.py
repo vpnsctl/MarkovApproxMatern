@@ -12,7 +12,7 @@ tf.random.set_seed(123)
 n = 10000
 n_obs = 5000
 n_rep = 100
-range_value = 2
+range_value = 0.5
 sigma = 1
 sigma_e = 0.1
 # Reversed order for nu_vec
