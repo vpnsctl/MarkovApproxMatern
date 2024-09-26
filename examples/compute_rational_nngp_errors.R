@@ -12,7 +12,7 @@ cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out")
 registerDoSNOW(cl)
 
 
-range <- 2
+range <- 1
 n <- 10000
 n.obs <- 5000
 
