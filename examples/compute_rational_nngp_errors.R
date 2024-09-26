@@ -12,9 +12,9 @@ cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out")
 registerDoSNOW(cl)
 
 
-range <- 0.5
+range <- 2
 n <- 10000
-n.obs <- 10000
+n.obs <- 5000
 
 sigma = 1
 sigma.e <- 0.1
@@ -34,7 +34,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "rational"
 
 fourier_samples <- 100
 
