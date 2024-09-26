@@ -5,7 +5,7 @@ import os
 import time
 import pandas as pd
 from scipy.special import gamma
-from scipy.stats import cauchy
+from scipy.stats import t
 
 def m_pca_fun(m, alpha, n, n_obs):
     if alpha < 1:
@@ -42,35 +42,25 @@ def load_hdf5_data(file_path, dataset_name):
         data = f[dataset_name][:]
     return data
 
-def mat_spec(x, kappa, alpha):
-    A = gamma(alpha) * np.sqrt(4 * np.pi) * kappa**(2 * (alpha - 0.5)) / (2 * np.pi * gamma(alpha - 0.5))
-    return A / ((kappa**2 + x**2)**alpha)
-
-def sample_mat(n, kappa, alpha):
-    c = mat_spec(0.0, kappa=kappa, alpha=alpha) / cauchy.pdf(0.0, loc=0, scale=kappa)
-    k = 0
-    out = np.zeros(n)
-    while k < n:
-        X = cauchy.rvs(loc=0, scale=kappa)
-        U1 = np.random.uniform(0, 1)
-        fx = cauchy.pdf(X, loc=0, scale=kappa)
-        fy = mat_spec(X, kappa=kappa, alpha=alpha)
-       
-        Y = c * fx * U1
-        if Y < fy:
-            out[k] = X
-            k += 1
-    return tf.convert_to_tensor(out, dtype=tf.float64)
-
 def ff_comp(m, kappa, alpha, loc):
-    w = sample_mat(m, kappa, alpha)
+    w = t.rvs(df = 2*alpha - 1, scale = kappa/np.sqrt(2*alpha-1), size = m)
     b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
-    ZX = tf.TensorArray(dtype=tf.float64, size=m)
-    for i in range(m):
-        row_value = tf.sqrt(tf.convert_to_tensor(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.convert_to_tensor(m, tf.float64))
-        ZX = ZX.write(i, row_value)
-    ZX_matrix = ZX.stack()
-    return tf.transpose(ZX_matrix)
+    # ZX = tf.TensorArray(dtype=tf.float64, size=m)
+    # for i in range(m):
+    #     row_value = tf.sqrt(tf.convert_to_tensor(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.convert_to_tensor(m, tf.float64))
+    #     ZX = ZX.write(i, row_value)
+    # ZX_matrix = ZX.stack()
+    # ZX = np.zeros((m, len(loc)), dtype=np.float64)
+    # for i in range(m):
+    #     ZX[i, :] = np.sqrt(2) * np.cos(w[i] * loc + b[i]) / np.sqrt(m)
+
+    # # Transpose the matrix and convert to tensorflow
+    # ZX_matrix = tf.convert_to_tensor(ZX.T, dtype=tf.float64)
+    ZX = np.sqrt(2) * np.cos(w[:, np.newaxis] * loc + b[:, np.newaxis]) / np.sqrt(m)
+
+    # Transpose and convert to TensorFlow tensor
+    ZX_matrix = tf.convert_to_tensor(ZX.T, dtype=tf.float64)
+    return ZX_matrix
 
 def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
     sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
