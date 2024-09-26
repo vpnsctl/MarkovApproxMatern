@@ -134,7 +134,6 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
     loc = tf.convert_to_tensor(loc)
 
     for nu in nu_vec:
-        nu = 0.4
         ind_nu = np.argmin((nu - nu_vec_loaded)**2)
 
         full_sim_data_nu = full_sim_data[ind_nu,:, :]
@@ -191,8 +190,6 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
         spline_interp = UnivariateSpline(x_vals, cdf_vals, s=0) # s=0 means interpolate
         
         
-        # alpha > 0.7
-        
         def find_root(prob):
             def func_to_solve(x):
                 return spline_interp(x) - prob
@@ -233,7 +230,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
         def fourier_prediction(Y, obs_ind, mn, lb, ub, plb, pub, loc, sigma, sigma_e, kappa, alpha):
             sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
             sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
-            if(alpha > 0.9):
+            if(alpha > 1.4):
                 # print("starting ff_comp")
                 K = ff_comp(m=mn, lb=lb, ub=ub, plb=plb, pub=pub, loc=loc) * sigma**2
                 
@@ -266,10 +263,10 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
                 err_tmp = 0 
                 loc_diff = loc[1] - loc[0]
                 
-                print("Starting Fourier")
+                print(f"j: {j}  m :{m}")
 
                 for jj in range(samples_fourier): 
-                    print(f"Fourier Sample = {jj}")
+                    time_tmp = time.time()
                     mu_fourier = fourier_prediction(Y, obs_ind, mn, lb, ub, plb, pub, loc, sigma, sigma_e, kappa_val, alpha)
                     err_tmp += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_fourier))) / (n_rep * samples_fourier)
                 err_fourier[0, j] += err_tmp.numpy() 
