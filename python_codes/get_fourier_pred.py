@@ -4,6 +4,7 @@ import tensorflow as tf
 import os
 import time
 import pandas as pd
+import math
 from scipy.special import gamma
 from scipy.stats import t
 
@@ -42,37 +43,45 @@ def load_hdf5_data(file_path, dataset_name):
         data = f[dataset_name][:]
     return data
 
-def ff_comp(m, kappa, alpha, loc):
-    w = t.rvs(df = 2*alpha - 1, scale = kappa/np.sqrt(2*alpha-1), size = m)
+# def ff_comp(m, kappa, alpha, loc):
+#     w = t.rvs(df = 2*alpha - 1, scale = kappa/np.sqrt(2*alpha-1), size = m)
+#     b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
+#     ZX = np.sqrt(2) * np.cos(w[:, np.newaxis] * loc + b[:, np.newaxis]) / np.sqrt(m)
+#     ZX_matrix = tf.convert_to_tensor(ZX.T, dtype=tf.float64)
+#     return ZX_matrix
+
+@tf.function
+def ff_comp(m, loc, w):
     b = tf.random.uniform([m], 0, 2 * np.pi, dtype=tf.float64)
-    # ZX = tf.TensorArray(dtype=tf.float64, size=m)
-    # for i in range(m):
-    #     row_value = tf.sqrt(tf.convert_to_tensor(2.0, tf.float64)) * tf.cos(w[i] * loc + b[i]) / tf.sqrt(tf.convert_to_tensor(m, tf.float64))
-    #     ZX = ZX.write(i, row_value)
-    # ZX_matrix = ZX.stack()
-    # ZX = np.zeros((m, len(loc)), dtype=np.float64)
-    # for i in range(m):
-    #     ZX[i, :] = np.sqrt(2) * np.cos(w[i] * loc + b[i]) / np.sqrt(m)
+    loc = tf.convert_to_tensor(loc, dtype=tf.float64)  
+    ZX = tf.sqrt(tf.convert_to_tensor(2.0, dtype=tf.float64)) * tf.cos(tf.expand_dims(w, axis=1) * tf.expand_dims(loc, axis=0) + tf.expand_dims(b, axis=1)) / tf.sqrt(tf.cast(m, tf.float64))
+    return tf.transpose(ZX)  
 
-    # # Transpose the matrix and convert to tensorflow
-    # ZX_matrix = tf.convert_to_tensor(ZX.T, dtype=tf.float64)
-    ZX = np.sqrt(2) * np.cos(w[:, np.newaxis] * loc + b[:, np.newaxis]) / np.sqrt(m)
 
-    # Transpose and convert to TensorFlow tensor
-    ZX_matrix = tf.convert_to_tensor(ZX.T, dtype=tf.float64)
-    return ZX_matrix
+# def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
+#     sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
+#     sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
+#     K = ff_comp(m=mn, kappa=kappa, alpha=nu + 0.5, loc=loc) * sigma**2
+#     D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.convert_to_tensor(1, dtype=tf.float64)))
+#     Bo = tf.gather(K, obs_ind, axis=0)
+#     # D is identity, so no need to invert
+#     Q_hat = D + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
+#     mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
+#     return mu_fourier
 
+def sample_t_mat(kappa, alpha, m):
+    return tf.convert_to_tensor(t.rvs(df=2 * alpha - 1, scale=kappa / tf.sqrt(2 * alpha - 1), size=m), dtype=tf.float64)
+    
 def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
     sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
     sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
-    K = ff_comp(m=mn, kappa=kappa, alpha=nu + 0.5, loc=loc) * sigma**2
-    D = tf.linalg.diag(tf.fill([tf.shape(K)[1]], tf.convert_to_tensor(1, dtype=tf.float64)))
+    w = sample_t_mat(kappa = kappa, alpha = nu + 0.5, m = mn)
+    K = ff_comp(m=mn, loc=loc, w=w) * tf.square(sigma)
     Bo = tf.gather(K, obs_ind, axis=0)
-    # D is identity, so no need to invert
-    Q_hat = D + tf.matmul(tf.transpose(Bo), Bo) / sigma_e**2
-    mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / sigma_e**2))
-    
+    Q_hat = tf.linalg.eye(tf.shape(K)[1], dtype=tf.float64) + tf.matmul(tf.transpose(Bo), Bo) / tf.square(sigma_e)
+    mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / tf.square(sigma_e)))
     return mu_fourier
+
 
 def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fourier, folder_to_save):
     sim_data_name = "sim_data_result"
@@ -138,10 +147,11 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
                 mn = m_pca_fun(m, alpha, n, n_obs)
                 err_tmp = 0 
                 loc_diff = loc[1] - loc[0]
-
+                time_tmp = time.time()
                 for jj in range(samples_fourier): 
                     mu_fourier = fourier_prediction(Y, obs_ind, mn, kappa_val, nu, loc, sigma, sigma_e)
                     err_tmp += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_fourier))) / (n_rep * samples_fourier)
+                print(f"Time sampling: {time.time() - time_tmp}")
                 err_fourier[0, j] += err_tmp.numpy() 
 
             
