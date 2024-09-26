@@ -263,7 +263,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
                 err_tmp = 0 
                 loc_diff = loc[1] - loc[0]
                 
-                print("Starting Fourier")
+                print(f"j: {j}  m :{m}")
 
                 for jj in range(samples_fourier): 
                     time_tmp = time.time()
