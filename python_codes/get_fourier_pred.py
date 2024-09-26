@@ -147,11 +147,9 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
                 mn = m_pca_fun(m, alpha, n, n_obs)
                 err_tmp = 0 
                 loc_diff = loc[1] - loc[0]
-                time_tmp = time.time()
                 for jj in range(samples_fourier): 
                     mu_fourier = fourier_prediction(Y, obs_ind, mn, kappa_val, nu, loc, sigma, sigma_e)
                     err_tmp += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_fourier))) / (n_rep * samples_fourier)
-                print(f"Time sampling: {time.time() - time_tmp}")
                 err_fourier[0, j] += err_tmp.numpy() 
 
             
@@ -187,6 +185,6 @@ sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
 n_rep = 100
-samples_fourier = 100
+samples_fourier = 10
 
 get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fourier, folder_to_save)
