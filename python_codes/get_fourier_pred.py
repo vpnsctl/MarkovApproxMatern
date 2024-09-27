@@ -152,7 +152,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
                 Y = tf.reshape(Y, [-1, 1])
                 mu = full_true_pred_nu[kk]
                 mu = tf.reshape(mu, [-1, 1])
-                max_attempts_fourier = 10  # number of times to try to sample t distribution (needed for nu = 0.01, when it sometimes gets numerically singular)
+                max_attempts_fourier = 20  # number of times to try to sample t distribution (needed for nu = 0.01, when it sometimes gets numerically singular)
 
                 for j, m in enumerate(m_vec):
                     mn = m_pca_fun(m, alpha, n, n_obs)
@@ -199,7 +199,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
 
 n = 10000
 n_obs = 10000
-range_val = 0.5
+range_val = 1
 sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
