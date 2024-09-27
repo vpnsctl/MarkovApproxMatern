@@ -129,37 +129,35 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
 
         alpha = nu + 0.5
         kappa_val = np.sqrt(8 * nu) / range_val        
-        
-        print(f"Getting True pred for nu = {nu:.2f}")
 
-        time1 = time.time()
-        for kk in range(n_rep):
+        # Load any existing partial results if they exist
+        partial_save_path = os.path.join(folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "fourier")
+        os.makedirs(partial_save_path, exist_ok=True)
+        partial_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz")
 
-            if n == 10000 and n_obs == 5000:
-                obs_ind = obs_ind_full[kk]
+        if os.path.exists(partial_file):
+            print(f"Using existing partial file for nu = {nu:.2f}")
+            err_fourier = np.load(partial_file)['errors']
+            all_err_fourier.append((nu, err_fourier)) 
+        else:
+            print(f"Getting True pred for nu = {nu:.2f}")
 
-            Y = tf.gather(full_sim_data_nu[kk], obs_ind)
-            Y = tf.reshape(Y, [-1, 1])
-            mu = full_true_pred_nu[kk]
-            mu = tf.reshape(mu, [-1, 1])
-            max_attempts_fourier = 10  # number of times to try to sample t distribution (needed for nu = 0.01, when it sometimes gets numerically singular)
+            time1 = time.time()
+            for kk in range(n_rep):
 
-            for j, m in enumerate(m_vec):
-                mn = m_pca_fun(m, alpha, n, n_obs)
-                err_tmp = 0 
-                loc_diff = loc[1] - loc[0]
+                if n == 10000 and n_obs == 5000:
+                    obs_ind = obs_ind_full[kk]
 
-                # Check if partial results exist
-                partial_save_path = os.path.join(folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "fourier")
-                os.makedirs(partial_save_path, exist_ok=True)
-                partial_result_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}_m_{m}.npz")
+                Y = tf.gather(full_sim_data_nu[kk], obs_ind)
+                Y = tf.reshape(Y, [-1, 1])
+                mu = full_true_pred_nu[kk]
+                mu = tf.reshape(mu, [-1, 1])
+                max_attempts_fourier = 10  # number of times to try to sample t distribution (needed for nu = 0.01, when it sometimes gets numerically singular)
 
-                if os.path.exists(partial_result_file):
-                    print(f"Loading partial result for nu={nu:.2f}, m={m}")
-                    partial_result = np.load(partial_result_file)
-                    err_tmp = partial_result['errors']
-                else:
-                    # Compute if file doesn't exist
+                for j, m in enumerate(m_vec):
+                    mn = m_pca_fun(m, alpha, n, n_obs)
+                    err_tmp = 0 
+                    loc_diff = loc[1] - loc[0]
                     for jj in range(samples_fourier): 
                         attempts = 0
                         while attempts < max_attempts_fourier:
@@ -173,15 +171,15 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
                                     print("Max retry attempts reached. Exiting.")
                                     raise  # Re-raise the exception after maximum attempts
                         err_tmp += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_fourier))) / (n_rep * samples_fourier)
+                    err_fourier[0, j] += err_tmp.numpy() 
 
-                    # Save partial result
-                    np.savez(partial_result_file, errors=err_tmp.numpy())
-                
-                err_fourier[0, j] += err_tmp 
-
-        print(f"Time: {time.time() - time1}")
-        print("Fourier Error :", err_fourier[0])
-        all_err_fourier.append((nu, err_fourier[0])) 
+            
+            print(f"Time: {time.time() - time1}")
+            print("Fourier Error :", err_fourier[0])
+            
+            # Save partial results after completion of loop over replicates
+            np.savez(partial_file, errors=err_fourier[0])
+            all_err_fourier.append((nu, err_fourier[0])) 
 
     # Save final results
     final_save_path = os.path.join(folder_to_save, "pred_tables")
@@ -197,6 +195,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
     final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_fourier.pkl"))
 
     return final_df
+
 
 n = 10000
 n_obs = 10000
