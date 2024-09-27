@@ -174,7 +174,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
 
     # Convert to DataFrame for saving
     final_df = pd.DataFrame(final_results)
-    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_fourier.RDS"))
+    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_fourier.pkl"))
 
     return final_df
 
