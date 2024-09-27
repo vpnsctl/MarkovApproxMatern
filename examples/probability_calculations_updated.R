@@ -21,6 +21,7 @@ if (!dir.exists("prob_tables/partial_results")) {
 
 use.excursions <- TRUE
 folder_to_save <- getwd()
+folder_to_save <- getwd()
 
 set.seed(123)
 
