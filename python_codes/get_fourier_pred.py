@@ -180,7 +180,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
 
 n = 10000
 n_obs = 10000
-range_val = 2
+range_val = 0.5
 sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
