@@ -215,7 +215,7 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
 
     # Convert to DataFrame for saving
     final_df = pd.DataFrame(final_results)
-    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_statespace.RDS"))
+    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_statespace.pkl"))
 
     return final_df
 
