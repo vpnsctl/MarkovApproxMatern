@@ -21,10 +21,11 @@ if (!dir.exists("prob_tables/partial_results")) {
 
 use.excursions <- TRUE
 folder_to_save <- getwd()
+folder_to_save <- getwd()
 
 set.seed(123)
 
-range = 0.5 # 1 2
+range = 1
 sigma = 1
 sigma.e <- 0.1
 n <- c(0, 25, 50, 100, 150, 250,  300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
