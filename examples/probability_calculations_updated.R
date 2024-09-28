@@ -22,7 +22,7 @@ if (!dir.exists(partial_results_folder)) {
 }
 
 # Set parameters
-range <- 1
+range <- 2
 sigma <- 1
 sigma.e <- 0.1
 n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
@@ -35,6 +35,7 @@ nu <- 1
 alpha <- nu + 1/2
 m_vec <- 1:6
 domain_upper_limit <- 10
+use.excursions <- TRUE
 
 # Initialize storage for calibration
 calibrated_m <- list()
@@ -82,24 +83,18 @@ for (j in 1:n.rep) {
     y <- t(L) %*%t(z) + sigma.e * rnorm(n.obs)
     
     for (i in 1:length(n)) {
-        if (n[i] > 0) {
-            loc <- c(obs_loc, locs[[i]])
-            loc <- unique(sort(loc))  # Ensure no duplicate locations
-            obs.ind <- match(obs_loc, loc)
-            
-            # Check if partial results already exist
-            partial_file <- paste0(partial_results_folder, "/partial_result_rep", j, "_n", n[i], "_range", range, "_nu", nu, ".RDS")
-            if (file.exists(partial_file)) {
+        partial_file <- paste0(partial_results_folder, "/partial_result_rep", j, "_n", n[i], "_range", range, "_nu", nu, ".RDS")
+        if (file.exists(partial_file)) {
                 cat("Skipping rep =", j, "n =", n[i], "- results already exist\n")
                 err_tmp <- readRDS(partial_file)
                 err_nngp[,i] <- err_nngp[,i] + err_tmp$err_nngp
                 err_rat[,i] <- err_rat[,i] + err_tmp$err_rat
-                # print("rational")
-                # print(err_rat)
-                # print("nngp")
-                # print(err_nngp)
                 next
-            }
+        }
+        if (n[i] > 0) {
+            loc <- c(obs_loc, locs[[i]])
+            loc <- unique(sort(loc))  # Ensure no duplicate locations
+            obs.ind <- match(obs_loc, loc)
 
             # Check calibration for the current `n`
             if (is.null(calibrated_m[[as.character(n[i])]])) {
