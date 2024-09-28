@@ -160,3 +160,35 @@ with open(filename, "wb") as f:
     pickle.dump(dist_fourier, f)
 
 print(f"Results saved to {filename}")
+
+# nu_vec = tf.convert_to_tensor([0.01], dtype=tf.float64)  # Set only nu = 0.01
+# sigma = 1
+# m = np.arange(1, 7)
+# samples_fourier = 10
+
+# n = 5000
+# n_obs = 5000
+# range_val = 2
+
+
+# dist_fourier_nu_0_01 = compute_distances_fourier(N=n, n_obs=n_obs, m_vec=m, nu_vec=nu_vec, range_val=range_val, sigma=sigma, samples=samples_fourier)
+
+# import pickle
+
+# filename = f"distance_tables/raw_tables/dist_fourier_{n}_{n_obs}_range_{range_val}_calibrated.pkl"
+
+# with open(filename, "rb") as f:
+#     data = pickle.load(f)
+
+# nu_index = -1 
+
+# data['L2'][nu_index, :] = dist_fourier_nu_0_01['L2'][0, :] 
+# data['Linf'][nu_index, :] = dist_fourier_nu_0_01['Linf'][0, :]  
+
+# with open(filename, "wb") as f:
+#     pickle.dump(data, f)
+
+# print(f"Updated results saved to {filename}")
+
+# print("Updated L2 for nu = 0.01:", data['L2'][nu_index, :])
+# print("Updated Linf for nu = 0.01:", data['Linf'][nu_index, :])
