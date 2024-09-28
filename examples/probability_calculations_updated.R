@@ -22,7 +22,7 @@ if (!dir.exists(partial_results_folder)) {
 }
 
 # Set parameters
-range <- 2
+range <- 1
 sigma <- 1
 sigma.e <- 0.1
 n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
@@ -50,25 +50,7 @@ locs <- lapply(n, function(x) if(x > 0) seq(from = 1, to = domain_upper_limit, l
 if (file.exists(calibration_file)) {
     calibrated_m <- readRDS(calibration_file)
     cat("Loaded calibrated m from", calibration_file, "\n")
-} else {
-    for (i in 1:length(n)) {
-        if (n[i] > 999) {
-            cat("Calibrating for n =", n[i], "\n")
-            previous_calibration <- auto_calibration_nngp_rat(
-                n = n[i] + n.obs, n_obs = n.obs, nu = nu, range = range,
-                sigma = sigma, sigma_e = sigma.e, samples = samples_calibration,
-                m_rat = m_vec, previous_calibration = previous_calibration, max_it_per_m = max_it_per_m, print = FALSE
-            )
-            calibrated_m[[as.character(n[i])]] <- previous_calibration
-            cat("Calibration for n =", n[i], ":", previous_calibration, "\n")
-        } else {
-            calibrated_m[[as.character(n[i])]] <- calibrated_m[[as.character(1000)]]
-        }
-    }
-    # Save the calibration results
-    saveRDS(calibrated_m, file = calibration_file)
-    cat("Calibrations saved to:", calibration_file, "\n")
-}
+} 
 
 # Set up matrices to store error results
 err_nngp <- err_rat <- matrix(0, length(m_vec), length(n))
@@ -130,6 +112,7 @@ for (j in 1:n.rep) {
             }
         } else{
             cat("rep =", j, "n =", n[i], "calibration loaded\n")
+            cat("Calibration: ", calibrated_m[[as.character(n[i])]], "\n")
         }
         cat('compute truth\n')
         true_cov <- get_cov_mat(loc = loc, m = NULL, method = "true", nu = nu, kappa = kappa, sigma = sigma, 
