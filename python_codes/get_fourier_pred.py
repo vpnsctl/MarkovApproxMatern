@@ -197,9 +197,9 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
     return final_df
 
 
-n = 10000
+n = 5000
 n_obs = 5000
-range_val = 0.5
+range_val = 2
 sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
