@@ -41,6 +41,7 @@ coverage <- 0.9
 # Initialize storage for calibration
 calibrated_m <- list()
 previous_calibration <- NULL
+kappa <- sqrt(8*nu)/range
 
 # Generate locations for the given `n`
 locs <- lapply(n, function(x) if(x > 0) seq(from = 1, to = domain_upper_limit, length.out = x) else NULL)
