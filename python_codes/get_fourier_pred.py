@@ -197,7 +197,7 @@ def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fouri
     return final_df
 
 
-n = 10000
+n = 5000
 n_obs = 5000
 range_val = 1
 sigma = 1.0
