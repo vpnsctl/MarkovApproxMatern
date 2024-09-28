@@ -89,8 +89,8 @@ for (j in 1:n.rep) {
         if (file.exists(partial_file)) {
                 cat("Skipping rep =", j, "n =", n[i], "- results already exist\n")
                 err_tmp <- readRDS(partial_file)
-                err_nngp[,i] <- err_nngp[,i] + err_tmp$err_nngp
-                err_rat[,i] <- err_rat[,i] + err_tmp$err_rat
+                err_nngp[,i] <- err_tmp$err_nngp
+                err_rat[,i] <- err_tmp$err_rat
                 next
         }
         if(n[i]>0){ 
