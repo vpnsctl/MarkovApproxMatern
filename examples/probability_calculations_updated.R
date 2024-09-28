@@ -106,11 +106,12 @@ for (j in 1:n.rep) {
                 ind_remove <- which(diff(loc)<1e-3)
                 ind_remove <- c(ind_remove, ind_remove+1)
                 ind_remove <- setdiff(ind_remove, obs.ind)
-            }            
+                loc <- loc[-ind_remove]
+                tolerance <- 1e-6
+                obs.ind <- sapply(obs_loc, function(x) which(abs(loc - x) < tolerance)[1])     
+            } 
 
-            loc <- loc[-ind_remove]
-            tolerance <- 1e-6
-            obs.ind <- sapply(obs_loc, function(x) which(abs(loc - x) < tolerance)[1])     
+
 
         } else {
             loc <- obs_loc
