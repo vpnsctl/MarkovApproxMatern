@@ -148,8 +148,8 @@ sigma = 1
 m = np.arange(1, 7)
 samples_fourier = 10
 
-n = 5000
-n_obs = 5000
+n = 10000
+n_obs = 10000
 range_val = 2
 
 dist_fourier = compute_distances_fourier(N=n, n_obs=n_obs, m_vec=m, nu_vec=nu_vec, range_val=range_val, sigma=sigma, samples=samples_fourier)
