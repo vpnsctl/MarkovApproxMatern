@@ -192,7 +192,6 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
     nu_vec_loaded = load_hdf5_data(sim_file_path, nu_vec_python)
 
     np.random.seed(123)
-    m_vec = np.arange(1, 7)
     all_err_ss = []
 
     nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
@@ -225,36 +224,56 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
         alpha = nu + 0.5
         kappa_val = np.sqrt(8 * nu) / range_val        
         
-        print(f"Getting True pred for nu = {nu:.2f}")
-
-        time1 = time.time()
-        for kk in range(n_rep):
-
-            if n == 10000 and n_obs == 5000:
-                obs_ind = obs_ind_full[kk]
-
-            Y = tf.gather(full_sim_data_nu[kk], obs_ind)
-            Y = tf.reshape(Y, [-1, 1])
-            mu = full_true_pred_nu[kk]
-            mu = tf.reshape(mu, [-1, 1])
-
-            for j, m in enumerate(m_vec):
-                mn = m_ss_fun(m, alpha)
-                mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn)
-                
-                loc_diff = loc[1] - loc[0]
-                err_ss[0, j] += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_ss))) / n_rep 
-
-            
-        print(f"Time: {time.time() - time1}")
-        print("Statespace Error :", err_ss[0])
-        all_err_ss.append((nu, err_ss[0])) 
-
-        # Save partial results
+        # Load any existing partial results if they exist
         partial_save_path = os.path.join(folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "statespace")
         os.makedirs(partial_save_path, exist_ok=True)
-        
-        np.savez(os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz"), errors=err_ss[0])
+        partial_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz")
+
+        if os.path.exists(partial_file):
+            print(f"Using existing partial file for nu = {nu:.2f}")
+            err_ss = np.load(partial_file)['errors']
+            all_err_ss.append((nu, err_ss)) 
+        else:
+            print(f"Getting True pred for nu = {nu:.2f}")
+
+            time1 = time.time()
+            for kk in range(n_rep):
+
+                if n == 10000 and n_obs == 5000:
+                    obs_ind = obs_ind_full[kk]
+
+                Y = tf.gather(full_sim_data_nu[kk], obs_ind)
+                Y = tf.reshape(Y, [-1, 1])
+                mu = full_true_pred_nu[kk]
+                mu = tf.reshape(mu, [-1, 1])
+
+                loc_diff = loc[1] - loc[0]            
+
+                mn_cache = {}
+
+                for j, m in enumerate(m_vec):
+                    mn = m_ss_fun(m, alpha).numpy()
+
+                    if mn in mn_cache:
+                        # print(f"[{j}] Reusing cached error for mn = {mn}")
+                        err_tmp = mn_cache[mn]
+                    else:
+                        # print(f"[{j}] Computing error for mn = {mn} (not cached)")
+                        mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn)
+                        err_tmp = tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_ss))) / n_rep
+                        mn_cache[mn] = err_tmp  # Store the computed error in the cache
+
+                    # print(f"[{j}] Error contribution for m = {m}: {err_tmp.numpy()}")
+
+                    err_ss[0, j] += err_tmp
+
+
+            print(f"Time: {time.time() - time1}")
+            print("Statespace Error :", err_ss[0])
+
+            # Save partial results        
+            np.savez(os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz"), errors=err_ss[0])
+            all_err_ss.append((nu, err_ss[0])) 
 
     # Save final results
     final_save_path = os.path.join(folder_to_save, "pred_tables")
