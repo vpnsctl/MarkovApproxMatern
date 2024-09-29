@@ -138,8 +138,9 @@ def S2cov(S, x, flim=2):
     
     phi_fft = tf.signal.fft(fact_s * S) 
     
-    exp_term = tf.exp(-1j * tf.cast(c, tf.complex128) * tf.cast(x, tf.complex128))
-    C = tf.math.real(tf.cast(ds, dtype=tf.complex128) * exp_term * phi_fft[:nx])  
+    exp_term = tf.exp(tf.cast(-1j, tf.complex128) * tf.cast(c, tf.complex128) * tf.cast(x_extended, tf.complex128))
+    C = tf.math.real(tf.cast(ds, dtype=tf.complex128) * exp_term * phi_fft)
+    C = C[:nx]  
     return C
 
 def m_ss_fun(m, alpha):
@@ -147,7 +148,7 @@ def m_ss_fun(m, alpha):
     return mn
 
 def statespace_prediction(kappa, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn):
-    ind = 1 + 100 * tf.range(0, n, dtype=tf.int32)
+    ind = 100 * tf.range(0, n, dtype=tf.int32)
     h2 = np.linspace(0.0, tf.reduce_max(loc), 100 * (n - 1) + 1, dtype='float64')
     h2 = tf.convert_to_tensor(h2)
 
@@ -239,7 +240,7 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
 
             for j, m in enumerate(m_vec):
                 mn = m_ss_fun(m, alpha)
-                mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn=4)
+                mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn)
                 
                 loc_diff = loc[1] - loc[0]
                 err_ss[0, j] += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_ss))) / n_rep 
