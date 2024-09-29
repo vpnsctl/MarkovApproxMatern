@@ -74,10 +74,6 @@ def spec_coeff(kappa, alpha, n, nm=0):
     kappa_power_b = kappa ** (2 * (n - nm - i_values))
 
     b = n_choose_i * kappa_power_b
-    print("nchoose")
-    print(n_choose_i)
-    print("kappa power")
-    print(kappa_power_b)
     return {'a': a, 'b': b * A}
 
 
@@ -119,7 +115,7 @@ def ab2spec(a, b, x, flim=2.0):
 
 
 def S2cov(S, x, flim=2):
-    S = tf.convert_to_tensor(S, dtype=tf.complex128)  # S should be complex for FFT operations
+    S = tf.cast(S, dtype=tf.complex128)  
     x = tf.convert_to_tensor(x, dtype=tf.float64)
     
     nx = tf.size(x)
@@ -127,12 +123,10 @@ def S2cov(S, x, flim=2):
     n = flim * nx - 1
     
     x_extended = np.linspace(0.0, x_max * flim, n, dtype='float64')
-    x_extended = tf.convert_to_tensor(x_extended)
+    x_extended = tf.convert_to_tensor(x_extended, dtype = tf.float64)
     
     ind = tf.range(0, n, dtype=tf.float64)
     dx = x_extended[1] - x_extended[0]
-    
-
     
     ds = 2.0 * np.pi / (tf.cast(n, tf.float64) * dx)
     c = -(tf.cast(n, tf.float64) / 2.0) * ds
@@ -140,13 +134,12 @@ def S2cov(S, x, flim=2):
     
     s_min = tf.reduce_min(s)
     x1 = x[0]  
-    fact_s = tf.exp(-1j * (s - s_min) * tf.cast(x1, tf.complex128))  
+    fact_s = tf.exp(tf.cast(-1j, tf.complex128) * tf.cast((s - s_min), tf.complex128) * tf.cast(x1, tf.complex128))
     
     phi_fft = tf.signal.fft(fact_s * S) 
     
     exp_term = tf.exp(-1j * tf.cast(c, tf.complex128) * tf.cast(x, tf.complex128))
-    C = tf.math.real(ds * exp_term * phi_fft[:nx])  
-    
+    C = tf.math.real(tf.cast(ds, dtype=tf.complex128) * exp_term * phi_fft[:nx])  
     return C
 
 def m_ss_fun(m, alpha):
@@ -163,18 +156,16 @@ def statespace_prediction(kappa, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn):
     b = spec_res['b']
         
     S1 = ab2spec(a, b, h2, flim=2)
-    print("S1")
-    print(S1)
     r1 = S2cov(S1, h2, flim=2)
-    
+        
     acf = tf.gather(r1, ind) * sigma ** 2
     
-    cov_mat = tf.signal.toeplitz(acf)
-
+    cov_mat = tf.linalg.LinearOperatorToeplitz(row=acf, col=acf).to_dense()
+    
     acf_nugget = tf.identity(acf)
     acf_nugget = tf.tensor_scatter_nd_update(acf_nugget, [[0]], [acf_nugget[0] + sigma_e ** 2])
     
-    toeplitz_op_nugget = tf.linalg.LinearOperatorToeplitz(acf_nugget)
+    toeplitz_op_nugget = tf.linalg.LinearOperatorToeplitz(row=acf_nugget, col=acf_nugget)
     cov_mat_nugget = toeplitz_op_nugget.to_dense()
     cov_mat_nugget = tf.gather(cov_mat_nugget, obs_ind, axis=0)
     cov_mat_nugget = tf.gather(cov_mat_nugget, obs_ind, axis=1)
