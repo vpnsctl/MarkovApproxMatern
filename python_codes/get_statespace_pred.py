@@ -1,50 +1,104 @@
 import tensorflow as tf
 import numpy as np
 import math
+import os
+import h5py
+import time
+import pandas as pd
+
+def load_hdf5_data(file_path, dataset_name):
+    with h5py.File(file_path, 'r') as f:
+        data = f[dataset_name][:]
+    return data
 
 
-@tf.function
-def spec_coeff(kappa, alpha, n, nm=0):
-    A = tf.exp(tf.math.lgamma(alpha)) * tf.sqrt(4 * math.pi) * kappa ** (2 * (alpha - 0.5)) / (2 * math.pi * tf.exp(tf.math.lgamma(alpha - 0.5)))
+# @tf.function
+# def spec_coeff(kappa, alpha, n, nm=0):
+#     alpha = tf.convert_to_tensor(alpha, tf.float64)
+#     kappa = tf.convert_to_tensor(kappa, tf.float64)
+#     A = tf.exp(tf.math.lgamma(alpha)) * tf.sqrt(tf.convert_to_tensor(4 * math.pi, dtype=tf.float64)) * kappa ** (2 * (alpha - 0.5)) / (2 * math.pi * tf.exp(tf.math.lgamma(alpha - 0.5)))
 
-    ca = tf.cast(tf.math.ceil(alpha), tf.int32)
-    k_values = tf.range(0, ca + n + 1, dtype=tf.float64)  
+#     ca = tf.convert_to_tensor(tf.math.ceil(alpha), tf.float64)
+#     k_values = tf.range(0, ca + n + 1, dtype=tf.float64)  
     
+#     k_factorial = tf.map_fn(lambda x: tf.exp(tf.math.lgamma(x + 1.0)), k_values)
+#     kappa_power = kappa ** (2 * (alpha + n) - 2 * k_values)
+
+#     prod_terms_range = tf.range(0, ca + n + 1, dtype=tf.float64)
+#     prod_terms_matrix = tf.range(0, ca + n + 1, dtype=tf.float64)[:, tf.newaxis] + tf.range(0, -tf.shape(prod_terms_range)[0], -1, dtype=tf.float64)
+    
+#     mask = tf.sequence_mask(tf.range(0, ca + n + 1, dtype=tf.int32), maxlen=ca + n, dtype=tf.float64)
+    
+#     masked_prod_matrix = (alpha + n + prod_terms_matrix) * mask
+#     prod_terms = tf.reduce_prod(masked_prod_matrix, axis=1)
+
+#     a = tf.where(k_values == 0, kappa_power / k_factorial, kappa_power / k_factorial * prod_terms)
+
+#     i_values = tf.range(0, n - nm + 1, dtype=tf.float64)
+#     n_choose_i = tf.map_fn(lambda i: tf.math.betainc(i, n - nm - i, 0.5), i_values)
+    
+#     kappa_power_b = kappa ** (2 * (n - nm - i_values))
+#     b = n_choose_i * kappa_power_b
+    
+#     return {'a': a, 'b': b * A}
+
+def n_choose_k(i, n):
+    if i < 0 or i > n:
+        return tf.constant(0.0, dtype=tf.float64)  
+
+    n_float = tf.cast(n, dtype=tf.float64)
+    i_float = tf.cast(i, dtype=tf.float64)
+    return tf.exp(tf.math.lgamma(n_float + 1) - 
+                   (tf.math.lgamma(i_float + 1) + tf.math.lgamma(n_float - i_float + 1)))
+
+
+# @tf.function
+def spec_coeff(kappa, alpha, n, nm=0):
+    kappa = tf.convert_to_tensor(kappa, dtype=tf.float64)
+    A = tf.exp(tf.math.lgamma(alpha)) * tf.sqrt(tf.convert_to_tensor(4 * math.pi, dtype=tf.float64)) * \
+        kappa ** (2 * (alpha - 0.5)) / (2 * math.pi * tf.exp(tf.math.lgamma(alpha - 0.5)))
+    ca = tf.cast(tf.math.ceil(alpha), dtype=tf.float64)
+    k_values = tf.range(0, ca + n + 1, dtype=tf.float64)
     k_factorial = tf.map_fn(lambda x: tf.exp(tf.math.lgamma(x + 1.0)), k_values)
     kappa_power = kappa ** (2 * (alpha + n) - 2 * k_values)
-
     prod_terms_range = tf.range(0, ca + n + 1, dtype=tf.float64)
-    prod_terms_matrix = tf.range(0, ca + n + 1, dtype=tf.float64)[:, tf.newaxis] + tf.range(0, -tf.shape(prod_terms_range)[0], -1, dtype=tf.float64)
-    
-    mask = tf.cast(tf.sequence_mask(tf.range(0, ca + n + 1, dtype=tf.int32), maxlen=ca + n), dtype=tf.float64)
-    
-    masked_prod_matrix = (alpha + n + prod_terms_matrix) * mask
-    prod_terms = tf.reduce_prod(masked_prod_matrix, axis=1)
-
+    prod_terms_matrix = tf.range(0, ca + n + 1, dtype=tf.float64)[:, tf.newaxis] + \
+                        tf.range(0, -tf.shape(prod_terms_range)[0], -1, dtype=tf.float64)
+    mask = tf.sequence_mask(tf.range(0, ca + n + 1, dtype=tf.int32), maxlen=ca + n + 1, dtype=tf.float64)
+    masked_prod_matrix = (alpha + n + 1 - prod_terms_matrix) * mask
+    prod_terms = tf.reduce_prod(masked_prod_matrix + (1.0 - mask), axis=1)
     a = tf.where(k_values == 0, kappa_power / k_factorial, kappa_power / k_factorial * prod_terms)
 
     i_values = tf.range(0, n - nm + 1, dtype=tf.float64)
-    n_choose_i = tf.map_fn(lambda i: tf.math.betainc(i, n - nm - i, 0.5), i_values)
-    
+    n_choose_i = tf.map_fn(lambda i: n_choose_k(i, n-nm), i_values)
     kappa_power_b = kappa ** (2 * (n - nm - i_values))
+
     b = n_choose_i * kappa_power_b
-    
+    print("nchoose")
+    print(n_choose_i)
+    print("kappa power")
+    print(kappa_power_b)
     return {'a': a, 'b': b * A}
 
-def ab2spec(a, b, x, flim=2):
+
+def ab2spec(a, b, x, flim=2.0):
+    if not isinstance(a, (list, np.ndarray)):
+        a = np.array(a)
     a = tf.convert_to_tensor(a, dtype=tf.float64)
     b = tf.convert_to_tensor(b, dtype=tf.float64)
     x = tf.convert_to_tensor(x, dtype=tf.float64)
-    
+       
     nx = tf.size(x)
     x_max = x[-1]
     n = flim * nx - 1
     
-    x_extended = np.linspace(0.0, x_max * flim, n, dtype='float64')
-    x_extended = tf.convert_to_tensor(loc)
+    x_extended = np.linspace(0.0, x_max * flim, n, dtype='float64')   
+    x_extended = tf.convert_to_tensor(x_extended)
     
     ind = tf.range(0, n, dtype=tf.float64)
     dx = x_extended[1] - x_extended[0]
+    
+    n = tf.cast(n, dtype = tf.float64)
     
     ds = 2.0 * np.pi / (tf.convert_to_tensor(n, tf.float64) * dx)
     c = -(tf.convert_to_tensor(n, tf.float64) / 2.0) * ds
@@ -73,10 +127,12 @@ def S2cov(S, x, flim=2):
     n = flim * nx - 1
     
     x_extended = np.linspace(0.0, x_max * flim, n, dtype='float64')
-    x_extended = tf.convert_to_tensor(loc)
+    x_extended = tf.convert_to_tensor(x_extended)
     
     ind = tf.range(0, n, dtype=tf.float64)
     dx = x_extended[1] - x_extended[0]
+    
+
     
     ds = 2.0 * np.pi / (tf.cast(n, tf.float64) * dx)
     c = -(tf.cast(n, tf.float64) / 2.0) * ds
@@ -101,10 +157,14 @@ def statespace_prediction(kappa, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn):
     ind = 1 + 100 * tf.range(0, n, dtype=tf.int32)
     h2 = np.linspace(0.0, tf.reduce_max(loc), 100 * (n - 1) + 1, dtype='float64')
     h2 = tf.convert_to_tensor(h2)
-    
-    a, b = spec_coeff(kappa=kappa, alpha=nu + 0.5, n=mn)
-    
+
+    spec_res = spec_coeff(kappa=kappa, alpha=nu + 0.5, n=mn)
+    a = spec_res['a']
+    b = spec_res['b']
+        
     S1 = ab2spec(a, b, h2, flim=2)
+    print("S1")
+    print(S1)
     r1 = S2cov(S1, h2, flim=2)
     
     acf = tf.gather(r1, ind) * sigma ** 2
@@ -187,8 +247,8 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
             mu = tf.reshape(mu, [-1, 1])
 
             for j, m in enumerate(m_vec):
-                mn = m_ss_fun(m, alpha, n, n_obs)
-                mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn)
+                mn = m_ss_fun(m, alpha)
+                mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn=4)
                 
                 loc_diff = loc[1] - loc[0]
                 err_ss[0, j] += tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_ss))) / n_rep 
