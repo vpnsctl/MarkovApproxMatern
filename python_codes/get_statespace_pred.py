@@ -291,8 +291,9 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
     return final_df
 
 n = 5000
+n = 5000
 n_obs = 5000
-range_val = 0.5
+range_val = 2
 sigma = 1.0
 sigma_e = 0.1
 folder_to_save = os.getcwd()
