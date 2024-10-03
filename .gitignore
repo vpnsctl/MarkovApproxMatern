@@ -12,7 +12,8 @@ docs
 
 # h5 files, too big
 
-*.h5
+/python_codes/old_results/results/*.h5
+/python_codes/results/*.h5
 
 #mac
 .DS_store
