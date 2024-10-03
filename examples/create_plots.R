@@ -44,12 +44,10 @@ line_types <- c("Rational" = "solid",
                 "Fourier" = "twodash", 
                 "PCA" = "dotdash")
 
-# Adjust Dist variable to use expressions
 df_filtered <- df_filtered %>% mutate(Dist = factor(Dist, levels = c("L2", "Linf"), 
-                              labels = c(expression(paste("Error in ", italic(L)[2], " (I %x% I)-norm")),
-                                         expression(paste("Error in ", italic(L)[infinity], " (I %x% I)-norm")))))
+                              labels = c(expression(paste("Error in ", italic(L)[2], "(I\u00D7I)-norm")),
+                                         expression(paste("Error in ", italic(L)[infinity], "(I\u00D7I)-norm")))))
 
-# Plot with custom labeller for Dist
 p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method)) +
   geom_line() +
   scale_y_log10() +
