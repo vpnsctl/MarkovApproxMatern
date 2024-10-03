@@ -54,7 +54,7 @@ m_pca_fun <- function(m, alpha){
             return(mn)
 }
 
-## Same as PCA, but with 100 samples
+## Same as PCA, but with 10 samples
 m_fourier_fun <- function(m, alpha){
             if(alpha<1) {
                 m_vec <- c(268, 308, 355, 406, 433, 478)

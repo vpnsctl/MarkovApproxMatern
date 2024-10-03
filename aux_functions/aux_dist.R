@@ -37,54 +37,43 @@ process_h5_fourier <- function(L2, Linf, N, n_obs) {
 process_dist <- function(df_list) {
     args <- df_list
     
-    # Extract methods, N values, and other attributes for each argument
-    methods <- unlist(lapply(args, function(i){attr(i, "type")}))
-    
     # Initialize an empty data frame for accumulating results
-    dist_df <- data.frame()
+    dist_df <- tibble()
 
     for (i in 1:length(args)) {
         possible_N <- as.character(attr(args[[i]], "N"))
         n_obs <- as.character(attr(args[[i]], "n_obs"))
-        range <- as.character(attr(args[[i]], "range"))        
+        range_val <- as.character(attr(args[[i]], "range"))        
         m <- as.character(attr(args[[i]], "m.vec"))
         nu <- attr(args[[i]], "nu.vec")
+        method <- attr(args[[i]], "type")
         
         # Process L2 distances
         tmp_df <- as.data.frame(args[[i]][["L2"]])
         colnames(tmp_df) <- m
-        tmp_df[["Method"]] <- methods[i]
+        tmp_df[["Method"]] <- method
         tmp_df[["nu"]] <- nu
         tmp_df[["Dist"]] <- "L2"
         tmp_df[["N"]] <- possible_N
         tmp_df[["n_obs"]] <- n_obs
-        tmp_df[["range"]] <- range
+        tmp_df[["range"]] <- range_val
         tmp_df <- pivot_longer(tmp_df, cols = all_of(m), names_to = "m", values_to = "Error")
-        
+       
         # Append the processed data to the cumulative data frame
-        dist_df <- rbind(dist_df, tmp_df)
-    }
+        dist_df <- bind_rows(dist_df, tmp_df)
 
-    # Process Linf distances
-    for (i in 1:length(args)) {
-        possible_N <- as.character(attr(args[[i]], "N"))
-        n_obs <- as.character(attr(args[[i]], "n_obs"))
-        range <- as.character(attr(args[[i]], "range"))           
-        m <- as.character(attr(args[[i]], "m.vec"))
-        nu <- attr(args[[i]], "nu.vec")
-        
         tmp_df <- as.data.frame(args[[i]][["Linf"]])
         colnames(tmp_df) <- m
-        tmp_df[["Method"]] <- methods[i]
+        tmp_df[["Method"]] <- method
         tmp_df[["nu"]] <- nu
         tmp_df[["Dist"]] <- "Linf"
         tmp_df[["N"]] <- possible_N
         tmp_df[["n_obs"]] <- n_obs        
-        tmp_df[["range"]] <- range
+        tmp_df[["range"]] <- range_val
         tmp_df <- pivot_longer(tmp_df, all_of(m), names_to = "m", values_to = "Error")
         
         # Append the Linf processed data to the cumulative data frame
-        dist_df <- rbind(dist_df, tmp_df)
+        dist_df <- bind_rows(dist_df, tmp_df)
     }
 
     return(dist_df)
@@ -97,8 +86,7 @@ process_all_files <- function(file_paths) {
         params <- extract_params_from_filename(file)
         N <- params$N
         n_obs <- params$n_obs
-        range <- params$range
-        print(range)
+        range_val <- params$range
 
         if (grepl(".RDS$", file)) {
             dist_data <- readRDS(file)
@@ -108,13 +96,15 @@ process_all_files <- function(file_paths) {
             dist_data <- process_h5_fourier(L2, Linf, N, n_obs)
         }
 
-        attr(dist_data,"range") <- range
+        attr(dist_data,"range") <- range_val
+        attr(dist_data,"n_obs") <- n_obs
         all_dfs[[file]] <- dist_data
     }
     
     all_dfs <<- all_dfs
 
     combined_df <- process_dist(all_dfs)
+    combined_df <- unique(combined_df)
     
     return(combined_df)
 }
@@ -127,24 +117,32 @@ process_all_files <- function(file_paths) {
 
 library(ggplot2)
 
-plot_dist <- function(df_dist, n_loc, n_obs, range, distance = c("L2", "Linf"), methods = NULL, logscale = TRUE, style=1){
-    n_loc <- as.character(n_loc)
-    n_obs <- as.character(n_obs)
-    df_dist <- df_dist |> dplyr::filter(N == n_loc, n_obs == n_obs)
+plot_dist <- function(dist_df, N_plot, n_obs_plot, range_val, m_vec = NULL, distance = c("L2", "Linf"), methods = NULL, logscale = TRUE, style=1){
+    N <- as.character(N_plot)
+    n_obs <- as.character(n_obs_plot)
+    range <- as.character(range_val)
+
     if(is.null(methods)){
-        methods <- unique(df_dist[["Method"]])
+        methods <- unique(dist_df[["Method"]])
     }
-    distance <- distance[[1]]
+
+    if(is.null(m_vec)){
+        m_vec <- unique(dist_df[["m"]])
+    }
+
+    idx_plot <- dist_df$Dist == distance & dist_df$N == N_plot & dist_df$n_obs == n_obs_plot & dist_df$range == range_val & dist_df$Method %in% methods & dist_df$m %in% m_vec
+    df_dist_plot <- dist_df[idx_plot,]
+
     if(logscale){
         if(style==1){
-            return(df_dist |> dplyr::filter(Dist == distance, range == range, Method %in% methods) |> ggplot2::ggplot() + 
+            return(df_dist_plot |> ggplot2::ggplot() + 
                 geom_line(aes(x = nu, y = Error, col = m,linetype=Method)) + scale_y_log10())
         } else{
-                        return(df_dist |> dplyr::filter(Dist == distance, range == range, Method %in% methods) |> ggplot2::ggplot() + 
+                        return(df_dist_plot |> ggplot2::ggplot() + 
                 geom_line(aes(x = nu, y = Error, col = Method,linetype=m)) + scale_y_log10())
         }
     } else{
-        return(df_dist |> dplyr::filter(Dist == distance,range == range, Method %in% methods) |> ggplot2::ggplot() + 
+        return(df_dist_plot |> ggplot2::ggplot() + 
             geom_line(aes(x = nu, y = Error, col = m,linetype=Method)))
     }
 }
