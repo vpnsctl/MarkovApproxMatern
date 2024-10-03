@@ -69,6 +69,8 @@ prob_df_tmp <- as.data.frame(prob_df_tmp) %>%
 prob_df_tmp[["Method"]] <- "Rational"
 prob_df_tmp[["range"]] <- "2"
 
+prob_df <- bind_rows(prob_df, prob_df_tmp)
+
 prob_df_tmp <- prob_tmp$err_nngp
 colnames(prob_df_tmp) <- prob_tmp$n_vec
 rownames(prob_df_tmp) <- prob_tmp$m_vec
@@ -80,7 +82,6 @@ prob_df_tmp <- as.data.frame(prob_df_tmp) %>%
 prob_df_tmp[["Method"]] <- "nnGP"
 prob_df_tmp[["range"]] <- "2"
 
-prob_df <- bind_rows(prob_df, prob_df_tmp)
 
 prob_df <- bind_rows(prob_df, prob_df_tmp)
 
