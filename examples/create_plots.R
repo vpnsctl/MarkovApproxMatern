@@ -8,7 +8,7 @@ dist_df <- readRDS("distance_tables/full_dists.RDS") %>%
   rename(Order = m, Range = range) %>% 
   filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
 
-dist_df <- dist_df %>% mutate(Error = ifelse(Error < 1e-15, 1e-13, Error))
+dist_df <- dist_df %>% mutate(Error = ifelse(Error < 1e-15, 1e-10, Error))
 
 df_filtered <- dist_df %>%
   filter((Method == "Rational") | (Order %in% c(3, 5)))
@@ -36,7 +36,7 @@ df_filtered$Facet_Cols <- factor(df_filtered$Facet_Cols,
   labels = c("Rational", expression(Order == 3), expression(Order == 5)))
 
 
-markers <- c("Rational" = 15, "nnGP" = 3, "State-Space" = 5, "Fourier" = 5, "PCA" = 15)
+markers <- c("Rational" = NA, "nnGP" = 0, "State-Space" = 1, "Fourier" = 2, "PCA" = NA)
 
 df_filtered <- df_filtered %>% 
   mutate(Dist = factor(Dist, levels = c("L2", "Linf"), 
@@ -47,35 +47,81 @@ df_points <- df_filtered %>% arrange(Order) %>% slice(seq(1, n(), by = 30))
 
 df_filtered$Order <- factor(df_filtered$Order)
 
-df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "Fourier", "nnGP", "PCA", "State-Space"))
+df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "PCA", "Fourier", "nnGP", "State-Space"))
 
-p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, shape = Method)) +
-  geom_line(size = 1.2) +
-  geom_point(data = df_points, size = 3) +  # Increase dodge width for sparse markers
-  scale_y_log10(limits = c(1e-13, NA)) +  
-  scale_color_manual(values = color_plot_used) +
-  scale_shape_manual(values = markers) +
+# p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, shape = Method)) +
+#   geom_line(size = 1.2) +
+#   geom_point(data = df_points, size = 3) +  # Increase dodge width for sparse markers
+#   scale_y_log10(limits = c(1e-13, NA)) +  
+#   scale_color_manual(values = color_plot_used) +
+#   scale_shape_manual(values = markers) +
+#   labs(y = "Covariance Error", x = expression(nu ~ "(smoothness parameter)")) +
+#   theme(
+#     legend.position = "bottom",
+#     legend.text = element_text(size = 12),   
+#     legend.title = element_text(size = 14),   
+#     axis.title = element_text(size = 14),
+#     axis.text = element_text(size = 12),
+#     strip.text.x = element_text(size = 14),
+#     strip.text.y = element_text(size = 14),
+#     panel.background = element_blank(),         
+#     panel.grid.major = element_line(color = "lightgray"), 
+#     panel.grid.minor = element_line(color = "gray"), 
+#     panel.border = element_rect(color = "black", fill = NA, size = 1)
+#   ) +
+#   facet_grid(rows = vars(Dist), 
+#              cols = vars(Facet_Cols), 
+#              labeller = label_parsed) + 
+#   theme(panel.spacing = unit(1, "lines"),
+#         strip.background = element_blank(),
+#         strip.placement = "outside") +
+#   theme(strip.text.y = element_text(size = 14, face = "bold"))  # Add back facet column titles
+
+
+line_types <- c("Rational" = "solid", 
+                "nnGP" = "11", 
+                "State-Space" = "81", 
+                "Fourier" = "solid", 
+                "PCA" = "dashed")
+
+line_sizes <- c("Rational" = 0.7, "nnGP" = 0.7, "State-Space" = 0.7, "Fourier" = 0.45, "PCA" = 0.7)
+
+p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method, size = Method)) +
+  geom_line(aes(size = ifelse(Method == "Fourier", 0.45, 0.7))) + 
+  # geom_point(data = df_points, size = 3) +
+  scale_y_log10(limits = c(1e-10, NA)) +
+  scale_color_manual(values = color_plot_used, guide = guide_legend(order = 2)) +
+  scale_shape_manual(values = markers, guide = guide_legend(order = 1)) +
+  scale_size_manual(values = line_sizes) +
+  scale_linetype_manual(values = line_types, , guide = guide_legend(order = 1)) +  
   labs(y = "Covariance Error", x = expression(nu ~ "(smoothness parameter)")) +
   theme(
     legend.position = "bottom",
-    legend.text = element_text(size = 12),   
-    legend.title = element_text(size = 14),   
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 14),
     axis.title = element_text(size = 14),
     axis.text = element_text(size = 12),
     strip.text.x = element_text(size = 14),
     strip.text.y = element_text(size = 14),
-    panel.background = element_blank(),         
-    panel.grid.major = element_line(color = "lightgray"), 
-    panel.grid.minor = element_line(color = "gray"), 
+    panel.background = element_blank(),
+    panel.grid.major = element_line(color = "lightgray"),
+    panel.grid.minor = element_line(color = "gray"),
     panel.border = element_rect(color = "black", fill = NA, size = 1)
   ) +
   facet_grid(rows = vars(Dist), 
              cols = vars(Facet_Cols), 
-             labeller = label_parsed) + 
+             labeller = label_parsed) +
   theme(panel.spacing = unit(1, "lines"),
         strip.background = element_blank(),
-        strip.placement = "outside") +
-  theme(strip.text.y = element_text(size = 14, face = "bold"))  # Add back facet column titles
+        strip.placement = "outside",
+        strip.text.y = element_text(size = 14, face = "bold"),
+        legend.box = "horizontal",  # Place legends in one horizontal box
+    legend.box.just = "center",  # Center-align legend box
+    legend.spacing.x = unit(0.5, "cm"),  # Adjust spacing between legend items
+    legend.margin = margin(t = 0, b = 0),  # Control margins to better align titles
+    legend.title.align = 0.5  # Center-align legend titles
+      ) +
+          guides(linetype = guide_legend(order = 1, override.aes = list(size = 16, linewidth = c(0.7,0.7,0.45,0.7,0.7))), color = guide_legend(override.aes = list(size = 1)),size = "none")
 
 print(p)
 ggsave("facet_plot.png", p, width = 12, height = 8)
