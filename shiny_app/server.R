@@ -181,8 +181,6 @@ server <- function(input, output, session) {
       color_plot_used <- color_plot_options[as.numeric(m_order_prob)+1]
       
       prob_table <- prob_table %>% dplyr::filter(m %in% as.character(m_order_prob))
-
-      print(prob_table)
       
       if(plotStyle_prob == "Linetype (Method), color (Order)"){
         fig <- ggplot(prob_table, aes(x = N, y = Error, linetype=Method, color = m)) + geom_line() +
