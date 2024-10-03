@@ -8,6 +8,8 @@ dist_df <- readRDS("distance_tables/full_dists.RDS") %>%
   rename(Order = m, Range = range) %>% 
   filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
 
+dist_df <- dist_df %>% mutate(Error = ifelse(Error < 1e-15, 1e-13, Error))
+
 df_filtered <- dist_df %>%
   filter((Method == "Rational") | (Order %in% c(3, 5)))
 
@@ -36,8 +38,6 @@ df_filtered$Facet_Cols <- factor(df_filtered$Facet_Cols,
 
 markers <- c("Rational" = 15, "nnGP" = 3, "State-Space" = 5, "Fourier" = 5, "PCA" = 15)
 
-# df_filtered <- df_filtered %>% filter(!is.na(Facet_Cols)) %>% mutate(Facet_Cols = factor(Facet_Cols))
-
 df_filtered <- df_filtered %>% 
   mutate(Dist = factor(Dist, levels = c("L2", "Linf"), 
                        labels = c(expression(paste("Error in ", italic(L)[2], "(I\u00D7I)-norm")),
@@ -46,6 +46,8 @@ df_filtered <- df_filtered %>%
 df_points <- df_filtered %>% arrange(Order) %>% slice(seq(1, n(), by = 30))
 
 df_filtered$Order <- factor(df_filtered$Order)
+
+df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "Fourier", "nnGP", "PCA", "State-Space"))
 
 p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, shape = Method)) +
   geom_line(size = 1.2) +
