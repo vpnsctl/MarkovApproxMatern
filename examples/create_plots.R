@@ -29,9 +29,14 @@ df_filtered_tmp <- df_filtered %>%
 
 df_filtered <- bind_rows(df_filtered, df_filtered_tmp)
 
-df_filtered$Facet_Cols <- factor(df_filtered$Facet_Cols, levels = c("Rational", "Order3", "Order5"))
+df_filtered$Facet_Cols <- factor(df_filtered$Facet_Cols, 
+  levels = c("Rational", "Order3", "Order5"), 
+  labels = c("Rational", expression(Order == 3), expression(Order == 5)))
+
 
 markers <- c("Rational" = 15, "nnGP" = 3, "State-Space" = 5, "Fourier" = 5, "PCA" = 15)
+
+# df_filtered <- df_filtered %>% filter(!is.na(Facet_Cols)) %>% mutate(Facet_Cols = factor(Facet_Cols))
 
 df_filtered <- df_filtered %>% 
   mutate(Dist = factor(Dist, levels = c("L2", "Linf"), 
