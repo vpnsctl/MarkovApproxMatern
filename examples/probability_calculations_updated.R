@@ -9,6 +9,7 @@ library(mvtnorm)
 # Define paths for saving calibration and results
 calibration_file <- "calibration_results/calibrated_m_list.RDS"
 partial_results_folder <- "prob_tables/partial_results"
+partial_results_folder <- "prob_tables"
 
 # Create directories for saving results
 if (!dir.exists("calibration_results")) {
@@ -25,7 +26,8 @@ if (!dir.exists(partial_results_folder)) {
 range <- 0.5
 sigma <- 1
 sigma.e <- 0.1
-n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
+# n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
+n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000)
 n <- n[length(n):1]
 n.obs <- 250
 n.rep <- 10
@@ -189,7 +191,7 @@ for (j in 1:n.rep) {
             rep = j,
             m = m_vec
         )
-        saveRDS(partial_res_list, file = partial_file)
+        # saveRDS(partial_res_list, file = partial_file)
     }
 }
 
@@ -199,4 +201,4 @@ err_nngp <- err_nngp / n.rep
 
 # Save final results
 res_list <- list(err_rat = err_rat, err_nngp = err_nngp, nu = nu, m_vec = m_vec, n_vec = n)
-saveRDS(res_list, file = paste0("prob_tables/rat_vs_nngp_range", range, "_nu", nu, ".RDS"))
+# saveRDS(res_list, file = paste0("prob_tables/rat_vs_nngp_range", range, "_nu", nu, ".RDS"))

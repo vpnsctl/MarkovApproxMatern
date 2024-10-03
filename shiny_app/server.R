@@ -193,7 +193,7 @@ server <- function(input, output, session) {
       
       fig <- fig +labs(y= y_label_cov, x = "N")
       
-      if(input$logScaleCoverror){
+      if(input$logScaleprobError){
         fig <- fig + scale_y_log10()
       }
       

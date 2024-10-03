@@ -57,7 +57,13 @@ process_dist <- function(df_list) {
         tmp_df[["N"]] <- possible_N
         tmp_df[["n_obs"]] <- n_obs
         tmp_df[["range"]] <- range_val
-        tmp_df <- pivot_longer(tmp_df, cols = all_of(m), names_to = "m", values_to = "Error")
+        tmp_df <- pivot_longer(tmp_df, cols = all_of(m), names_to = "m", values_to = "Error")        
+        if(method == "Rational"){
+            tmp_df_tmp <- data.frame(Dist = "L2", nu = c(0.5, 1.5), Error = 1e-16, n_obs = n_obs, N = possible_N, range = range_val, m = rep(m,2), Method = "Rational")
+            tmp_df_tmp <- tibble(tmp_df_tmp)
+            tmp_df = bind_rows(tmp_df,tmp_df_tmp)
+        }
+
        
         # Append the processed data to the cumulative data frame
         dist_df <- bind_rows(dist_df, tmp_df)
@@ -71,6 +77,12 @@ process_dist <- function(df_list) {
         tmp_df[["n_obs"]] <- n_obs        
         tmp_df[["range"]] <- range_val
         tmp_df <- pivot_longer(tmp_df, all_of(m), names_to = "m", values_to = "Error")
+        if(method == "Rational"){
+            tmp_df_tmp <- data.frame(Dist = "Linf", nu = c(0.5, 1.5), Error = 1e-16, n_obs = n_obs, N = possible_N, range = range_val, m = rep(m,2), Method = "Rational")
+            tmp_df_tmp <- tibble(tmp_df_tmp)
+            tmp_df = bind_rows(tmp_df,tmp_df_tmp)
+        }        
+
         
         # Append the Linf processed data to the cumulative data frame
         dist_df <- bind_rows(dist_df, tmp_df)
