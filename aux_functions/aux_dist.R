@@ -101,7 +101,7 @@ process_all_files <- function(file_paths) {
         all_dfs[[file]] <- dist_data
     }
     
-    all_dfs <<- all_dfs
+    all_dfs <- all_dfs
 
     combined_df <- process_dist(all_dfs)
     combined_df <- unique(combined_df)
