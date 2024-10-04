@@ -54,4 +54,4 @@ p <- ggplot(df_filtered, aes(x = N, y = Error, color = Order, linetype = Method)
           guides(linetype = guide_legend(order = 1, override.aes = list(size = 16, linewidth = c(0.8,0.8))), color = guide_legend(override.aes = list(size = 1)),size = "none")
 
 print(p)
-ggsave("prob_error.png", p, width = 12, height = 5)
+ggsave("prob_tables/prob_error.png", p, width = 12, height = 5)
