@@ -17,6 +17,8 @@ df_filtered$N <- as.numeric(df_filtered$N)
 
 df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "nnGP"))
 
+df_filtered$Range <- factor(df_filtered$Range, levels = c("0.5","1", "2"), labels = c(expression(rho~"= 0.5"), expression(rho~"= 1"), expression(rho~"=2")))
+
 line_types <- c("Rational" = "solid", 
                 "nnGP" = "11")
 
@@ -38,7 +40,7 @@ p <- ggplot(df_filtered, aes(x = N, y = Error, color = Order, linetype = Method)
     panel.grid.minor = element_line(color = "gray"),
     panel.border = element_rect(color = "black", fill = NA, size = 1)
   ) +
-  facet_grid(~Range) +
+  facet_grid(~Range, labeller = label_parsed) +
   theme(panel.spacing = unit(1, "lines"),
         strip.background = element_blank(),
         strip.placement = "outside",
