@@ -5,7 +5,7 @@ source("aux_functions/aux_dist.R")
 
 
 ## General setup:
-## Ranges considered are: 20%, 50% and 100% of the domain length.
+## Ranges considered are: 0.5, 1 and 2
 ## Domain length = N/100
 ## m for the different methods were calibrated by the total prediction time.
 ## sigma = 1
@@ -87,10 +87,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_5000_range_05_calibrate
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_5000_range_05_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_5000_range_05_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range_05_calibrated.RDS")
 
@@ -108,10 +104,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_5000_range_1_calibrated
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_5000_range_1_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_5000_range_1_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range_1_calibrated.RDS")
 
@@ -128,10 +120,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_5000_range_2_calibrated
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_5000_range_2_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_5000_range_2_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range_2_calibrated.RDS")
 
@@ -145,7 +133,7 @@ source("aux_functions/aux_dist.R")
 
 
 ## General setup:
-## Ranges considered are: 20%, 50% and 100% of the domain length.
+## Ranges considered are: 0.5, 1 and 2
 ## Domain length = N/100
 ## m for the different methods were calibrated by the total prediction time.
 ## sigma = 1
@@ -161,12 +149,12 @@ m_rat <- 0:6
 
 
 ## Config 2:
-## N = 10000, n_obs = 5000
+
+# Calibration for N = 10000 and n_obs = 5000
 
 N <- 10000
 n_obs <- 10000
 
-# 10000/5000 calibrations
 
 m_nngp_fun <- function(m, alpha){
             if(alpha<1) {
@@ -231,10 +219,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_10000_5000_range_05_cal
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_10000_5000_range_05_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_10000_5000_range_05_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range_05_calibrated.RDS")
 
@@ -252,10 +236,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_10000_5000_range_1_cali
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_10000_5000_range_1_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_10000_5000_range_1_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range_1_calibrated.RDS")
 
@@ -271,10 +251,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_10000_5000_range_2_cali
 
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_10000_5000_range_2_calibrated.RDS")
-
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_10000_5000_range_2_calibrated.RDS")
 
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_5000_range_2_calibrated.RDS")
@@ -294,7 +270,7 @@ source("aux_functions/aux_dist.R")
 
 
 ## General setup:
-## Ranges considered are: 20%, 50% and 100% of the domain length.
+## Ranges considered are: 0.5, 1 and 2
 ## Domain length = N/100
 ## m for the different methods were calibrated by the total prediction time.
 ## sigma = 1
@@ -375,10 +351,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_10000_10000_range_05_ca
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_10000_10000_range_05_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_10000_10000_range_05_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_10000_range_05_calibrated.RDS")
 
@@ -396,91 +368,10 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_10000_10000_range_1_cal
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_10000_10000_range_1_calibrated.RDS")
 
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_10000_10000_range_1_calibrated.RDS")
-
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_10000_range_1_calibrated.RDS")
 
 ### Third range
-
-
-source("aux_functions/aux_functions_cov.R")
-source("aux_functions/predict_methods.R")
-source("aux_functions/distance_computations.R")
-source("aux_functions/aux_dist.R")
-
-
-## General setup:
-## Ranges considered are: 20%, 50% and 100% of the domain length.
-## Domain length = N/100
-## m for the different methods were calibrated by the total prediction time.
-## sigma = 1
-## No calibration were carried out against the parsimonious method.
-
-nu_vec <- seq(from = 0.01, to = 2.49, by = 0.01)
-idx <- (nu_vec + 0.5)%%1 > 1e-10
-nu_vec_rat <- nu_vec[idx]
-sigma = 1
-m <- 1:6
-m_rat <- 0:6
-
-
-
-N <- 10000
-n_obs <- 10000
-
-m_nngp_fun <- function(m, alpha){
-            if(alpha<1) {
-                mn <- m - 1
-                if(mn < 1){
-                    mn <- 1
-                }
-            } else if (alpha < 2) {
-                m_vec <- c(1, 2, 7, 18, 24, 29)
-                mn <- m_vec[m]
-            } else {
-                m_vec <- c(14, 28, 37, 44, 51, 57)
-                mn <- m_vec[m]
-            }
-            return(mn)
-} 
-
-m_pca_fun <- function(m, alpha){
-            if(alpha<1) {
-                m_vec <- c(271, 311, 367, 412, 452, 493)
-                mn <- m_vec[m]
-            } else if (alpha < 2) {
-                m_vec <- c(372, 493, 591, 672, 751, 821)
-                mn <- m_vec[m]
-            } else {
-                m_vec <- c(640, 848, 1016, 1168, 1299, 1420)
-                mn <- m_vec[m]
-            }
-            return(mn)
-}
-
-## Same as PCA, but with 100 samples
-m_fourier_fun <- function(m, alpha){
-            if(alpha<1) {
-                m_vec <- c(271, 311, 367, 412, 452, 493)
-                mn <- m_vec[m]
-            } else if (alpha < 2) {
-                m_vec <- c(372, 493, 591, 672, 751, 821)
-                mn <- m_vec[m]
-            } else {
-                m_vec <- c(640, 848, 1016, 1168, 1299, 1420)
-                mn <- m_vec[m]
-            }
-            return(mn)
-}
-
-m_statespace_fun <- function(m, alpha){
-    return(max(c(1,m - floor(alpha))))
-}
-
-
 
 range <- 2
 
@@ -492,10 +383,6 @@ saveRDS(dist_nngp, "distance_tables/raw_tables/dist_nngp_10000_10000_range_2_cal
 
 dist_pca <- compute_distances_pca(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_pca_fun = m_pca_fun)
 saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_10000_10000_range_2_calibrated.RDS")
-
-samples <- 100
-dist_fourier <- compute_distances_fourier(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, samples=samples, m_fourier_fun = m_fourier_fun)
-saveRDS(dist_fourier, "distance_tables/raw_tables/dist_fourier_10000_10000_range_2_calibrated.RDS")
 
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_10000_10000_range_2_calibrated.RDS")

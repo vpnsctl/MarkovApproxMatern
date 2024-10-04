@@ -9,7 +9,6 @@ library(mvtnorm)
 # Define paths for saving calibration and results
 calibration_file <- "calibration_results/calibrated_m_list.RDS"
 partial_results_folder <- "prob_tables/partial_results"
-partial_results_folder <- "prob_tables"
 
 # Create directories for saving results
 if (!dir.exists("calibration_results")) {
@@ -26,8 +25,7 @@ if (!dir.exists(partial_results_folder)) {
 range <- 0.5
 sigma <- 1
 sigma.e <- 0.1
-# n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
-n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000)
+n <- c(0, 25, 50, 100, 150, 250, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2500, 3000)
 n <- n[length(n):1]
 n.obs <- 250
 n.rep <- 10
@@ -40,24 +38,19 @@ domain_upper_limit <- 10
 use.excursions <- TRUE
 coverage <- 0.9
 
-# Initialize storage for calibration
 calibrated_m <- list()
 previous_calibration <- NULL
 kappa <- sqrt(8*nu)/range
 
-# Generate locations for the given `n`
 locs <- lapply(n, function(x) if(x > 0) seq(from = 1, to = domain_upper_limit, length.out = x) else NULL)
 
-# Load or generate calibration
 if (file.exists(calibration_file)) {
     calibrated_m <- readRDS(calibration_file)
     cat("Loaded calibrated m from", calibration_file, "\n")
 } 
 
-# Set up matrices to store error results
 err_nngp <- err_rat <- matrix(0, length(m_vec), length(n))
 
-# Main loop for replicates and `n` values
 for (j in 1:n.rep) {
     obs_loc <- sort(runif(n.obs, 0, domain_upper_limit))
     while (min(diff(obs_loc)) < 1e-3) {
@@ -102,7 +95,6 @@ for (j in 1:n.rep) {
             obs.ind <- 1:n.obs
         }
 
-        # Check calibration for the current `n`
         if(is.null(calibrated_m[[as.character(n[i])]])){
             if(n[i] > 999){
                 print("Calibrating...")
@@ -134,7 +126,6 @@ for (j in 1:n.rep) {
             prob_true <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_mean_true,sigma = post_cov_true)
         }
         
-        # Loop over `m_vec` to compute errors for both rational and NNGP methods
         for(k in 1:length(m_vec)){
             m <- m_vec[k]
             cat("rep = ", j,"n =", n[i], 'rational, m = ', m, '\n')
@@ -191,7 +182,7 @@ for (j in 1:n.rep) {
             rep = j,
             m = m_vec
         )
-        # saveRDS(partial_res_list, file = partial_file)
+        saveRDS(partial_res_list, file = partial_file)
     }
 }
 
@@ -201,4 +192,4 @@ err_nngp <- err_nngp / n.rep
 
 # Save final results
 res_list <- list(err_rat = err_rat, err_nngp = err_nngp, nu = nu, m_vec = m_vec, n_vec = n)
-# saveRDS(res_list, file = paste0("prob_tables/rat_vs_nngp_range", range, "_nu", nu, ".RDS"))
+saveRDS(res_list, file = paste0("prob_tables/rat_vs_nngp_range", range, "_nu", nu, ".RDS"))
