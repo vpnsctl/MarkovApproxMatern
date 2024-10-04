@@ -18,14 +18,18 @@ python_codes/get_fourier_cov_errors.py
 The prediction error computations were obtained using the following files:
 
 ```{bash, eval=FALSE}
-# These codes are used to generate samples and obtain the predictions based on the exact covariance
+# These codes are used to generate samples and 
+# obtain the predictions based on the exact covariance
 python_codes/get_true_pred.py
 python_codes/gen_samples_and_true_pred.py
-# These codes compute the prediction errors for PCA, Fourier and State-Space methods, respectively
+# These codes compute the prediction errors for PCA, 
+# Fourier and State-Space methods, respectively
 python_codes/get_pca_pred.py
 python_codes/get_fourier_pred.py
 python_codes/get_statespace_pred.py
-# The following code computes the prediction errors for Rational and nnGP (using the predictions and samples from the previous files):
+# The following code computes the prediction errors for 
+# Rational and nnGP (using the predictions and samples 
+# from the previous files):
 examples/compute_rational_nngp_errors.R
 ```
 
