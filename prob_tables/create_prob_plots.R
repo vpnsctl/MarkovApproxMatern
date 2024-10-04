@@ -17,7 +17,7 @@ df_filtered$N <- as.numeric(df_filtered$N)
 
 df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "nnGP"))
 
-df_filtered$Range <- factor(df_filtered$Range, levels = c("0.5","1", "2"), labels = c(expression(rho~"= 0.5"), expression(rho~"= 1"), expression(rho~"=2")))
+df_filtered$Range <- factor(df_filtered$Range, levels = c("0.5","1", "2"), labels = c(expression(rho~"= 0.5"), expression(rho~"= 1"), expression(rho~"= 2")))
 
 line_types <- c("Rational" = "solid", 
                 "nnGP" = "11")
