@@ -33,7 +33,7 @@ df_filtered <- bind_rows(df_filtered, df_filtered_tmp)
 
 df_filtered$Facet_Cols <- factor(df_filtered$Facet_Cols, 
   levels = c("Rational", "Order3", "Order5"), 
-  labels = c("Rational", expression(Order == 3), expression(Order == 5)))
+  labels = c("Rational", "Order = 3", "Order = 5"))
 
 df_filtered$Order <- factor(df_filtered$Order)
 
@@ -52,7 +52,6 @@ p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method
   # geom_point(data = df_points, size = 3) +
   scale_y_log10(limits = c(1e-10, NA)) +
   scale_color_manual(values = color_plot_used, guide = guide_legend(order = 2)) +
-  scale_shape_manual(values = markers, guide = guide_legend(order = 1)) +
   scale_size_manual(values = line_sizes) +
   scale_linetype_manual(values = line_types, , guide = guide_legend(order = 1)) +  
   labs(y = "Prediction Error", x = expression(nu ~ "(smoothness parameter)")) +
