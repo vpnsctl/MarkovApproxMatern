@@ -191,48 +191,6 @@ compute_distances_pca <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_pca_f
     return(ret)
 }
 
-
-# kl
-
-compute_distances_kl <- function(N, m.vec, nu.vec, range, sigma, N_KL=10000, m_kl_fun){
-    L2dist <- list()
-    Linfdist <- list()
-    for(n_loc in N){
-        l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))        
-        loc <- seq(0, 1, length.out = n_loc)
-        large_KL <- seq(min(loc), max(loc), length.out = N_KL)
-        kl_loc <- c(loc, large_KL)
-        kl_loc <- unique(kl_loc)
-        D_loc <- as.matrix(dist(kl_loc))
-        for(i in 1:length(nu.vec)) {
-            nu <- nu.vec[i]
-            # cat(i/length(nu.vec)," ")
-            print(paste("nu = ",nu))            
-            alpha <- nu + 0.5  
-            kappa <- sqrt(8*nu)/range
-            cov_mat <- rSPDE::matern.covariance(h=D_loc,kappa=kappa,nu=nu,sigma=sigma)
-            eigen_cov <- eigen(cov_mat) 
-            eigen_cov$vec <- eigen_cov$vec[1:N,]            
-            Sigma.t <- cov_mat[1:N, 1:N]
-            for(j in 1:length(m.vec)){
-                m = m.vec[j]
-                m <- m_kl_fun(m, alpha)
-                Sigma_KL <- KL_matern(m=m, eigen_cov = eigen_cov)    
-                l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_KL)^2))*(loc[2]-loc[1])
-                sup.err[i,j] <- max(abs(Sigma.t-Sigma_KL))         
-            }
-        }
-        L2dist[[as.character(n_loc)]] <- l2.err
-        Linfdist[[as.character(n_loc)]] <- sup.err
-    }
-    ret <- list(L2 = L2dist, Linf = Linfdist)
-    attr(ret, "type") <- "KL"
-    attr(ret, "nu.vec") <- nu.vec
-    attr(ret, "m.vec") <- m.vec    
-    return(ret)
-}
-
-
 # Fourier
 compute_distances_fourier <- function(N, n_obs, m.vec, nu.vec, range, sigma, samples, m_fourier_fun){
     N <- N[[1]]
