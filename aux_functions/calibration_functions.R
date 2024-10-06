@@ -836,6 +836,7 @@ timing_rat <- function(N, n_obs, nu, range, sigma, sigma_e, m_rat, samples,
             cat("\n")
         }
         times.rat[i] <- times.rat[i]/samples
+        print(times.rat[i])
     } 
     return(times.rat)
 }
@@ -1116,7 +1117,7 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
         if(print){
             print("Computing rational times")
         }
-        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction")
+        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction", print = print)
         if(print){
             print("Calibrating taper")
         }
@@ -1157,7 +1158,12 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
 }
 
 # time1 <- Sys.time()
-m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
+# m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
+m_tmp <- c(1, 1, 1, 41, 61, 81)
+m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
+
+# Calibration: Taper, nu = 1.4 : 1  1  1 41 61 81
+
 # time2 <- Sys.time()
 # print(time2-time1)
 
