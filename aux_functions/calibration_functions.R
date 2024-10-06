@@ -1080,7 +1080,7 @@ auto_calibration_nngp_rat <- function(n, n_obs, nu, range, sigma, sigma_e, sampl
 
 
 
-auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samples, m_rat, previous_calibration = NULL, max_it_per_m = 20, print=FALSE){
+auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samples, m_rat, step_size = 1, previous_calibration = NULL, max_it_per_m = 20, print=FALSE){
     ret_m <- numeric(length(m_rat))
     if(is.null(previous_calibration)){
         # get rational times
@@ -1102,7 +1102,7 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
                 ret_m[i] <- m_tmp
             } else{
                 while((times_tmp < times_rat[i]) && (count < max_it_per_m)){
-                    m_tmp <- m_tmp + 1
+                    m_tmp <- m_tmp + step_size
                     times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
                     count <- count + 1
                 }
@@ -1131,16 +1131,16 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
 
             if(times_tmp > times_rat[i]){
                 while((times_tmp > times_rat[i]) &&  (count < max_it_per_m) && (m_tmp > 1)){
-                    m_tmp <- m_tmp - 1
+                    m_tmp <- m_tmp - step_size
                     times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
                     count <- count + 1
                 }
                 if(times_tmp < times_rat[i]){
-                    m_tmp <- m_tmp + 1
+                    m_tmp <- m_tmp + step_size
                 }
             } else{
                 while((times_tmp < times_rat[i]) &&  (count < max_it_per_m)){
-                    m_tmp <- m_tmp + 1
+                    m_tmp <- m_tmp + step_size
                     times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
                     count <- count + 1
                 }
@@ -1158,11 +1158,15 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
 }
 
 # time1 <- Sys.time()
-# m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
-m_tmp <- c(1, 1, 1, 41, 61, 81)
-m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
+# m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 50, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
+# m_tmp <- c(1,1,1, 62, 124, 166) # 300 samples
+m_tmp <- c(31, 210, 342, 376, 405, 490)
+m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=20, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
 
-# Calibration: Taper, nu = 1.4 : 1  1  1 41 61 81
+# Calibration: Taper, 
+# nu = 0.4 : 1 1 1 1 1 1 -> m-1
+# nu = 1.4 : 1, 1, 1, 62,  -> 1, 1, 2, 62, 124, 166
+# nu = 2.4 : 31, 210, 342, 376, 405, 490
 
 # time2 <- Sys.time()
 # print(time2-time1)
