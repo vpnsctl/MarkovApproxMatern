@@ -466,6 +466,10 @@ wendland_K2 <- function(h, gamma){
     return(tmp^6 * (tmp>0) * (1+6*h/gamma + 35*h^2 /(3*gamma^2)))
 }
 
+spherical_tap <- function(h, gamma){
+    tmp <- (1-h/gamma)
+    return(tmp^2*(tmp>0) * (1 + h/(2*gamma))) 
+}
 
 ## Assuming equally spaced mesh
 taper_matern <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigma = NULL, Sigma = NULL){
@@ -479,8 +483,8 @@ taper_matern <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigm
         rm(sorted_loc)
     }
     gamma <- (m+1) * delta_loc
-    if(nu >= 2){
-        stop("nu must be less than 2.")
+    if(nu > 2.5){
+        stop("nu must be less than 2.5")
     }
     if(is.null(Sigma)){
         if(any(c(is.null(nu), is.null(kappa),is.null(sigma)))){
@@ -489,14 +493,148 @@ taper_matern <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigm
         D <- as.matrix(dist(loc))
         Sigma <- rSPDE::matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
     } 
-    if(nu < 1){
+    if(nu <= 0.5){
+        Sigma_tap <- spherical_tap(D, gamma = gamma)
+    } else if (nu <= 1.5){
         Sigma_tap <- wendland_K1(D, gamma = gamma)
-        return(Sigma*Sigma_tap)
-    } else{
+    } else {
         Sigma_tap <- wendland_K2(D, gamma = gamma)
-        return(Sigma*Sigma_tap)
     }
+    return(Sigma*Sigma_tap)    
 }
+
+
+
+## Assuming equally spaced mesh
+
+# compute_sparse_distances_v1 <- function(loc, threshold = Inf) {
+#     dist_vec <- dist(loc)
+#     n <- length(loc)
+#     sparse_dist_mat <- Matrix(0, n, n, sparse = TRUE)
+#     get_dist <- function(i, j) {
+#       if (i < j) {
+#         idx <- n*(i - 1)  - i*(i - 1) / 2 + j-i
+#       } else if (i > j) {
+#         idx <- n*(j - 1)  - j*(j - 1) / 2 + i-j
+#       } else {
+#         return(0)  # distance to self is 0
+#       }
+#       return(dist_vec[idx])
+#     }
+      
+#     for (i in 1:n) {
+#       distances <- sapply(1:n, function(j) get_dist(i, j))
+#       closest_indices <- order(distances)
+#       closest_indices <- closest_indices[distances[closest_indices] <= threshold]
+#       sparse_dist_mat[i, closest_indices] <- distances[closest_indices]
+#     }
+    
+#     return(sparse_dist_mat)
+#   }
+
+#   compute_sparse_distances_v2 <- function(loc, threshold = Inf) {
+#     dist_vec <- dist(loc)
+#     dist_vec <- as.matrix(dist_vec)
+#     n <- length(loc)
+#     sparse_dist_mat <- Matrix(0, n, n, sparse = TRUE)
+      
+#     for (i in 1:n) {
+#       closest_indices <- order(dist_vec[i,])
+#       closest_indices <- closest_indices[dist_vec[closest_indices] <= threshold]
+#       sparse_dist_mat[i, closest_indices] <- dist_vec[closest_indices]
+#     }
+    
+#     return(sparse_dist_mat)
+#   }
+
+## Fastest
+
+  compute_sparse_distances_v3 <- function(loc, threshold = Inf) {
+    D <- dist(loc)
+    D <- D * (D < threshold)
+    D <- as.matrix(D)
+    D <- as(D, "sparseMatrix")
+    return(D)
+  }
+
+
+#   compute_bandwidth <- function(A) {
+#     non_zero_indices <- which(A != 0, arr.ind = TRUE)
+#     bandwidths <- abs(non_zero_indices[, 1] - non_zero_indices[, 2])
+#     return(max(bandwidths))
+#   }
+
+# convert_to_band_sparse <- function(D, m) {
+#   n <- nrow(D)  
+#   diagonals <- matrix(nrow=n, ncol=m+1)  
+#   diagonals[,1] <- diag(D)
+#   for (i in 1:m) {
+#     if (i <= n - 1) {
+#       diagonals[,i+1] <- c(diag(D[-((n-i+1):n),-(1:i)]), rep(0,i))
+#     }
+#   }
+
+#   banded_sparse_matrix <- bandSparse(n = n, m = n, k = 0:m, diagonals = diagonals, symmetric = TRUE)
+
+#   return(banded_sparse_matrix)
+# }
+
+#   compute_sparse_distances_v4 <- function(loc, threshold = Inf) {
+#     D <- dist(loc)
+#     D <- D * (D < threshold)
+#     D <- as.matrix(D)
+#     m <- compute_bandwidth(D)
+#     D_bs <- convert_to_band_sparse(D,m)
+#     D <- as(D, "sparseMatrix")
+#     return(D)
+#   }
+
+
+
+taper_matern_efficient <- function(m, loc = NULL, delta_loc = NULL, nu, kappa = NULL, sigma = NULL, Sigma = NULL){
+    if(is.null(loc)){
+        if(is.null(delta_loc)){
+            stop("delta_loc must be provided if loc is null.")
+        }
+    } else{
+        sorted_loc <- sort(loc)
+        delta_loc <- sorted_loc[2] - sorted_loc[1]
+        rm(sorted_loc)
+    }
+    gamma <- (m+1) * delta_loc
+    if(nu > 2.5){
+        stop("nu must be less than 2.5")
+    }
+    if(is.null(Sigma)){
+        if(any(c(is.null(nu), is.null(kappa),is.null(sigma)))){
+            stop("if Sigma is null, nu, kappa and sigma must be nonnull!")
+        }
+        D <- compute_sparse_distances_v3(loc = loc, threshold = gamma)
+        Sigma <- D
+        Sigma@x <- rSPDE::matern.covariance(h=D@x,kappa=kappa,nu=nu,sigma=sigma)
+        Sigma <- Sigma + Matrix::Diagonal(x = rSPDE::matern.covariance(h=0,kappa=kappa,nu=nu,sigma=sigma), n = nrow(Sigma))
+    } 
+    Sigma_tap <- D
+    if(nu <= 0.5){
+        Sigma_tap@x <- spherical_tap(D@x, gamma = gamma)
+    } else if (nu <= 1.5){
+        Sigma_tap@x <- wendland_K1(D@x, gamma = gamma)
+    } else {
+        Sigma_tap@x <- wendland_K2(D@x, gamma = gamma)
+    }
+    Sigma_tap <- Sigma_tap + Matrix::Diagonal(x=1, n = nrow(Sigma_tap))
+    return(Sigma*Sigma_tap)    
+}
+
+# time1 <- Sys.time()
+# tap_2 <- taper_matern_efficient(m = 10, loc=loc, nu = 0.4, kappa = 10, sigma = 1)
+# time2 <- Sys.time()
+# print(time2-time1)
+
+# time1 <- Sys.time()
+# tap_1 <- taper_matern_efficient(m = 10, loc=loc, nu = 0.4, kappa = 10, sigma = 1)
+# time2 <- Sys.time()
+# print(time2-time1)
 
 
 ## Parsimonious rational approximation

@@ -1,46 +1,5 @@
 ## Calibrations:
 
-# NNGP (calibrations for m from 2 to 6):
-# N = n_obs = 5000 
-# (prediction) 
-# 1 < alpha < 2: 2, 17, 20, 27, 30
-# 2 < alpha < 3: 28, 37, 47, 52, 56
-# (sampling) - including build the precision
-# 1 < alpha < 2: 2,  9,  19, 22, 28
-# 2 < alpha < 3: 30, 38, ,46, 54, 59
-
-# N = 10000, n_obs = 5000
-# (prediction) 
-# (sampling) 
-# 1 < alpha < 2: 2 2 12 22 29
-# 2 < alpha < 3: 33 44 49 52 60
-
-# N = 10000, n_obs = 10000
-# (prediction) 
-# 1 < alpha < 2: 2  3  9  20 31
-# 2 < alpha < 3: 32 42 48 53 58
-# (sampling) 
-# 1 < alpha < 2: 3 3 3 16 23
-# 2 < alpha < 3: 26 38 49 55 62
-
-
-# NNGP Calibrations
-
-# N= 5000, nobs = 5000
-# alpha01: 268 308 355 406 433 478
-# alpha12: 380 473 561 651 708 776
-# alpha23: 611  810  945 1082 1205 1325
-
-# N=10000, nobs = 5000
-# alpha01: 381 448 533 588 654 727
-# alpha12: 532  704  844  953 1065 1162
-# alpha23: 904 1202 1431 1622 1808 1965
-
-# N=10000, nobs = 10000
-# alpha01: 271 311 367 412 452 493
-# alpha12: 372 493 591 672 751 821
-# alpha23: 640  848 1016 1168 1299 1420
-
 # PCA Calibrations
 
 # N= 5000, nobs = 5000

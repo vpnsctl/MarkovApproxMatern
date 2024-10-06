@@ -1,8 +1,9 @@
 library(rSPDE)
 library(Matrix)
 source("aux_functions/aux_functions_cov.R")
+source("aux_functions/prediction_computations.R")
 
-# Calibrations obtained:
+# Calibrations obtained PCA:
 
 # N= 5000, nobs = 5000
 # alpha01: 268 308 355 406 433 478
@@ -944,6 +945,50 @@ type = c("prediction", "sampling", "estimation"), est_nu, only_optim, plot=FALSE
 }
 
 
+timing_taper_m_vec <- function(N, n_obs, m.taper, factor = 100, nu, range, sigma, sigma_e, samples, print=FALSE){
+        if(n_obs > N){
+            stop("n_obs needs to be less or equal to N")
+        }
+    
+        kappa <- sqrt(8*nu)/range
+        sigma.e <- sigma_e
+        loc <- seq(0,N/factor,length.out=N) 
+        n <- N
+        n.obs <- n_obs
+        obs_ind <- obs.ind <- sort(sample(1:n)[1:n.obs]) 
+        y <- rnorm(n.obs) 
+    
+        times.taper <- rep(0, length(m.taper))     
+    
+        if(print){
+            print("starting taper")
+        }
+    
+         for(i in 1:length(m.taper)){ 
+            i_m <- m.taper[i] 
+            if(print){
+                print(paste("m =", i_m))
+            }
+            for(jj in 1:samples){
+                if(print){
+                    cat(jj/samples, " ")
+                }
+                    t1 <- Sys.time()                 
+                    taper_pred(y = y, loc_full = loc, idx_obs = obs_ind, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, m = i_m)
+                    t2 <- Sys.time() 
+                    times.taper[i] <- times.taper[i] + as.numeric(t2-t1, units="secs")
+            }
+            times.taper[i] <- times.taper[i]/samples
+            if(print){
+                print(paste("time =", times.taper[i]))
+            }
+            } 
+        return(times.taper)
+    }
+
+
+
+
 auto_calibration_nngp_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samples, m_rat, previous_calibration = NULL, max_it_per_m = 20, print=FALSE){
     ret_m <- numeric(length(m_rat))
     if(is.null(previous_calibration)){
@@ -1028,5 +1073,95 @@ auto_calibration_nngp_rat <- function(n, n_obs, nu, range, sigma, sigma_e, sampl
 
 # time1 <- Sys.time()
 # m_tmp2 <- auto_calibration_nngp_rat(n=500, n_obs=250, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE)
+# time2 <- Sys.time()
+# print(time2-time1)
+
+
+
+
+auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samples, m_rat, previous_calibration = NULL, max_it_per_m = 20, print=FALSE){
+    ret_m <- numeric(length(m_rat))
+    if(is.null(previous_calibration)){
+        # get rational times
+        if(print){
+            print("Computing rational times")
+        }
+        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction", print = print)
+        if(print){
+            print("Calibrating taper")
+        }
+        m_tmp <- 1
+        times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
+        for(i in 1:length(m_rat)){
+            if(print){
+                print(paste("Starting calibration for m =",m_rat[i]))
+            }
+            count <- 0
+            if(times_tmp >= times_rat[i]){
+                ret_m[i] <- m_tmp
+            } else{
+                while((times_tmp < times_rat[i]) && (count < max_it_per_m)){
+                    m_tmp <- m_tmp + 1
+                    times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
+                    count <- count + 1
+                }
+                ret_m[i] <- m_tmp
+            }
+            if(print){
+                print("Calibration found:")
+                print(paste("m_taper =", ret_m[i]))
+            }
+        }
+    } else{
+        if(print){
+            print("Computing rational times")
+        }
+        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction")
+        if(print){
+            print("Calibrating taper")
+        }
+        for(i in 1:length(m_rat)){
+            if(print){
+                print(paste("Starting calibration for m =",m_rat[i]))
+            }
+            count <- 0
+            m_tmp <- previous_calibration[i]
+            times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
+
+            if(times_tmp > times_rat[i]){
+                while((times_tmp > times_rat[i]) &&  (count < max_it_per_m) && (m_tmp > 1)){
+                    m_tmp <- m_tmp - 1
+                    times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
+                    count <- count + 1
+                }
+                if(times_tmp < times_rat[i]){
+                    m_tmp <- m_tmp + 1
+                }
+            } else{
+                while((times_tmp < times_rat[i]) &&  (count < max_it_per_m)){
+                    m_tmp <- m_tmp + 1
+                    times_tmp <- timing_taper_m_vec(N = n, n_obs = n_obs, m.taper = m_tmp, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print)
+                    count <- count + 1
+                }
+            }
+
+            ret_m[i] <- m_tmp
+
+            if(print){
+                print("Calibration found:")
+                print(paste("m_taper =", ret_m[i]))
+            }
+        }
+    }
+    return(ret_m)
+}
+
+# time1 <- Sys.time()
+m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
+# time2 <- Sys.time()
+# print(time2-time1)
+
+# time1 <- Sys.time()
+# m_tmp2 <- auto_calibration_taper_rat(n=500, n_obs=250, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE)
 # time2 <- Sys.time()
 # print(time2-time1)

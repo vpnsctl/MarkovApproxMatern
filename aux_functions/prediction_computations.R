@@ -10,7 +10,7 @@ sample_matern <- function(loc, nu, kappa, sigma, nsim = 1){
     return(t(L)%*%t(z))
 }
 
-# # Example:
+# # # Example:
 # loc <- seq(0,1,by = 0.001)
 # nu <- 0.6
 # kappa <- 10
@@ -859,6 +859,33 @@ for(i_m in m){
     return(pred)
 }
 
+## Taper prediction
+
+taper_pred <- function(y, loc = NULL, loc_pred = NULL, loc_full = NULL, idx_obs = NULL, idx_pred = NULL, nu, kappa, sigma, sigma_e, m){
+    if(is.null(loc_full)){
+        if(is.null(loc)){
+            stop("either loc or loc_full needs to be non-NULL")
+        }
+        loc_full <- c(loc_pred,loc)
+        idx_obs <- (length(loc_pred)+1):length(loc_full)
+        if(!is.null(loc_pred)){
+            idx_pred <- 1:length(loc_pred)
+        } else{
+            idx_pred <- idx_obs
+        }
+    }
+
+    # Constructing taper cov
+    cov_mat = taper_matern_efficient(m = m, loc = loc_full, nu = nu, kappa = kappa, sigma = sigma)
+    cov_mat_nugget <-  cov_mat[idx_obs, idx_obs] + Matrix::Diagonal(x=sigma_e^2, n=length(idx_obs))
+    cov_mat <- cov_mat[idx_pred,idx_obs]
+    # cov_mat <- as(cov_mat, "sparseMatrix")
+    # cov_mat_nugget <- as(cov_mat_nugget, "sparseMatrix")
+    d <- solve(cov_mat_nugget, y)
+    return(cov_mat%*%d)
+}
+
+# post_mean_taper <- taper_pred(m = 10, y, loc=loc_full[idx_obs], loc_pred = loc_full[idx_pred], nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
 
 
 # Generate complete table
