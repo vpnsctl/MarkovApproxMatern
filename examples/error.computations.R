@@ -71,6 +71,32 @@ m_pca_fun <- function(m, alpha, n, n.obs){
 }
 
 
+
+
+m_taper_fun <- function(m, alpha, n, n.obs){
+            if(alpha<1) {
+                mn <- m - 1
+                if(mn < 1){
+                    mn <- 1
+                }
+            } else if (alpha < 2) {
+                if(n == 5000){
+                    m_vec <- c(1, 2, 3, 62, 124, 166) 
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            } else {
+                if(n == 5000){
+                    m_vec <- c(31, 210, 342, 376, 405, 490)
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            }
+            return(mn)
+} 
+
 sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc, Sigma){
     loc <- loc - loc[1]
     acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
@@ -744,7 +770,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
     set.seed(123)
     m.vec <- 1:6
-    err.nn <- err.rat <- err.pca <- err.fourier <- err.ss <- matrix(0,nrow= 1, ncol = length(m.vec))
+    err.nn <- err.rat <- err.pca <- err.fourier <- err.ss  <- err.taper <- matrix(0,nrow= 1, ncol = length(m.vec))
     
     alpha <- nu + 1/2
     kappa = sqrt(8*nu)/range
@@ -815,6 +841,23 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
                 print("nn")
                 print(err.nn[1,j])
+
+            } else if(method == "taper"){
+
+            #########################
+            ## taper prediction
+            ########################
+            mn <- m_taper_fun(m, alpha, n, n.obs)
+            cov_mat = taper_matern_efficient(m = mn, loc = loc, nu = nu, kappa = kappa, sigma = sigma)
+            cov_mat_nugget <-  cov_mat[obs.ind, obs.ind] + Matrix::Diagonal(x=sigma.e^2, n=length(obs.ind))        
+            ov_mat <- cov_mat[,obs.ind]
+            Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
+            mu.taper <- solve(cov_mat_nugget, Y)
+            mu.taper <- cov_mat%*%mu.taper
+            err.taper[1,j] <- err.taper[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.taper)^2))/n.rep            
+
+                print("taper")
+                print(err.taper[1,j])
 
             } else if(method == "pca"){
 
