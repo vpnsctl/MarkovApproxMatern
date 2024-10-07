@@ -88,7 +88,7 @@ m_taper_fun <- function(m, alpha, n, n.obs){
                 mn <- m_vec[m]
             } else {
                 if(n == 5000){
-                    m_vec <- c(31, 210, 342, 376, 405, 490)
+                    m_vec <- c(31, 210, 342, 376, 405, 501)
                 } else{
                     stop("not implemented")
                 }
