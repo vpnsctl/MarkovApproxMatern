@@ -74,6 +74,31 @@ m_statespace_fun <- function(m, alpha){
 }
 
 
+m_taper_fun <- function(m, alpha, n, n.obs){
+            if(alpha<1) {
+                mn <- m - 1
+                if(mn < 1){
+                    mn <- 1
+                }
+            } else if (alpha < 2) {
+                if(n == 5000){
+                    m_vec <- c(1, 2, 3, 62, 124, 166) 
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            } else {
+                if(n == 5000){
+                    m_vec <- c(31, 210, 342, 376, 405, 501)
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            }
+            return(mn)
+} 
+
+
 ### First range
 
 range <- 0.5
