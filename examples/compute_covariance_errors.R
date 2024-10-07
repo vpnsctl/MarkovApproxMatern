@@ -148,6 +148,8 @@ saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_5000_range_2_calibrated.R
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range_2_calibrated.RDS")
 
+dist_taper <- compute_distances_taper(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_taper_fun = m_taper_fun)
+saveRDS(dist_ss, "distance_tables/raw_tables/dist_taper_5000_range_2_calibrated.RDS")
 
 ###############
 
