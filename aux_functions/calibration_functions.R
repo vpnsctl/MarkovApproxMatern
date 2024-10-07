@@ -1158,11 +1158,15 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
 }
 
 # time1 <- Sys.time()
-m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 10, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
-# m_tmp <- c(1, 1, 1, 41, 61, 81)
-# m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, step_size = 10, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
+# m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 50, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
+# m_tmp <- c(1,1,1, 62, 124, 166) # 300 samples
+m_tmp <- c(31, 210, 342, 376, 405, 490)
+m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=20, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
 
-# Calibration: Taper, nu = 1.4 : 1   1   1  46 111 156
+# Calibration: Taper, 
+# nu = 0.4 : 1 1 1 1 1 1 -> m-1
+# nu = 1.4 : 1, 1, 1, 62,  -> 1, 1, 2, 62, 124, 166
+# nu = 2.4 : 31, 210, 342, 376, 405, 490
 
 # time2 <- Sys.time()
 # print(time2-time1)
