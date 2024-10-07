@@ -82,7 +82,7 @@ if(method == "rational"){
         err.taper <- nu <- NULL
         for(i in 1:length(res)) {
             nu <- c(nu, res[[i]]$nu)
-            err.taper <- rbind(err.ss, res[[i]]$err.taper)
+            err.taper <- rbind(err.taper, res[[i]]$err.taper)
         } 
         res_pred <- list(nu = nu, err.taper = err.taper)  
     }
