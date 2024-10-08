@@ -100,12 +100,13 @@ for(kk in 1:n.rep) {
             t1 <- Sys.time()
             
             mesh <- rSPDE::rSPDE.fem1d(loc_mesh)
-            A  <- rSPDE::rSPDE.A1d(mesh, loc)
+            A  <- rSPDE::rSPDE.A1d(loc_mesh, loc)
             
             op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
-                                       loc_mesh = loc_mesh, d = 1, m = mr,
+                                       d = 1, m = mr,
                                        parameterization = "matern", 
-                                       type_rational_approximation = "brasil")
+                                       type_rational_approximation = "brasil",
+                                       C = mesh$C, G = mesh$G)
             t2 <- Sys.time()
             mu.rspde <- as.vector(predict(op.cov, A[obs.ind,], A, Y, sigma.e)$mean)
             t3 <- Sys.time()

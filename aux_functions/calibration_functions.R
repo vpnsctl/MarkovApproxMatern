@@ -1160,13 +1160,114 @@ auto_calibration_taper_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samp
 # time1 <- Sys.time()
 # m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 50, previous_calibration = NULL, max_it_per_m = 20, print=TRUE) 
 # m_tmp <- c(1,1,1, 62, 124, 166) # 300 samples
-m_tmp <- c(31, 210, 342, 376, 405, 490)
-m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=20, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
+# m_tmp <- c(31, 210, 342, 376, 405, 501)
+# m_tmp <- auto_calibration_taper_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=20, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE) 
 
 # Calibration: Taper, 
 # nu = 0.4 : 1 1 1 1 1 1 -> m-1
 # nu = 1.4 : 1, 1, 1, 62,  -> 1, 1, 2, 62, 124, 166
-# nu = 2.4 : 31, 210, 342, 376, 405, 490
+# nu = 2.4 : 31, 210, 342, 376, 405, 501
+
+# time2 <- Sys.time()
+# print(time2-time1)
+
+# time1 <- Sys.time()
+# m_tmp2 <- auto_calibration_taper_rat(n=500, n_obs=250, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=50, m_rat=1:6, previous_calibration = m_tmp, max_it_per_m = 20, print=TRUE)
+# time2 <- Sys.time()
+# print(time2-time1)
+
+
+
+
+timing_fem_m_vec <- function(N, n_obs, m_fem, mesh_fem, factor = 100, nu, range, sigma, sigma_e, samples, print=FALSE){
+        if(n_obs > N){
+            stop("n_obs needs to be less or equal to N")
+        }
+    
+        kappa <- sqrt(8*nu)/range
+        sigma.e <- sigma_e
+        loc <- seq(0,N/factor,length.out=N) 
+        n <- N
+        n.obs <- n_obs
+        obs_ind <- obs.ind <- sort(sample(1:n)[1:n.obs]) 
+        y <- rnorm(n.obs) 
+    
+        times.fem <- rep(0, length(m_fem))     
+    
+        if(print){
+            print("starting fem")
+        }
+    
+         for(i in 1:length(m_fem)){ 
+            i_m <- m_fem[i] 
+            if(print){
+                print(paste("m =", i_m))
+            }
+            for(jj in 1:samples){
+                if(print){
+                    cat(jj/samples, " ")
+                }
+                    t1 <- Sys.time()                 
+                    fem_pred(y = y, loc_full = loc, idx_obs = obs_ind, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma_e, m = i_m, mesh = mesh_fem)
+                    t2 <- Sys.time() 
+                    times.fem[i] <- times.fem[i] + as.numeric(t2-t1, units="secs")
+            }
+            times.fem[i] <- times.fem[i]/samples
+            if(print){
+                print(paste("time =", times.fem[i]))
+            }
+            } 
+        return(times.fem)
+    }
+
+
+
+
+
+
+auto_calibration_fem_rat <- function(n, n_obs, nu, range, sigma, sigma_e, samples, m_rat, step_size = 1, max_it_per_m = 20, print=FALSE){
+    ret_m <- numeric(length(m_rat))
+        # get rational times
+        if(print){
+            print("Computing rational times")
+        }
+        times_rat <- timing_rat(N = n, n_obs = n_obs, nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, m_rat = m_rat, samples = samples, type = "prediction", print = print)
+        if(print){
+            print("Calibrating taper")
+        }
+        for(i in 1:length(m_rat)){
+            if(print){
+                print(paste("Starting calibration for m =",m_rat[i]))
+            }
+            count <- 0
+            m_tmp <- 1
+            times_tmp <- timing_fem_m_vec(N = n, n_obs = n_obs, m = m_rat[i], nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print, mesh_fem = m_tmp)
+            if(times_tmp >= times_rat[i]){
+                ret_m[i] <- m_tmp
+            } else{
+                while((times_tmp < times_rat[i]) && (count < max_it_per_m)){
+                    m_tmp <- m_tmp + step_size
+                    times_tmp <- timing_fem_m_vec(N = n, n_obs = n_obs, m = m_rat[i], nu = nu, range = range, sigma = sigma, sigma_e = sigma_e, samples = samples, print = print, mesh_fem = m_tmp)
+                    count <- count + 1
+                }
+                ret_m[i] <- m_tmp
+            }
+            if(print){
+                print("Calibration found:")
+                print(paste("m_fem =", ret_m[i]))
+            }
+        }
+    return(ret_m)
+}
+
+# m_tmp <- auto_calibration_fem_rat(n=5000, n_obs=5000, nu=0.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
+# m_tmp2 <- auto_calibration_fem_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
+# m_tmp4 <- auto_calibration_fem_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=10, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
+
+# Calibration: Taper, 
+# nu = 0.4 : 1 1 2 3 3 3
+# nu = 1.4 : 2 4 6 7 8 9
+# nu = 2.4 : 7 13 17 21 21 21
 
 # time2 <- Sys.time()
 # print(time2-time1)
