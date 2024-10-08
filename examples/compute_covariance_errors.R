@@ -175,7 +175,10 @@ dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_v
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range_2_calibrated.RDS")
 
 dist_taper <- compute_distances_taper(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_taper_fun = m_taper_fun)
-saveRDS(dist_ss, "distance_tables/raw_tables/dist_taper_5000_range_2_calibrated.RDS")
+saveRDS(dist_taper, "distance_tables/raw_tables/dist_taper_5000_range_2_calibrated.RDS")
+
+dist_fem <- compute_distances_fem(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_fem_fun = m_fem_fun)
+saveRDS(dist_fem, "distance_tables/raw_tables/dist_fem_5000_range_2_calibrated.RDS")
 
 ###############
 

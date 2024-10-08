@@ -670,8 +670,11 @@ fem_cov <- function(m, mesh_fem, loc, nu, kappa, sigma){
                            type_rational_approximation = "chebfun",
                                    C = mesh$C, G = mesh$G)
     }
-
-    A_bar <- kronecker(matrix(1, ncol = m + 1), A)
+    if((nu + 0.5) %% 1 == 0){
+        A_bar <- A
+    } else{
+        A_bar <- kronecker(matrix(1, ncol = m + 1), A)
+    }
     return((A_bar) %*% solve(op.cov$Q, t(A_bar)))
 }
 
