@@ -97,6 +97,33 @@ m_taper_fun <- function(m, alpha, n, n.obs){
             return(mn)
 } 
 
+
+m_fem_fun <- function(m, alpha, n, n.obs){
+            if(alpha<1) {
+                if(n == 5000){
+                m_vec <- c(1, 1, 2, 3, 3, 3)
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]                
+            } else if (alpha < 2) {
+                if(n == 5000){
+                    m_vec <- c(2, 4, 6, 7, 8, 9) 
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            } else {
+                if(n == 5000){
+                    m_vec <- c(7, 13, 17, 21, 21, 21)
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            }
+            return(mn)
+} 
+
 sample_supergauss <- function(kappa, sigma, sigma.e, obs.ind, nu, loc, Sigma){
     loc <- loc - loc[1]
     acf = rSPDE::matern.covariance(h=loc,kappa=kappa,nu=nu,sigma=sigma)
@@ -770,7 +797,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
     set.seed(123)
     m.vec <- 1:6
-    err.nn <- err.rat <- err.pca <- err.fourier <- err.ss  <- err.taper <- matrix(0,nrow= 1, ncol = length(m.vec))
+    err.nn <- err.rat <- err.pca <- err.fourier <- err.ss  <- err.taper <- err.fem <- matrix(0,nrow= 1, ncol = length(m.vec))
     
     alpha <- nu + 1/2
     kappa = sqrt(8*nu)/range
@@ -858,6 +885,18 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
                 print("taper")
                 print(err.taper[1,j])
+
+            } else if(method == "fem"){
+
+            #########################
+            ## FEM prediction
+            ########################
+            mn <- m_fem_fun(m, alpha, n, n.obs)
+            mu.fem <- fem_pred(y = Y, loc_full = loc, idx_obs = obs.ind, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma.e, m = m, mesh_fem = mn)
+            err.fem[1,j] <- err.fem[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.fem)^2))/n.rep            
+
+                print("fem")
+                print(err.fem[1,j])
 
             } else if(method == "pca"){
 
