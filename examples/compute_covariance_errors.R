@@ -98,6 +98,32 @@ m_taper_fun <- function(m, alpha, n, n.obs){
             return(mn)
 } 
 
+m_fem_fun <- function(m, alpha, n, n.obs){
+            if(alpha<1) {
+                if(n == 5000){
+                m_vec <- c(1, 1, 2, 3, 3, 3)
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]                
+            } else if (alpha < 2) {
+                if(n == 5000){
+                    m_vec <- c(2, 4, 6, 7, 8, 9) 
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            } else {
+                if(n == 5000){
+                    m_vec <- c(7, 13, 17, 21, 21, 21)
+                } else{
+                    stop("not implemented")
+                }
+                mn <- m_vec[m]
+            }
+            return(mn)
+} 
+
 
 ### First range
 
@@ -148,6 +174,11 @@ saveRDS(dist_pca, "distance_tables/raw_tables/dist_pca_5000_range_2_calibrated.R
 dist_ss <- compute_distances_statespace(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_statespace_fun = m_statespace_fun)
 saveRDS(dist_ss, "distance_tables/raw_tables/dist_ss_5000_range_2_calibrated.RDS")
 
+dist_taper <- compute_distances_taper(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_taper_fun = m_taper_fun)
+saveRDS(dist_taper, "distance_tables/raw_tables/dist_taper_5000_range_2_calibrated.RDS")
+
+dist_fem <- compute_distances_fem(N=N, n_obs = n_obs, m.vec=m, nu.vec=nu_vec, range=range, sigma=sigma, m_fem_fun = m_fem_fun)
+saveRDS(dist_fem, "distance_tables/raw_tables/dist_fem_5000_range_2_calibrated.RDS")
 
 ###############
 

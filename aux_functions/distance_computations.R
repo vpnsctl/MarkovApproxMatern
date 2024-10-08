@@ -258,7 +258,7 @@ compute_distances_taper <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_tap
             eigen_cov <- eigen(Sigma.t)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
-                m <- m_taper_fun(m, alpha)
+                m <- m_taper_fun(m = m, alpha = alpha, n = N, n.obs = n_obs)
                 Sigma_taper <- taper_matern_efficient(m=m, loc = loc, nu = nu, kappa = kappa, sigma = sigma)    
                 if(n_obs < N){
                     l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_taper[1:n_obs,])^2))*(loc[2]-loc[1])
@@ -268,6 +268,60 @@ compute_distances_taper <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_tap
                     sup.err[i,j] <- max(abs(Sigma.t-Sigma_taper))               
                 }          
             }
+        saveRDS(list(L2 = l2.err, Linf = sup.err), paste0("distance_tables/raw_tables/partials/res_",N,"_",n_obs,"_nu_",nu,"_range_",range,".RDS"))
+
+    }
+    ret <- list(L2 = l2.err, Linf = sup.err)
+    attr(ret, "type") <- "Taper"
+    attr(ret, "nu.vec") <- nu.vec
+    attr(ret, "m.vec") <- m.vec    
+    attr(ret, "N") <- N
+    attr(ret, "n_obs") <- n_obs    
+    return(ret)
+}
+
+
+compute_distances_fem <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_fem_fun){
+    N <- N[[1]]
+    n_obs <- n_obs[[1]]
+    l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))       
+    # tmp_file <- readRDS("distance_tables//raw_tables//partials_fem//res_5000_5000_nu_0.49_range_2.RDS")
+    loc <- seq(0, N/100, length.out = N)
+    D <- as.matrix(dist(loc))     
+    # range <- range * max(loc)      
+    print("FEM")
+    print(paste("N = ",N))
+    print(paste("n_obs = ", n_obs))
+    print(paste("Domain length = ", max(loc)))
+    print(paste("range = ", range))        
+    for(i in 1:length(nu.vec)) {
+            cat(i/length(nu.vec)," ")
+            nu <- nu.vec[i]      
+            # if(nu < 0.5){
+            #     next
+            # }
+            alpha <- nu + 0.5  
+            kappa <- sqrt(8*nu)/range
+            Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
+            eigen_cov <- eigen(Sigma.t)
+            for(j in 1:length(m.vec)){
+                m_rat = m.vec[j]
+                m <- m_fem_fun(m_rat, alpha, n = N, n.obs = N_obs)
+                Sigma_fem <- fem_cov(m=m_rat, mesh_fem = m, loc = loc, nu = nu, kappa = kappa, sigma = sigma)    
+                if(n_obs < N){
+                    l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_fem[1:n_obs,])^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t[1:n_obs,]-Sigma_fem[1:n_obs,]))                           
+                } else{
+                    l2.err[i,j] <- sqrt(sum((Sigma.t-Sigma_fem)^2))*(loc[2]-loc[1])
+                    sup.err[i,j] <- max(abs(Sigma.t-Sigma_fem))               
+                }          
+            }
+            print("L2")
+            print(l2.err[i,])
+            print("Sup")
+            print(sup.err[i,])
+            print("")
+            saveRDS(list(L2 = l2.err, Linf = sup.err), paste0("distance_tables/raw_tables/partials_fem/res_",N,"_",n_obs,"_nu_",nu,"_range_",range,".RDS"))
     }
     ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "Taper"
