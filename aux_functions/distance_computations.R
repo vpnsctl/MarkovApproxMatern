@@ -258,7 +258,7 @@ compute_distances_taper <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_tap
             eigen_cov <- eigen(Sigma.t)
             for(j in 1:length(m.vec)){
                 m = m.vec[j]
-                m <- m_taper_fun(m, alpha)
+                m <- m_taper_fun(m = m, alpha = alpha, n = N, n.obs = n_obs)
                 Sigma_taper <- taper_matern_efficient(m=m, loc = loc, nu = nu, kappa = kappa, sigma = sigma)    
                 if(n_obs < N){
                     l2.err[i,j] <- sqrt(sum((Sigma.t[1:n_obs,]-Sigma_taper[1:n_obs,])^2))*(loc[2]-loc[1])
@@ -268,6 +268,8 @@ compute_distances_taper <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_tap
                     sup.err[i,j] <- max(abs(Sigma.t-Sigma_taper))               
                 }          
             }
+        saveRDS(list(L2 = l2.err, Linf = sup.err), paste0("distance_tables/raw_tables/partials/res_",N,"_",n_obs,"_nu_",nu,"_range_",range,".RDS"))
+
     }
     ret <- list(L2 = l2.err, Linf = sup.err)
     attr(ret, "type") <- "Taper"
