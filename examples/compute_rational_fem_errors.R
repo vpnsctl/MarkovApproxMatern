@@ -1,6 +1,8 @@
 rm(list=ls())
 source("aux_functions/aux_functions_cov.R")
 source("examples/error.computations.R")
+source("aux_functions/prediction_computations.R")
+
 library(rSPDE)
 library(foreach)
 library(doParallel)
