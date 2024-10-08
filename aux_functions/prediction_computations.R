@@ -926,10 +926,61 @@ fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma
     return(mu.rspde)
 }
 
-
-
 # post_mean_fem <- fem_pred(y, loc_full=loc_full, idx_obs = idx_obs, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1, m = 2,mesh_fem=2)
 
+
+### post calculations fem
+
+fem_post_calculations <- function(y, loc, idx_obs = NULL, nu, kappa, sigma, sigma_e, m, mesh_fem){
+    if((sum(loc_full - sort(loc_full)))^2>1e-10){
+        stop("loc_full must be ordered")
+    }
+
+    range <- sqrt(8*nu)/kappa
+
+    n <- length(loc)
+
+    #rspde
+    mr <- m
+    extension <- c(seq(from = 0, to = 4*range, length.out = 200)[-1],
+                   seq(from = range, to = 4*range, length.out = 50)[-1])
+    loc_mesh <- seq(0,max(loc),length.out=(mesh_fem+1)*(n-1)+1)
+    loc_mesh <- c(-rev(extension), loc_mesh, max(loc) + extension)
+    
+    mesh <- rSPDE::rSPDE.fem1d(loc_mesh)
+    A  <- rSPDE::rSPDE.A1d(loc_mesh, loc)
+
+    if(nu < 0.5){
+        op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
+                                    d = 1, m = mr,
+                                   parameterization = "matern", 
+                                   type_rational_approximation = "brasil",
+                                   C = mesh$C, G = mesh$G)
+    } else{
+        op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
+                           d = 1, m = mr,
+                           parameterization = "matern", 
+                           type_rational_approximation = "chebfun",
+                                   C = mesh$C, G = mesh$G)
+    }
+
+    Q <- op.cov$Q
+    if((nu + 0.5) %% 1 == 0){
+        A_bar <- A
+    } else{
+        A_bar <- kronecker(matrix(1, ncol = m + 1), A)
+    }
+    A_obs <- A_bar[idx_obs,]
+    A_mat <- t(A)
+    Q_xgiveny <-(A_mat%*% (A_obs))/sigma_e^2 + Q
+    post_y <- (A_mat%*% y)/sigma_e^2
+    R <- Matrix::Cholesky(Q_xgiveny)         
+    mu_xgiveny <- solve(R, post_y, system = "A")
+    mu.fem <-  as.vector(A_bar %*% mu_xgiveny)
+    Sigma.fem <- as.matrix(A_bar%*%solve(Q_xgiveny, t(A_bar)))
+
+    return(list(mu.fem = mu.fem, Sigma.fem = Sigma.fem))
+}
 
 
 
