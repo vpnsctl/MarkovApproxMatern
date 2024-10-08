@@ -130,11 +130,10 @@ for (j in 1:n.rep) {
             cat("rep = ", j,"n =", n[i], 'rational, m = ', m, '\n')
             mn <- calibrated_m[[as.character(n[i])]][k]
             post_fem_mat <- fem_post_calculations(y = y, loc = loc, idx_obs = obs.ind, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma.e, m = m, mesh_fem = mn)
-            
             if(use.excursions && n[i] > 999) {
-                prob_fem <- gaussint(a=lb_prob,b=ub_prob,mu=mu.fem,Q = solve(Sigma.fem), n.iter = 1e5)$P
+                prob_fem <- gaussint(a=lb_prob,b=ub_prob,mu=post_fem_mat$mu.fem,Q = solve(post_fem_mat$Sigma.fem), n.iter = 1e5)$P
             } else {
-                prob_fem <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=mu.fem,sigma = Sigma.fem)
+                prob_fem <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=mu.fem,sigma = post_fem_mat$Sigma.fem)
             }
             err_fem[k,i] <- err_fem[k,i] + prob_fem-prob_true
             
