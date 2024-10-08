@@ -37,7 +37,7 @@ sample_y <- function(loc, nu, kappa, sigma, sigma_e, seed=123){
 # sigma <- 1
 # N_full <- 100
 # n_loc <- 50
-# loc_full <- seq(0,10,length.out = N_full)
+# loc_full <- seq(0,N_full/100,length.out = N_full)
 # idx_pred <- sample(1:N_full, n_loc)
 # idx_obs <- sample(1:N_full, n_loc)
 # idx_pred <- setdiff(idx_pred, idx_obs)
@@ -74,8 +74,8 @@ true_pred <- function(y, loc = NULL, loc_pred = NULL, loc_full = NULL, idx_obs =
 }
 
 # # Example:
-# post_mean_true <- true_pred(y, loc=loc_full[idx_obs], loc_pred = loc_full[idx_pred], nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
-# post_mean_true2 <- true_pred(y, loc_full = loc_full, idx_obs = idx_obs, idx_pred = idx_pred, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+# post_mean_true <- true_pred(y, loc=loc_full[idx_obs], loc_pred = loc_full, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+# post_mean_true2 <- true_pred(y, loc_full = loc_full, idx_obs = idx_obs, idx_pred = 1:length(loc_full), nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
 
 # post_mean_true_obs <- true_pred(y, loc=loc_full[idx_obs], loc_pred = loc_full[idx_obs], nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
 
@@ -886,6 +886,51 @@ taper_pred <- function(y, loc = NULL, loc_pred = NULL, loc_full = NULL, idx_obs 
 }
 
 # post_mean_taper <- taper_pred(m = 10, y, loc=loc_full[idx_obs], loc_pred = loc_full[idx_pred], nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1)
+
+
+
+## Pred FEM
+fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma_e, m, mesh_fem){
+    if((sum(loc_full - sort(loc_full)))^2>1e-10){
+        stop("loc_full must be ordered")
+    }
+
+    range <- sqrt(8*nu)/kappa
+
+    #rspde
+    n <- length(loc_full)
+    mr <- m
+    extension <- c(seq(from = 0, to = 4*range, length.out = 200)[-1],
+                   seq(from = range, to = 4*range, length.out = 50)[-1])
+    loc_mesh <- seq(0,max(loc_full),length.out=(mesh_fem+1)*(n-1)+1)
+    loc_mesh <- c(-rev(extension), loc_mesh, max(loc_full) + extension)
+    
+    mesh <- rSPDE::rSPDE.fem1d(loc_mesh)
+    A  <- rSPDE::rSPDE.A1d(loc_mesh, loc_full)
+
+    if(nu < 0.5){
+        op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
+                                    d = 1, m = mr,
+                                   parameterization = "matern", 
+                                   type_rational_approximation = "brasil",
+                                   C = mesh$C, G = mesh$G)
+    } else{
+        op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
+                           d = 1, m = mr,
+                           parameterization = "matern", 
+                           type_rational_approximation = "chebfun",
+                                   C = mesh$C, G = mesh$G)
+    }
+
+    mu.rspde <- as.vector(predict(object = op.cov, A = A[idx_obs,], Aprd = A, Y = y, sigma.e = sigma_e)$mean)
+    return(mu.rspde)
+}
+
+
+
+# post_mean_fem <- fem_pred(y, loc_full=loc_full, idx_obs = idx_obs, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1, m = 2,mesh_fem=2)
+
+
 
 
 # Generate complete table
