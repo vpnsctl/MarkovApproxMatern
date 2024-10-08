@@ -932,7 +932,7 @@ fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma
 ### post calculations fem
 
 fem_post_calculations <- function(y, loc, idx_obs = NULL, nu, kappa, sigma, sigma_e, m, mesh_fem){
-    if((sum(loc_full - sort(loc_full)))^2>1e-10){
+    if((sum(loc - sort(loc)))^2>1e-10){
         stop("loc_full must be ordered")
     }
 
@@ -971,7 +971,7 @@ fem_post_calculations <- function(y, loc, idx_obs = NULL, nu, kappa, sigma, sigm
         A_bar <- kronecker(matrix(1, ncol = m + 1), A)
     }
     A_obs <- A_bar[idx_obs,]
-    A_mat <- t(A)
+    A_mat <- t(A_obs)
     Q_xgiveny <-(A_mat%*% (A_obs))/sigma_e^2 + Q
     post_y <- (A_mat%*% y)/sigma_e^2
     R <- Matrix::Cholesky(Q_xgiveny)         
