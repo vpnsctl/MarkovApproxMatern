@@ -1015,6 +1015,12 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
         colnames(err.taper) <- c(as.character(m.vec), "nu")
         res <- list(err.taper = err.taper,  
                 nu = nu)   
+    } else if(method == "fem"){
+        err.fem <- as.data.frame(err.fem)
+        err.fem[["nu"]] <- nu
+        colnames(err.fem) <- c(as.character(m.vec), "nu")
+        res <- list(err.fem = err.fem,  
+                nu = nu)   
     }
 
     dir.create(file.path(folder_to_save, "pred_tables"), showWarnings = FALSE)
