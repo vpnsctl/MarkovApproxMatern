@@ -116,7 +116,7 @@ m_fem_fun <- function(m, alpha, n, n.obs){
             } else {
                 if(n == 5000){
                     # m_vec <- c(7, 13, 17, 21, 21, 21)
-                    m_vec <- c(6,5,5,5,5,4) # Chose to stabilize the results, not based on cost.
+                    m_vec <- c(5,4,3,3,3,2) # Chose to stabilize the results, not based on cost.
                 } else{
                     stop("not implemented")
                 }
