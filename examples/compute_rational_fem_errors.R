@@ -22,7 +22,8 @@ sigma = 1
 sigma.e <- 0.1
 
 
-nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
+nu.vec <- seq(from = 1.51, to = 2.49, by = 0.01)
+# nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
 
@@ -37,8 +38,6 @@ n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
 method <- "fem"
-
-fourier_samples <- 100
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma', 'SuperGauss','rhdf5')) %dopar% {
     res <- error.computations_general(method = method, range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, samples.fourier = fourier_samples, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
