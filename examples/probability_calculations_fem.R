@@ -133,7 +133,7 @@ for (j in 1:n.rep) {
             if(use.excursions && n[i] > 999) {
                 prob_fem <- gaussint(a=lb_prob,b=ub_prob,mu=post_fem_mat$mu.fem,Q = solve(post_fem_mat$Sigma.fem), n.iter = 1e5)$P
             } else {
-                prob_fem <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=mu.fem,sigma = post_fem_mat$Sigma.fem)
+                prob_fem <- pmvnorm(lower=lb_prob,upper=ub_prob,mean=post_fem_mat$mu.fem,sigma = post_fem_mat$Sigma.fem)
             }
             err_fem[k,i] <- err_fem[k,i] + prob_fem-prob_true
             
