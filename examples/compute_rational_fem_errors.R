@@ -8,7 +8,7 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 19
+cores <- 12
 
 cl <- makeCluster(cores[1], outfile = "log_rational_fem.out") 
 registerDoSNOW(cl)
@@ -22,7 +22,7 @@ sigma = 1
 sigma.e <- 0.1
 
 
-nu.vec <- seq(from = 1.51, to = 2.49, by = 0.01)
+nu.vec <- seq(from = 1.51, to = 2.37, by = 0.01)
 # nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
 nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
