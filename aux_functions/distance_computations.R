@@ -285,7 +285,11 @@ compute_distances_fem <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_fem_f
     N <- N[[1]]
     n_obs <- n_obs[[1]]
     l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))       
-    # tmp_file <- readRDS("distance_tables//raw_tables//partials_fem//res_5000_5000_nu_0.49_range_2.RDS")
+    tmp_file <- readRDS("distance_tables//raw_tables//partials_fem//res_5000_5000_nu_1.49_range_2.RDS")
+    l2.err <- tmp_file$L2
+    sup.err <- tmp_file$Linf
+    print(l2.err)
+    print(sup.err)
     loc <- seq(0, N/100, length.out = N)
     D <- as.matrix(dist(loc))     
     # range <- range * max(loc)      
@@ -297,9 +301,9 @@ compute_distances_fem <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_fem_f
     for(i in 1:length(nu.vec)) {
             cat(i/length(nu.vec)," ")
             nu <- nu.vec[i]      
-            # if(nu < 0.5){
-            #     next
-            # }
+            if(nu < 1.5){
+                next
+            }
             alpha <- nu + 0.5  
             kappa <- sqrt(8*nu)/range
             Sigma.t <- matern.covariance(h=D,kappa=kappa,nu=nu,sigma=sigma)
@@ -331,3 +335,4 @@ compute_distances_fem <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_fem_f
     attr(ret, "n_obs") <- n_obs    
     return(ret)
 }
+
