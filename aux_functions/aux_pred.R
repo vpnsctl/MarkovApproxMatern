@@ -20,6 +20,8 @@ extract_pred_params_from_filename <- function(filename) {
           "rational" = "Rational",
           "nngp" = "nnGP",
           "pca" = "PCA",
+          "fem" = "FEM",
+          "taper" = "Taper",
           stop("Unknown method: ", method)
         )     
         
