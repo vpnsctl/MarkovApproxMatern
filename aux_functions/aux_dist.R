@@ -95,6 +95,7 @@ process_all_files <- function(file_paths) {
     all_dfs <- list()
 
     for (file in file_paths) {
+        cat("Processing file: ", file, "\n")
         params <- extract_params_from_filename(file)
         N <- params$N
         n_obs <- params$n_obs

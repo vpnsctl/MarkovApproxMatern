@@ -36,6 +36,7 @@ process_pred_files <- function(file_paths) {
   all_dfs <- list()
 
   for (file in file_paths) {
+      cat("Processing file: ", file, "\n")
       params <- extract_pred_params_from_filename(file)
       N <- params$N
       n_obs <- params$n_obs
@@ -50,6 +51,7 @@ process_pred_files <- function(file_paths) {
           pred_data <- read.csv(file)
           colnames(pred_data) <- c("nu", 1:6)
       }
+      cat("File was read successfully!\n")
       pred_data <- tibble(pred_data)
       pred_data[["range"]] <-  range_val
       pred_data[["n_obs"]] <- n_obs
