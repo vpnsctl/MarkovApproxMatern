@@ -13,8 +13,10 @@ dist_df <- dist_df |> mutate(Error = ifelse(Error < 1e-15, 1e-10, Error))
 df_filtered <- dist_df |>
   filter(Method %in% c("Rational", "PCA", "Fourier", "nnGP", "State-Space", "FEM", "Taper"))
 
-df_filtered <- df_filtered |> 
+df_filtered <- df_filtered |>
   mutate(Facet_Cols = case_when(
+    Method == "Rational" & Order == 3 ~ "Order3",
+    Method == "Rational" & Order == 5 ~ "Order5",
     Method == "Rational" ~ "Rational",
     Order == 3 ~ "Order3",
     Order == 5 ~ "Order5",
@@ -91,4 +93,4 @@ p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Method,
   )
 
 print(p)
-ggsave("distance_tables/cov_dist_error.png", p, width = 14, height = 5)
+ggsave("distance_tables/cov_dist_error.png", p, width = 14, height = 8)
