@@ -10,7 +10,7 @@ pred_df <- readRDS("pred_tables/pred_error_true_nnGP.RDS") |>
 
 pred_df <- pred_df |> rename(Error = pred_error)
 
-pred_df <- pred_df |> mutate(Error = ifelse(Error < 1e-15, 1e-10, Error))
+pred_df <- pred_df |> mutate(Error = ifelse(Error < 1e-10, 1e-10, Error))
 
 df_filtered <- pred_df |>
   filter((Method == "Rational") | (Order %in% c(3, 5)))
@@ -56,12 +56,12 @@ p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Method, linetype = Order
   labs(y = "Prediction Error", x = expression(nu ~ "(smoothness parameter)")) +
   theme(
     legend.position = "bottom",
-    legend.text = element_text(size = 12),
-    legend.title = element_text(size = 14),
-    axis.title = element_text(size = 14),
-    axis.text = element_text(size = 12),
-    strip.text.x = element_text(size = 14),
-    strip.text.y = element_text(size = 14),
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 16),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text.x = element_text(size = 16),
+    strip.text.y = element_text(size = 16),
     panel.background = element_blank(),
     panel.grid.major = element_line(color = "lightgray"),
     panel.grid.minor = element_line(color = "gray"),
@@ -72,7 +72,8 @@ p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Method, linetype = Order
     panel.spacing = unit(1, "lines"),
     strip.background = element_blank(),
     strip.placement = "outside",
-    strip.text.y = element_text(size = 14, face = "bold"),
+    strip.text.y = element_text(size = 16),#, face = "bold"),
+    strip.text.x = element_text(size = 16),# face = "bold"),
     legend.box = "horizontal",  
     legend.box.just = "center", 
     legend.spacing.x = unit(0.5, "cm"),  
