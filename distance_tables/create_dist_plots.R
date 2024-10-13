@@ -8,7 +8,7 @@ dist_df <- readRDS("distance_tables/full_dists_true_nnGP.RDS") |>
   rename(Order = m, Range = range) |> 
   filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
 
-dist_df <- dist_df |> mutate(Error = ifelse(Error < 1e-15, 1e-10, Error))
+dist_df <- dist_df |> mutate(Error = ifelse(Error < 1e-10, 1e-10, Error))
 
 df_filtered <- dist_df |>
   filter(Method %in% c("Rational", "PCA", "Fourier", "nnGP", "State-Space", "FEM", "Taper"))
@@ -22,6 +22,13 @@ df_filtered <- df_filtered |>
     Order == 5 ~ "Order5",
     TRUE ~ NA_character_
   ))
+
+df_filtered_tmp <- df_filtered |> 
+  filter(Method == "Rational", Order %in% c(3, 5)) |> 
+  mutate(Facet_Cols = ifelse(Method == "Rational", "Rational", Method))
+
+df_filtered <- bind_rows(df_filtered, df_filtered_tmp)
+
 
 df_filtered <- df_filtered |> 
   mutate(Facet_Cols = factor(Facet_Cols, 
