@@ -30,6 +30,11 @@ df_filtered <- df_filtered %>% filter(!is.na(Facet_Cols))
 
 df_filtered$Order <- factor(df_filtered$Order, levels = 2:6, labels = paste("Order =", 2:6))
 
+df_filtered <- df_filtered |> 
+  mutate(Dist = factor(Dist, levels = c("L2", "Linf"), 
+                       labels = c(expression(paste("Error in ", italic(L)[2], "(I\u00D7I)-norm")),
+                                   expression(paste("Error in ", italic(L)[infinity], "(I\u00D7I)-norm")))))
+
 line_types_order <- c("Order = 2" = "dotted", 
                       "Order = 3" = "dashed", 
                       "Order = 4" = "twodash", 
