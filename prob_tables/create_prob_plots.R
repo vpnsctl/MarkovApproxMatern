@@ -15,12 +15,13 @@ df_filtered$Order <- factor(df_filtered$Order)
 
 df_filtered$N <- as.numeric(df_filtered$N)
 
-df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "nnGP"))
+df_filtered$Method <- factor(df_filtered$Method, levels = c("Rational", "nnGP", "FEM"))
 
 df_filtered$Range <- factor(df_filtered$Range, levels = c("0.5","1", "2"), labels = c(expression(rho~"= 0.5"), expression(rho~"= 1"), expression(rho~"= 2")))
 
 line_types <- c("Rational" = "solid", 
-                "nnGP" = "11")
+                "nnGP" = "11",
+                "FEM" = "dotdash")
 
 p <- ggplot(df_filtered, aes(x = N, y = Error, color = Order, linetype = Method)) +
   geom_line(size = 0.7) + 
@@ -51,7 +52,7 @@ p <- ggplot(df_filtered, aes(x = N, y = Error, color = Order, linetype = Method)
     legend.margin = margin(t = 0, b = 0), 
     legend.title.align = 0.5 
       ) +
-          guides(linetype = guide_legend(order = 1, override.aes = list(size = 16, linewidth = c(0.8,0.8))), color = guide_legend(override.aes = list(size = 1)),size = "none")
+          guides(linetype = guide_legend(order = 1, override.aes = list(size = 16, linewidth = c(0.8,0.8,0.8))), color = guide_legend(override.aes = list(size = 1)),size = "none")
 
 print(p)
 ggsave("prob_tables/prob_error.png", p, width = 12, height = 5)

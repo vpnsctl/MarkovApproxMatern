@@ -4,7 +4,7 @@ library(dplyr)
 color_plot_options <- c("black", "steelblue", "limegreen", "red", "purple", "orange", "brown")
 color_plot_used <- color_plot_options
 
-pred_df <- readRDS("pred_tables/pred_error.RDS") |> 
+pred_df <- readRDS("pred_tables/pred_error_true_nnGP.RDS") |> 
   rename(Order = m, Range = range) |> 
   filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
 
@@ -49,13 +49,69 @@ line_types <- c("Rational" = "solid",
 
 line_sizes <- c("Rational" = 0.7, "nnGP" = 0.7, "State-Space" = 0.7, "Fourier" = 0.45, "PCA" = 0.7, "FEM" = 0.7, "Taper" = 0.7)
 
-p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method, size = Method)) +
-  geom_line(aes(size = ifelse(Method == "Fourier", 0.45, 0.7))) + 
+# p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method, size = Method)) +
+#   geom_line(aes(size = ifelse(Method == "Fourier", 0.45, 0.7))) + 
+#   scale_y_log10(limits = c(1e-10, NA)) +
+#   scale_color_manual(values = color_plot_used, guide = guide_legend(order = 2)) +  # Color legend for Order
+#   scale_size_manual(values = line_sizes) +  # Keep the specified line sizes
+#   scale_linetype_manual(values = line_types, guide = guide_legend(order = 1)) +  # Linetype legend for Method
+#   labs(y = "Prediction Error", x = expression(nu ~ "(smoothness parameter)")) +
+#   theme(
+#     legend.position = "bottom",
+#     legend.text = element_text(size = 12),
+#     legend.title = element_text(size = 14),
+#     axis.title = element_text(size = 14),
+#     axis.text = element_text(size = 12),
+#     strip.text.x = element_text(size = 14),
+#     strip.text.y = element_text(size = 14),
+#     panel.background = element_blank(),
+#     panel.grid.major = element_line(color = "lightgray"),
+#     panel.grid.minor = element_line(color = "gray"),
+#     panel.border = element_rect(color = "black", fill = NA, size = 1)
+#   ) +
+#   facet_grid(~Facet_Cols) +
+#   theme(panel.spacing = unit(1, "lines"),
+#         strip.background = element_blank(),
+#         strip.placement = "outside",
+#         strip.text.y = element_text(size = 14, face = "bold"),
+#         legend.box = "horizontal",  
+#         legend.box.just = "center", 
+#         legend.spacing.x = unit(0.5, "cm"),  
+#         legend.margin = margin(t = 0, b = 0), 
+#         legend.title.align = 0.5,
+#         legend.key.width = unit(.5, "cm"),  
+#         legend.key.height = unit(0.5, "cm")  
+#   ) +
+#   guides(
+#     linetype = guide_legend(order = 1, 
+#                             override.aes = list(size = 1, 
+#                                                 linewidth = c(0.8, 0.8, 0.4, 0.8, 0.8, 0.8, 0.8))),  # Keep different line sizes
+#     color = guide_legend(order = 2, override.aes = list(size = 1)), 
+#     size = "none" 
+#   )
+
+# print(p)
+# ggsave("pred_tables/pred_error.png", p, width = 14, height = 5)
+
+df_filtered$Order <- factor(df_filtered$Order, levels = 2:6, labels = paste("Order =", 2:6))
+
+line_types_order <- c("Order = 2" = "dotted", "Order = 3" = "dashed", "Order = 4" = "twodash", "Order = 5" = "solid", "Order = 6" = "dotdash")
+
+
+p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Method, linetype = Order, size = Method)) +
+  
+  geom_line(aes(size = ifelse(Method == "Fourier", 0.45, 0.7))) +
+  
   scale_y_log10(limits = c(1e-10, NA)) +
-  scale_color_manual(values = color_plot_used, guide = guide_legend(order = 2)) +  # Color legend for Order
-  scale_size_manual(values = line_sizes) +  # Keep the specified line sizes
-  scale_linetype_manual(values = line_types, guide = guide_legend(order = 1)) +  # Linetype legend for Method
+  
+  scale_color_manual(values = color_plot_used, guide = guide_legend(order = 1)) +
+  
+  scale_linetype_manual(values = line_types_order, guide = guide_legend(order = 2, nrow = 2)) + 
+  
+  scale_size_manual(values = line_sizes) +
+  
   labs(y = "Prediction Error", x = expression(nu ~ "(smoothness parameter)")) +
+  
   theme(
     legend.position = "bottom",
     legend.text = element_text(size = 12),
@@ -69,25 +125,27 @@ p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method
     panel.grid.minor = element_line(color = "gray"),
     panel.border = element_rect(color = "black", fill = NA, size = 1)
   ) +
+
   facet_grid(~Facet_Cols) +
-  theme(panel.spacing = unit(1, "lines"),
-        strip.background = element_blank(),
-        strip.placement = "outside",
-        strip.text.y = element_text(size = 14, face = "bold"),
-        legend.box = "horizontal",  
-        legend.box.just = "center", 
-        legend.spacing.x = unit(0.5, "cm"),  
-        legend.margin = margin(t = 0, b = 0), 
-        legend.title.align = 0.5,
-        legend.key.width = unit(2.5, "cm"),  
-        legend.key.height = unit(0.5, "cm")  
+  
+  theme(
+    panel.spacing = unit(1, "lines"),
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    strip.text.y = element_text(size = 14, face = "bold"),
+    legend.box = "horizontal",  
+    legend.box.just = "center", 
+    legend.spacing.x = unit(0.5, "cm"),  
+    legend.margin = margin(t = 0, b = 0), 
+    legend.title.align = 0.5,
+    legend.key.width = unit(1.5, "cm"),  
+    legend.key.height = unit(0.5, "cm")
   ) +
+  
   guides(
-    linetype = guide_legend(order = 1, 
-                            override.aes = list(size = 1, 
-                                                linewidth = c(0.8, 0.8, 0.4, 0.8, 0.8, 0.8, 0.8))),  # Keep different line sizes
-    color = guide_legend(order = 2, override.aes = list(size = 1)), 
-    size = "none" 
+    color = guide_legend(order = 1, override.aes = list(size = 1)),  
+    linetype = guide_legend(order = 2, override.aes = list(size = 1), nrow = 2),  
+    size = "none"  
   )
 
 print(p)

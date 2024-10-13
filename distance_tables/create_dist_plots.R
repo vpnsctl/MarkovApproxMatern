@@ -4,7 +4,7 @@ library(dplyr)
 color_plot_options <- c("black", "steelblue", "limegreen", "red", "purple", "orange", "brown")
 color_plot_used <- color_plot_options
 
-dist_df <- readRDS("distance_tables/full_dists.RDS") |> 
+dist_df <- readRDS("distance_tables/full_dists_true_nnGP.RDS") |> 
   rename(Order = m, Range = range) |> 
   filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
 
@@ -94,7 +94,7 @@ p <- ggplot(df_filtered, aes(x = nu, y = Error, color = Order, linetype = Method
         legend.spacing.x = unit(0.5, "cm"),  
         legend.margin = margin(t = 0, b = 0), 
         legend.title.align = 0.5,
-        legend.key.width = unit(2.5, "cm"),  
+        legend.key.width = unit(1.5, "cm"),  
         legend.key.height = unit(0.5, "cm")  
   ) +
   guides(
