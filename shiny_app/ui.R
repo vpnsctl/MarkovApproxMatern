@@ -8,18 +8,22 @@ nu_val <- seq(0.01, 2.49, 0.01)
 ui <- navbarPage(
   "Markov Rational Approximation",
 
-  tabPanel("Overview",
-           fluidPage(
-             titlePanel("Welcome to the Markov Rational Approximation App"),
-             mainPanel(
-               h4("Introduction"),
-               p("This application provides tools to analyze the covariance error, prediction error, 
-                  and posterior probability error for various approximation methods."),
-               p("To ensure fair comparisons between methods, we performed detailed calibration procedures. 
-                 Please check the 'Details on calibrations' tab for further information.")
-             )
+tabPanel("Overview",
+         fluidPage(
+           titlePanel("Welcome to the Markov Rational Approximation App"),
+           mainPanel(
+             h4("Introduction"),
+             p("This application accompanies the research paper ",
+               em("Linear cost and exponentially convergent approximation of Gaussian Matérn processes"), 
+               " by David Bolin, Vaibhav Mehandiratta, and Alexandre B. Simas. It provides tools to analyze the covariance error, 
+               prediction error, and posterior probability error for various approximation methods."),
+             p("This app is designed to support users in exploring the results and methods presented in the paper, including 
+               detailed comparisons between state-of-the-art approximations."),
+             p("To ensure fair comparisons between methods, we performed detailed calibration procedures. 
+               Please refer to the 'Details on calibrations' tab for further information on these procedures.")
            )
-  ),
+         )
+),
 
   tabPanel("Covariance error",  
            sidebarLayout(position = "left",
