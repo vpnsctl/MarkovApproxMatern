@@ -4,7 +4,14 @@ Markov approximation of one-dimensional stationary Gaussian processes with Maté
 
 ## Shiny Application
 
-To run the Shiny app:
+To run the Shiny app from the github repository:
+
+```r
+# install.packages(c("shiny", "shinythemes", "shinyWidgets", "plotly"))
+shiny::runGitHub("vpnsctl/MarkovApproxMatern", subdir="shiny_app")
+```
+
+To run the Shiny app locally:
 
 ```r
 # install.packages(c("shiny", "shinythemes", "shinyWidgets", "plotly"))
