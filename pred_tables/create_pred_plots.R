@@ -4,16 +4,16 @@ library(dplyr)
 color_plot_options <- c("black", "steelblue", "limegreen", "red", "purple", "orange", "brown")
 color_plot_used <- color_plot_options
 
-pred_df <- readRDS("pred_tables/pred_error_true_nnGP.RDS") |> 
+pred_df <- readRDS("pred_tables/pred_error.RDS") |> 
   rename(Order = m, Range = range) |> 
-  filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
+  dplyr::filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
 
-pred_df <- pred_df |> rename(Error = pred_error)
+pred_df <- pred_df |> rename(Error = true_pred_error_nnGP_Taper)
 
 pred_df <- pred_df |> mutate(Error = ifelse(Error < 1e-10, 1e-10, Error))
 
 df_filtered <- pred_df |>
-  filter((Method == "Rational") | (Order %in% c(3, 5)))
+  dplyr::filter((Method == "Rational") | (Order %in% c(3, 5)))
 
 df_filtered <- df_filtered |>
   mutate(Facet_Cols = case_when(
@@ -26,7 +26,7 @@ df_filtered <- df_filtered |>
   ))
 
 df_filtered_tmp <- df_filtered |> 
-  filter(Method == "Rational", Order %in% c(3, 5)) |> 
+  dplyr::filter(Method == "Rational", Order %in% c(3, 5)) |> 
   mutate(Facet_Cols = ifelse(Method == "Rational", "Rational", Method))
 
 df_filtered <- bind_rows(df_filtered, df_filtered_tmp)

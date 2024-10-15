@@ -4,14 +4,16 @@ library(dplyr)
 color_plot_options <- c("black", "steelblue", "limegreen", "red", "purple", "orange", "brown")
 color_plot_used <- color_plot_options
 
-dist_df <- readRDS("distance_tables/full_dists_true_nnGP.RDS") |> 
-  rename(Order = m, Range = range) |> 
-  filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
+dist_df <- readRDS("distance_tables/full_dists.RDS") |> 
+  rename(Order = m, Range = range) |> mutate(Order = as.numeric(Order)) |>
+  dplyr::filter(Order %in% 2:6, N == 5000, n_obs == 5000, Range == 2)
+
+dist_df <- dist_df |> dplyr::select(-Error) |> rename(Error = True_Error_nnGP_Taper)
 
 dist_df <- dist_df |> mutate(Error = ifelse(Error < 1e-10, 1e-10, Error))
 
 df_filtered <- dist_df |>
-  filter(Method %in% c("Rational", "PCA", "Fourier", "nnGP", "State-Space", "FEM", "Taper"))
+  dplyr::filter(Method %in% c("Rational", "PCA", "Fourier", "nnGP", "State-Space", "FEM", "Taper"))
 
 df_filtered <- df_filtered |>
   mutate(Facet_Cols = case_when(
@@ -24,7 +26,7 @@ df_filtered <- df_filtered |>
   ))
 
 df_filtered_tmp <- df_filtered |> 
-  filter(Method == "Rational", Order %in% c(3, 5)) |> 
+  dplyr::filter(Method == "Rational", Order %in% c(3, 5)) |> 
   mutate(Facet_Cols = ifelse(Method == "Rational", "Rational", Method))
 
 df_filtered <- bind_rows(df_filtered, df_filtered_tmp)
@@ -35,7 +37,7 @@ df_filtered <- df_filtered |>
                              levels = c("Rational", "Order3", "Order5"),
                              labels = c("Rational", expression(Order == 3), expression(Order == 5))))
 
-df_filtered <- df_filtered %>% filter(!is.na(Facet_Cols))
+df_filtered <- df_filtered %>% dplyr::filter(!is.na(Facet_Cols))
 
 df_filtered$Order <- factor(df_filtered$Order, levels = 2:6, labels = paste("Order =", 2:6))
 
