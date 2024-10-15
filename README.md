@@ -79,8 +79,4 @@ The state-space method offers an alternative Markov representation, enabling the
 
 To minimize boundary effects in the FEM method, the original domain $[0, 50]$ was extended to $[-4\rho, 50 + 4\rho]$, where $\rho$ is the practical correlation range. This extension ensures accurate approximation of the Matérn covariance at target locations. Since the FEM method uses the same rational approximation as the proposed method, the value of $m$ was fixed to match the proposed method. Calibration for the FEM method was performed on the finite element mesh.
 
-Specifically, a mesh with  
-$$
-N = kn + 500 - (k + 3)
-$$
-locations was used, where 500 locations were in the extensions and $kn$ in the interior $[0, 50]$. The term $-(k + 3)$ ensures that the regular mesh contains the observation locations. These $kn$ locations were evenly spaced to include the observations, and $k \in \mathbb{N}$ was calibrated to match the computational cost of the proposed method for $\nu < 1.5$. For $1.5 < \nu < 2.5$, $k$ was chosen as the largest value yielding stable predictions, as matching the computational cost resulted in instability.
+Specifically, a mesh with  $N = kn + 500 - (k + 3)$ locations was used, where 500 locations were in the extensions and $kn$ in the interior $[0, 50]$. The term $-(k + 3)$ ensures that the regular mesh contains the observation locations. These $kn$ locations were evenly spaced to include the observations, and $k \in \mathbb{N}$ was calibrated to match the computational cost of the proposed method for $\nu < 1.5$. For $1.5 < \nu < 2.5$, $k$ was chosen as the largest value yielding stable predictions, as matching the computational cost resulted in instability.
