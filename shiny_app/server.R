@@ -6,7 +6,8 @@ dist_df <- readRDS("../distance_tables/full_dists.RDS")
 pred_df <- readRDS("../pred_tables/pred_error.RDS")
 prob_df <- readRDS("../prob_tables/prob_errors.RDS")
 
-pred_df <- pred_df |> rename(Error = pred_error)
+dist_df <- dist_df |> rename(Error_not_true = Error)
+
 prob_df <- prob_df |> rename(Error = prob_error)
 
 prob_df <- prob_df |> mutate(Error = abs(Error))
@@ -25,8 +26,16 @@ server <- function(input, output, session) {
     methods_approx <- input$methods_approx
     methods_approx <- c("Rational", methods_approx)
     numberLoc <- as.numeric(input$numberLoc)
-    numberObs <-numberLoc
+    numberObs <- as.numeric(input$numberObs)
     nuRange <- input$nuRange
+
+    true_cal <- input$trueCalibrationCov
+
+    if(true_cal){
+      dist_df <- dist_df |> mutate(Error = True_Error_nnGP_Taper)
+    } else{
+      dist_df <- dist_df |> mutate(Error = Error_not_true)
+    }
         
     color_plot_options <- c("black", "steelblue", 
                     "limegreen", "red",
@@ -101,6 +110,14 @@ server <- function(input, output, session) {
     nuRange_pred <- input$nuRange_pred
     numberObs_pred <- min(as.numeric(input$numberObs_pred), as.numeric(input$numberLoc_pred))
     methods_approx_pred <- c("Rational", methods_approx_pred)
+
+    true_cal_pred <- input$trueCalibrationPred
+
+    if(true_cal_pred){
+      pred_df <- pred_df |> mutate(Error = true_pred_error_nnGP_Taper)
+    } else{
+      pred_df <- pred_df |> mutate(Error = pred_error)
+    }    
     
     color_plot_options <- c("black", "steelblue", 
                     "limegreen", "red",
