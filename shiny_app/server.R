@@ -45,9 +45,6 @@ apply_aesthetic_mappings <- function(plotStyle) {
   }
 }
 
-tmp <- apply_aesthetic_mappings("Linetype (Method), color (Order)")
-print(tmp[[1]])
-
 server <- function(input, output, session) {
 
   observe({
@@ -136,67 +133,33 @@ server <- function(input, output, session) {
 
 
    observe({
+  output$proberrors <- renderPlotly({
     range_val_prob <- input$rangeParameter_prob
-    approxNorm_prob <- input$approxNorm_prob
     plotStyle_prob <- input$plotStyle_prob
     m_order_prob <- input$orderRat_prob
-    nuRange_prob <- 1
-     
-    color_plot_options <- c("black", "steelblue", 
-                    "limegreen", "red",
-                    "purple","orange","pink")
+    selected_methods <- c("Rational", input$methods_prob) 
     
-    prob_table <- prob_df |> dplyr::filter(range == range_val_prob)
-     
-    prob_table[["N"]] <- as.numeric(prob_table[["N"]])
-    
-    if(!is.null(m_order_prob)){
-      color_plot_used <- color_plot_options[as.numeric(m_order_prob)+1]
-      
-      prob_table <- prob_table %>% dplyr::filter(m %in% as.character(m_order_prob))
-      
-      if(plotStyle_prob == "Linetype (Method), color (Order)"){
-        fig <- ggplot(prob_table, aes(x = N, y = Error, linetype=Method, color = m)) + geom_line() +
-          scale_color_manual(values = color_plot_used)
-      } else{
-        fig <- ggplot(prob_table, aes(x = N, y = Error, linetype=m, color = Method)) + geom_line() 
-      }
-            
-      y_label_cov <- "Probability error"
-      
-      fig <- fig +labs(y= y_label_cov, x = "N")
-      
-      if(input$logScaleprobError){
-        fig <- fig + scale_y_log10()
-      }
-      
-            output$downloadPlotprob <- downloadHandler(
-          filename = function() { paste0("Prob_error_plot.", input$fileExtensionCov) },
-          content = function(file) {
-            ggsave(file, plot = fig, device = input$fileExtensionCov)
-          }
-        )
-        
-        output$downloadDataFrameprob <- downloadHandler(
-          filename = function() { paste0("Prob_error_data_frame_range_",range_val,".RDS") },
-          content = function(file) {
-            saveRDS(error_table, file = file)
-          }
-        )
-      
-      fig_plotly <- ggplotly(fig,height = 755)
-      
-      
-    } else{
-      m_order = c(2)
-      updateCheckboxGroupInput(session, "orderRat_prob", selected= c("2"))
+    filtered_data <- prob_df %>% mutate(N = as.numeric(N)) %>%
+      filter(
+        range == range_val_prob,
+        Method %in% selected_methods,
+        m %in% as.character(m_order_prob)
+      ) %>%
+      set_factor_levels()
+
+    aesthetics <- apply_aesthetic_mappings(plotStyle_prob)
+
+    fig <- ggplot(filtered_data, aes(x = N, y = Error)) +
+      geom_line(aesthetics[[1]]) +
+      aesthetics[[2]] + aesthetics[[3]] +
+      labs(y = "Probability Error", x = "N")
+
+    if (input$logScaleprobError) {
+      fig <- fig + scale_y_log10()
     }
-    
-    output$proberrors <- renderPlotly({
-      
-      fig_plotly
-      
-    })
+
+    ggplotly(fig, height = 755)
+  })
    })
 
 }

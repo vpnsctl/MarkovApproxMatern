@@ -91,26 +91,29 @@ tabPanel("Overview",
            )
   ),
 
-  tabPanel("Posterior probability error", 
-           sidebarLayout(position = "left",
-                         sidebarPanel(width = 3,
-                                      checkboxGroupInput(inputId = "orderRat_prob", label = "Order of the approximation",
-                                                         choices = 1:6, selected = 3:6, inline = TRUE),
-                                      radioButtons(inputId = "rangeParameter_prob", label = "Range Parameter",
-                                                   choices = c("0.5", "1", "2"), selected = "0.5", inline = TRUE),
-                                      radioButtons(inputId = "plotStyle_prob", label = "Which style?",
-                                                   choices = c("Linetype (Method), color (Order)", 
-                                                               "Linetype (Order), color (Method)"),
-                                                   selected = "Linetype (Method), color (Order)", inline = FALSE),
-                                      checkboxInput("logScaleprobError", "Use log scale?", value = FALSE),
-                                      downloadButton('downloadPlotprob', 'Download Plot'),
-                                      radioButtons(inputId = "fileExtensionprob", label = "File extension",
-                                                   choices = c("png", "pdf"), selected = "png", inline = TRUE),
-                                      downloadButton('downloadDataFrameprob', 'Download Data Frame')
-                         ),
-                         mainPanel(width = 9, plotlyOutput("proberrors"))
-           )
-  ),
+tabPanel("Posterior probability error", 
+  sidebarLayout(
+    position = "left",
+    sidebarPanel(width = 3,
+      checkboxGroupInput(inputId = "methods_prob", label = "Methods to be included",
+        choices = c("nnGP", "FEM"), selected = "nnGP", inline = TRUE),
+      checkboxGroupInput(inputId = "orderRat_prob", label = "Order of the approximation",
+        choices = 1:6, selected = 3:6, inline = TRUE),
+      radioButtons(inputId = "rangeParameter_prob", label = "Range Parameter",
+        choices = c("0.5", "1", "2"), selected = "0.5", inline = TRUE),
+      radioButtons(inputId = "plotStyle_prob", label = "Which style?",
+        choices = c("Linetype (Method), color (Order)", 
+                    "Linetype (Order), color (Method)"),
+        selected = "Linetype (Method), color (Order)", inline = FALSE),
+      checkboxInput("logScaleprobError", "Use log scale?", value = FALSE),
+      downloadButton('downloadPlotprob', 'Download Plot'),
+      radioButtons(inputId = "fileExtensionprob", label = "File extension",
+        choices = c("png", "pdf"), selected = "png", inline = TRUE),
+      downloadButton('downloadDataFrameprob', 'Download Data Frame')
+    ),
+    mainPanel(width = 9, plotlyOutput("proberrors"))
+  )
+),
 
 tabPanel("Details on calibrations",
            fluidPage(
