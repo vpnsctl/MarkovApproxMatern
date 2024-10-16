@@ -2,6 +2,7 @@
 
 Markov approximation of one-dimensional stationary Gaussian processes with Matérn covariance.
 
+
 ## Shiny Application
 
 To run the Shiny app from the github repository:
