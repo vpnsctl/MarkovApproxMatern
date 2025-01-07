@@ -327,9 +327,9 @@ for (j in seq_len(n.rep)) {
         y        = y,
         sigma_e  = sigma.e,
         idx_pred = setdiff(seq_along(loc), obs.ind),
-        idx_obs  = obs.ind,
+        obs.ind  = obs.ind,        # match function argument
         loc      = loc,
-        m        = mn_nngp,
+        i_m      = mn_nngp,        # match 'i_m' instead of 'm'
         nu       = nu,
         kappa    = kappa,
         sigma    = sigma,
