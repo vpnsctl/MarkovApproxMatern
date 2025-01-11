@@ -27,7 +27,7 @@ if (!dir.exists(partial_results_folder)) {
 # ------------------------------------------------------------------------------
 # 2) Set parameters (adjust as needed)
 # ------------------------------------------------------------------------------
-range        <- 2             # or 0.5, or any other
+range        <- 0.5             # or 0.5, or any other
 sigma        <- 1
 sigma.e      <- sqrt(0.1) # or 0.1
 n            <- c(0, 25, 50, 100, 150, 250, 300, 400, 500,
