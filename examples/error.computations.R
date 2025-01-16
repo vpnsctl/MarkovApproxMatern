@@ -769,267 +769,163 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
     sim_data_name <- "sim_data_result"
     true_mean_name <- "true_mean_result"
+    true_sigma_name <- "true_sigma_result"
     nu_vec_python <- "nu_vec"
     obs_ind_python <- "obs_ind_result"
 
-    full_sim_data <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), sim_data_name)
-    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), true_mean_name)
+    file_path <- sprintf("python_codes/results/simulation_results_n%s_nobs%s_range%s_sigmae%.2f.h5", n, n.obs, range, sigma.e)
 
-    nu_vec_python <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), nu_vec_python)
+    full_sim_data <- rhdf5::h5read(file_path, sim_data_name)
+    full_true_pred <- rhdf5::h5read(file_path, true_mean_name)
+    full_true_sigma <- rhdf5::h5read(file_path, true_sigma_name)
 
-    ind_nu <- which.min((nu-nu_vec_python)^2)
+    nu_vec_python <- rhdf5::h5read(file_path, nu_vec_python)
+
+    ind_nu <- which.min((nu - nu_vec_python)^2)
 
     full_sim_data <- full_sim_data[,,ind_nu]
     full_true_pred <- full_true_pred[,,ind_nu]
+    full_true_sigma <- full_true_sigma[,,ind_nu]
 
-    if(n == 10000 && n.obs == 5000){
-        obs.ind_full <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
+    if (n == 10000 && n.obs == 5000) {
+        obs.ind_full <- rhdf5::h5read(file_path, obs_ind_python)
         obs.ind_full <- obs.ind_full[,,ind_nu]
-    } else{
+    } else {
         obs.ind <- 1:n
     }
 
-    if(n == 5000){
+    if (n == 5000) {
         full_sim_data <- full_sim_data[obs.ind,]
         full_true_pred <- full_true_pred[obs.ind,]
+        full_true_sigma <- full_true_sigma[obs.ind,]
     }
-
-    # method options: "rational", "pca", "fourier", "statespace", "nngp"
 
     set.seed(123)
     m.vec <- 1:6
-    err.nn <- err.rat <- err.pca <- err.fourier <- err.ss  <- err.taper <- err.fem <- matrix(0,nrow= 1, ncol = length(m.vec))
-    
-    alpha <- nu + 1/2
-    kappa = sqrt(8*nu)/range
-    # loc2 <- loc - loc[1]
-    # acf = rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
-    # acf <- as.vector(acf)
-    # acf[1] = acf[1]+sigma.e^2
-    # acf2 =rSPDE::matern.covariance(h=loc2,kappa=kappa,nu=nu,sigma=sigma)
-    # acf2 =as.vector(acf2)
-    # Sigma <- toeplitz(acf2)
-    # Sigma.hat <- Sigma + sigma.e^2*diag(n)
-    # if(method == "pca"){
-    #     eigen_cov <- eigen(Sigma)   
-    # }
-    for(kk in 1:n.rep) {
-        time1 <- Sys.time()
-        cat(kk, "Getting True pred\n")
-        # obs.ind <- sort(sample(1:n)[1:n.obs])
+    err_mu <- matrix(0, nrow = 1, ncol = length(m.vec))
+    err_sigma <- matrix(0, nrow = 1, ncol = length(m.vec))
 
-        # Y <- sample_supergauss_v2(kappa = kappa, sigma = sigma, sigma.e = sigma.e, obs.ind = obs.ind, nu = nu, acf = acf, Sigma = Sigma)
-        # Sigma.hat <- Sigma[obs.ind,obs.ind] + sigma.e^2*diag(n.obs)
-        # mu <- Sigma[,obs.ind]%*%solve(Sigma.hat,Y)
+    alpha <- nu + 1 / 2
+    kappa <- sqrt(8 * nu) / range
 
-        if(n == 10000 && n.obs == 5000){
-            obs.ind <- obs.ind_full[,kk] + 1
-        } 
-        
+    for (kk in 1:n.rep) {
+        cat(kk, "Processing replicate\n")
+
+        if (n == 10000 && n.obs == 5000) {
+            obs.ind <- obs.ind_full[, kk] + 1
+        }
+
         Y <- full_sim_data[obs.ind, kk]
-        mu <- full_true_pred[, kk]
+        mu_true <- full_true_pred[, kk]
+        sigma_true <- full_true_sigma[, kk]
 
-        
-        for(j in 1:length(m.vec)) { 
-            timem1 <- Sys.time()
-            
+        for (j in 1:length(m.vec)) {
+            cat("Processing m =", m.vec[j], "\n")
             m <- m.vec[j]
 
-            if(method == "rational"){
-
-            cat(kk, j, "Rational\n")
-            if((nu + 0.5)%%1 > 1e-10){
-                Qrat <-rSPDE:::matern.rational.precision(loc = loc, order = m, nu = nu, kappa = kappa, sigma = sigma, 
-                                                         cumsum = FALSE, ordering = "location",
-                                                         type_rational = "brasil", type_interp =  "spline")    
+            if (method == "rational") {
+                Qrat <- rSPDE:::matern.rational.precision(loc, order = m, nu, kappa, sigma, 
+                                                          cumsum = FALSE, ordering = "location",
+                                                          type_rational = "brasil", type_interp = "spline")
                 A_obs <- Qrat$A[obs.ind,]
-                A_mat = Matrix::t(A_obs)
-                Q_xgiveny <-(A_mat%*% (A_obs))/sigma.e^2 + Qrat$Q
-                post_y <- (A_mat%*% Y)/sigma.e^2
-                R <- Matrix::Cholesky(Q_xgiveny, perm = FALSE)         
-                mu_xgiveny <- Matrix::solve(R, post_y, system = "A")
-                mu.rat <-  Qrat$A %*% mu_xgiveny
-                err.rat[1,j] <- err.rat[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.rat)^2))/n.rep
-            }
+                Q.hat <- t(A_obs) %*% A_obs / sigma.e^2 + Qrat$Q
+                mu_est <- Qrat$A %*% Matrix::solve(Matrix::Cholesky(Q.hat, perm = FALSE), 
+                                                   t(A_obs) %*% Y / sigma.e^2, system = "A")
+                Sigma_post <- Qrat$A %*% Matrix::solve(Q.hat, t(Qrat$A))
 
-                print("rational")
-                print(err.rat[1,j])
-            } else if(method == "nngp"){
+            } else if (method == "nngp") {
+                mn <- m_nngp_fun(m, alpha, n, n.obs)
+                Qnn <- get.nnQ(loc = loc[obs.ind], kappa, nu, sigma, mn)
+                Q.hat <- Qnn + Diagonal(n.obs) / sigma.e^2
+                mu_obs <- solve(Q.hat, Y / sigma.e^2)
+                Bp <- get.nn.pred(loc, kappa, nu, sigma, mn, obs.ind)$B
+                mu_est <- Bp %*% mu_obs
+                Sigma_post <- Bp %*% solve(Q.hat, t(Bp))
 
-            #########################
-            ## nngp prediction
-            #########################
-            mn <- m_nngp_fun(m, alpha, n, n.obs)
-            Qnn <- get.nnQ(loc = loc[obs.ind],kappa = kappa,nu = nu,sigma = sigma, n.nbr = mn)
-            Qhat <- Qnn + Diagonal(n.obs)/sigma.e^2        
-            mu.nn <- solve(Qhat, Y/sigma.e^2)
-            Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
-            mu.nn <- Bp%*%mu.nn
-            err.nn[1,j] <- err.nn[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.nn)^2))/n.rep            
+            } else if (method == "taper") {
+                mn <- m_taper_fun(m, alpha, n, n.obs)
+                cov_mat <- taper_matern_efficient(mn, loc, nu, kappa, sigma)
+                cov_mat_nugget <- cov_mat[obs.ind, obs.ind] + Diagonal(x = sigma.e^2, n = length(obs.ind))
+                mu_obs <- solve(cov_mat_nugget, Y)
+                mu_est <- cov_mat %*% mu_obs
+                Sigma_post <- cov_mat - cov_mat[, obs.ind] %*% solve(cov_mat_nugget, t(cov_mat[, obs.ind]))
 
-                print("nn")
-                print(err.nn[1,j])
+            } else if (method == "fem") {
+                mn <- m_fem_fun(m, alpha, n, n.obs)
+                pred <- fem_pred(Y, loc, obs.ind, nu, kappa, sigma, sigma.e, m, mn)
+                mu_est <- pred$mean
+                Sigma_post <- Matrix::Diagonal(x = pred$variance)
 
-            } else if(method == "taper"){
-
-            #########################
-            ## taper prediction
-            ########################
-            mn <- m_taper_fun(m, alpha, n, n.obs)
-            cov_mat = taper_matern_efficient(m = mn, loc = loc, nu = nu, kappa = kappa, sigma = sigma)
-            cov_mat_nugget <-  cov_mat[obs.ind, obs.ind] + Matrix::Diagonal(x=sigma.e^2, n=length(obs.ind))        
-            ov_mat <- cov_mat[,obs.ind]
-            Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
-            mu.taper <- solve(cov_mat_nugget, Y)
-            mu.taper <- cov_mat%*%mu.taper
-            err.taper[1,j] <- err.taper[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.taper)^2))/n.rep            
-
-                print("taper")
-                print(err.taper[1,j])
-
-            } else if(method == "fem"){
-
-            #########################
-            ## FEM prediction
-            ########################
-            mn <- m_fem_fun(m, alpha, n, n.obs)
-            mu.fem <- fem_pred(y = Y, loc_full = loc, idx_obs = obs.ind, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma.e, m = m, mesh_fem = mn)
-            err.fem[1,j] <- err.fem[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.fem)^2))/n.rep            
-
-                print("fem")
-                print(err.fem[1,j])
-
-            } else if(method == "pca"){
-
-            #######################
-            # PCA prediction
-            #####################
-
-            mn <- m_pca_fun(m, alpha, n, n.obs)
-            
-            K <- eigen_cov$vec[,1:mn]    
-            D <- Diagonal(mn,eigen_cov$val[1:mn]) 
-            
-            Bo <- K[obs.ind,] 
-            Q.hat <- solve(D) + t(Bo)%*%Bo/sigma.e^2 
-            mu.pca <- K%*%solve(Q.hat, t(Bo)%*%Y/sigma.e^2) 
-            
-            err.pca[1,j] <- err.pca[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.pca)^2))/n.rep
-            
-                print("pca")
-                print(err.pca[1,j])            
-            } else if(method == "fourier"){
-            
-            #######################
-            # Fourier prediction
-            #####################
-            cat(kk, j, "Fourier\n")
-
-            mn <- m_pca_fun(m, alpha, n, n.obs)
-
-            err.tmp <- 0
-            for(jj in 1:samples.fourier){
-                K <-  ff.comp(m = mn, kappa = kappa, alpha = nu + 0.5, loc = loc) * sigma^2
-                D <- Matrix::Diagonal(x = 1, n = ncol(K))
+            } else if (method == "pca") {
+                mn <- m_pca_fun(m, alpha, n, n.obs)
+                eigen_cov <- eigen_matern_covariance(loc, kappa, sigma, nu)
+                K <- eigen_cov$vectors[, 1:mn]
+                D <- diag(1 / eigen_cov$values[1:mn])
                 Bo <- K[obs.ind,]
-                Q.hat <- solve(D) + t(Bo)%*%Bo/sigma.e^2
-                mu.fourier <- K%*%solve(Q.hat, t(Bo)%*%Y/sigma.e^2)
-                err.tmp <-  err.tmp + sqrt((loc[2]-loc[1])*sum((mu-mu.fourier)^2))/(n.rep*samples.fourier)
-            }
-            err.fourier[1,j] <- err.tmp
+                Q.hat <- solve(D + t(Bo) %*% Bo / sigma.e^2)
+                mu_est <- K %*% (Q.hat %*% (t(Bo) %*% Y / sigma.e^2))
+                Sigma_post <- K %*% solve(Q.hat, t(K))
 
-                print("fourier")
-                print(err.fourier[1,j])
-            } else if (method == "statespace"){
+            } else if (method == "fourier") {
+                mn <- m_pca_fun(m, alpha, n, n.obs)
+                K <- ff.comp(m = mn, kappa = kappa, alpha = nu + 0.5, loc = loc) * sigma^2
+                D <- diag(1 / rep(1, ncol(K)))
+                Bo <- K[obs.ind,]
+                Q.hat <- solve(D + t(Bo) %*% Bo / sigma.e^2)
+                mu_est <- K %*% (Q.hat %*% (t(Bo) %*% Y / sigma.e^2))
+                Sigma_post <- K %*% solve(Q.hat, t(K))
 
-            ########################
-            # Statespace prediction
-            #######################
-            cat(kk, j, "Statespace\n")
-            ind = 1 + 100*(0:(n-1))
-            h2 = seq(from=0,to=max(loc),length.out=100*(n-1)+1)
-            
-            mn <- max(c(1,m - floor(alpha)))
-            coeff <- spec.coeff(kappa = kappa,alpha = nu + 0.5,mn)
-            S1 <- ab2spec(coeff$a,coeff$b,h2, flim = 2)
-            r1 <- S2cov(S1,h2,flim = 2)
-            acf <- r1[ind]
-            acf <- acf * sigma^2
-            cov_mat <- toeplitz(acf, symmetric=TRUE)
-            acf2 <- acf
-            acf2[1] <- acf2[1] + sigma.e^2
-            cov_mat_nugget <-  toeplitz(as.vector(acf2), symmetric=TRUE)
-            cov_mat_nugget <- cov_mat_nugget[obs.ind,obs.ind]
-            d <- solve(cov_mat_nugget, Y)
-            cov_mat <- cov_mat[, obs.ind]
-            mu.ss <- cov_mat%*%d
-            
-            err.ss[1,j] <- err.ss[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.ss)^2))/n.rep   
-
-                print("ss")
-                print(err.ss[1,j])
+            } else if (method == "statespace") {
+                ind <- 1 + 100 * (0:(n - 1))
+                h2 <- seq(0, max(loc), length.out = 100 * (n - 1) + 1)
+                coeff <- spec.coeff(kappa, alpha = nu + 0.5, mn)
+                S1 <- ab2spec(coeff$a, coeff$b, h2, flim = 2)
+                r1 <- S2cov(S1, h2, flim = 2)
+                acf <- r1[ind] * sigma^2
+                cov_mat <- toeplitz(acf, symmetric = TRUE)
+                cov_mat_nugget <- toeplitz(acf + c(sigma.e^2, rep(0, length(acf) - 1)), symmetric = TRUE)
+                d <- solve(cov_mat_nugget[obs.ind, obs.ind], Y)
+                mu_est <- cov_mat[, obs.ind] %*% d
+                Sigma_post <- cov_mat - cov_mat[, obs.ind] %*% solve(cov_mat_nugget[obs.ind, obs.ind], t(cov_mat[, obs.ind]))
             }
 
-
-            timem2 <- Sys.time()
-            print(paste0("Time for m = ",m))
-            print(timem2-timem1)
+            # Compute errors
+            err_mu[1, j] <- err_mu[1, j] + sqrt(mean((mu_true - mu_est)^2)) / n.rep
+            err_sigma[1, j] <- err_sigma[1, j] + sqrt(mean((sigma_true - sqrt(diag(Sigma_post)))^2)) / n.rep
+            print(method)
+            print("mean errors")
+            print(err_mu[1,j])
+            print("sd errors")
+            print(err_sigma[1,j])
         }
-        time2 <- Sys.time()
-        print("time for replicate")
-        print(time2 - time1)
-        }
-
-    if(method == "rational"){
-        err.rat <- as.data.frame(err.rat)
-        err.rat[["nu"]] <- nu
-        colnames(err.rat) <- c(as.character(m.vec), "nu")
-        res <- list(err.rat = err.rat,  
-                nu = nu)        
-    } else if(method == "nngp"){
-        err.nn <- as.data.frame(err.nn)
-        err.nn[["nu"]] <- nu
-        colnames(err.nn) <- c(as.character(m.vec), "nu")
-        res <- list(err.nn = err.nn,  
-                nu = nu)    
-    } else if(method == "pca"){
-                err.pca <- as.data.frame(err.pca)
-        err.pca[["nu"]] <- nu
-        colnames(err.pca) <- c(as.character(m.vec), "nu")
-        res <- list(err.pca = err.pca,  
-                nu = nu)   
-    } else if(method == "fourier"){
-                        err.fourier <- as.data.frame(err.fourier)
-        err.fourier[["nu"]] <- nu
-        colnames(err.fourier) <- c(as.character(m.vec), "nu")
-        res <- list(err.fourier = err.fourier,  
-                nu = nu)   
-    } else if(method == "statespace"){
-                        err.ss <- as.data.frame(err.ss)
-        err.ss[["nu"]] <- nu
-        colnames(err.ss) <- c(as.character(m.vec), "nu")
-        res <- list(err.ss = err.ss,  
-                nu = nu)   
-    } else if(method == "taper"){
-        err.taper <- as.data.frame(err.taper)
-        err.taper[["nu"]] <- nu
-        colnames(err.taper) <- c(as.character(m.vec), "nu")
-        res <- list(err.taper = err.taper,  
-                nu = nu)   
-    } else if(method == "fem"){
-        err.fem <- as.data.frame(err.fem)
-        err.fem[["nu"]] <- nu
-        colnames(err.fem) <- c(as.character(m.vec), "nu")
-        res <- list(err.fem = err.fem,  
-                nu = nu)   
     }
 
-    dir.create(file.path(folder_to_save, "pred_tables"), showWarnings = FALSE)
-    dir.create(file.path(paste0(folder_to_save, "/pred_tables/"), paste0(as.character(n),"_",as.character(n.obs))), showWarnings = FALSE)
-    dir.create(file.path(paste0(folder_to_save, "/pred_tables/", as.character(n),"_",as.character(n.obs)),paste0("range_",as.character(range))), showWarnings = FALSE)
-    dir.create(file.path(paste0(folder_to_save, "/pred_tables/", as.character(n),"_",as.character(n.obs),"/range_",as.character(range)),as.character(method)),showWarnings = FALSE)    
-    saveRDS(res, paste0(folder_to_save,"/pred_tables/",as.character(n),"_",as.character(n.obs),"/range_",as.character(range),"/",as.character(method),"/res_",as.character(nu),"_",as.character(n),"_",as.character(n.obs),"_range_",as.character(range),"_",as.character(method),".RDS"))
-    return(res)
+    # Save results
+    results <- list(
+        mu_errors = as.data.frame(err_mu),
+        sigma_errors = as.data.frame(err_sigma),
+        nu = nu
+    )
+    colnames(results$mu_errors) <- as.character(m.vec)
+    colnames(results$sigma_errors) <- as.character(m.vec)
+
+    save_dir <- file.path(
+        folder_to_save, "pred_tables",
+        paste0(n, "_", n.obs),
+        paste0("range_", range),
+        method
+    )
+    dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
+
+    saveRDS(
+        results,
+        file.path(
+            save_dir,
+            sprintf("res_%.2f_%s_%s_range_%s_sigmae_%.2f_%s.RDS",
+                    nu, n, n.obs, range, sigma.e, method)
+        )
+    )
+    return(results)
 }
 
 
