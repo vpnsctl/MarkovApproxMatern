@@ -6,18 +6,18 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 23
+cores <- 14
 
 cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
 registerDoSNOW(cl)
 
 
-range <- 1
-n <- 10000
+range <- 2
+n <- 5000
 n.obs <- 5000
 
 sigma = 1
-sigma.e <- 0.1
+sigma.e <- sqrt(0.1)
 
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
@@ -80,4 +80,7 @@ if(method == "rational"){
         res_pred <- list(nu = nu, err.ss = err.ss)  
     }
 
-saveRDS(res_pred, paste0("pred_tables/res_",as.character(n),"_",as.character(n.obs),"_range",range,"_",as.character(method),".RDS"))
+saveRDS(res_pred, paste0(
+    "pred_tables/res_", as.character(n), "_", as.character(n.obs), 
+    "_range", range, "_sigmaE", sprintf("%.2f", sigma.e), "_", as.character(method), ".RDS"
+))
