@@ -13,7 +13,7 @@ tf.random.set_seed(123)
 n = 5000
 n_obs = 5000
 n_rep = 100
-range_value = 1
+range_value = 2
 sigma = 1
 sigma_e = math.sqrt(0.1)
 
@@ -136,7 +136,7 @@ for idx, nu in enumerate(nu_vec):
     nu_start_time = time.time()
 
     # Define filename for current nu
-    filename = f"{output_dir}/simulation_results_n{n}_nobs{n_obs}_range{range_value}_sigmae{sigma_e:.2f}_nu{nu.numpy():.2f}.h5"
+    filename = f"{output_dir}/simulation_results_n{n}_nobs{n_obs}_range{range_value}_sigmae{sigma_e:.2f}_nu{nu.numpy():.2f}_v2.h5"
 
     # Check if the file exists
     if os.path.exists(filename):
@@ -160,15 +160,33 @@ for idx, nu in enumerate(nu_vec):
             R = None
 
         for i in range(n_rep):
+            # obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
+            # sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e=sigma_e, R=R)
+            # mu, sigma = compute_true_mu_and_sigma(Sigma_row=Sigma_row, obs_ind=obs_ind, sigma_e=sigma_e, Y=sim_data)
+
+            # sim_data_nu[i, :] = sim_data_result[idx, i, :] = sim_data.numpy().flatten()
+            # true_mean_nu[i, :] = true_mean_result[idx, i, :] = mu.numpy().flatten()
+            # true_sigma_nu[i, :] = true_sigma_result[idx, i, :] = sigma.numpy().flatten()
+            # if n != n_obs:
+            #     obs_ind_nu[i, :] = obs_ind_result[idx, i, :] = obs_ind.numpy().flatten()
+            
             obs_ind = generate_obs_indices(n=n, n_obs=n_obs)
             sim_data = simulate_from_covariance(Sigma_row, obs_ind, sigma_e=sigma_e, R=R)
             mu, sigma = compute_true_mu_and_sigma(Sigma_row=Sigma_row, obs_ind=obs_ind, sigma_e=sigma_e, Y=sim_data)
 
-            sim_data_nu[i, :] = sim_data_result[idx, i, :] = sim_data.numpy().flatten()
-            true_mean_nu[i, :] = true_mean_result[idx, i, :] = mu.numpy().flatten()
-            true_sigma_nu[i, :] = true_sigma_result[idx, i, :] = sigma.numpy().flatten()
+            # Store in both temporary and result arrays
+            sim_data_nu[i, :] = sim_data.numpy().flatten()
+            true_mean_nu[i, :] = mu.numpy().flatten()
+            true_sigma_nu[i, :] = sigma.numpy().flatten()
             if n != n_obs:
-                obs_ind_nu[i, :] = obs_ind_result[idx, i, :] = obs_ind.numpy().flatten()
+                obs_ind_nu[i, :] = obs_ind.numpy().flatten()
+                
+            # Update result arrays
+            sim_data_result[idx, i, :] = sim_data_nu[i, :]
+            true_mean_result[idx, i, :] = true_mean_nu[i, :]
+            true_sigma_result[idx, i, :] = true_sigma_nu[i, :]
+            if n != n_obs:
+                obs_ind_result[idx, i, :] = obs_ind_nu[i, :]
 
         # Save computed results to HDF5 file
         with h5py.File(filename, 'w') as f:

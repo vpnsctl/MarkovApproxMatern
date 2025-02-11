@@ -211,6 +211,8 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
 
     loc = np.linspace(0.0, n / 100.0, n, dtype="float64")
     loc = tf.convert_to_tensor(loc)
+    
+    m_vec = np.arange(1, 7)
 
     for nu in nu_vec:
         ind_nu = np.argmin((nu - nu_vec_loaded) ** 2)

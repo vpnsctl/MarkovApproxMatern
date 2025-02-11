@@ -75,12 +75,27 @@ def sample_t_mat(kappa, alpha, m):
 def fourier_prediction(Y, obs_ind, mn, kappa, nu, loc, sigma, sigma_e):
     sigma = tf.convert_to_tensor(sigma, dtype=tf.float64)
     sigma_e = tf.convert_to_tensor(sigma_e, dtype=tf.float64)
-    w = sample_t_mat(kappa = kappa, alpha = nu + 0.5, m = mn)
+
+    # Compute Fourier coefficients and kernel matrix
+    w = sample_t_mat(kappa=kappa, alpha=nu + 0.5, m=mn)
     K = ff_comp(m=mn, loc=loc, w=w) * tf.square(sigma)
+
+    # Extract observed rows of K
     Bo = tf.gather(K, obs_ind, axis=0)
+
+    # Compute Q_hat (posterior precision matrix)
     Q_hat = tf.linalg.eye(tf.shape(K)[1], dtype=tf.float64) + tf.matmul(tf.transpose(Bo), Bo) / tf.square(sigma_e)
+
+    # Compute posterior mean
     mu_fourier = tf.matmul(K, tf.linalg.solve(Q_hat, tf.matmul(tf.transpose(Bo), Y) / tf.square(sigma_e)))
-    return mu_fourier
+
+    # Compute posterior covariance
+    Sigma_post = tf.matmul(K, tf.linalg.solve(Q_hat, tf.transpose(K)))
+
+    # Compute posterior standard deviation
+    sigma_fourier = tf.sqrt(tf.linalg.diag_part(Sigma_post))
+
+    return mu_fourier, sigma_fourier
 
 
 def get_fourier_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, samples_fourier, folder_to_save):

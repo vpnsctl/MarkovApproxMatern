@@ -929,7 +929,8 @@ fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma
         Aprd = A,
         Y = y,
         sigma.e = sigma_e,
-        compute.variances = TRUE
+        compute.variances = TRUE,
+        compute_var_method = "loop"
     )
 
     # Extract posterior mean and variance
