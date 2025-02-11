@@ -922,8 +922,23 @@ fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma
                                    C = mesh$C, G = mesh$G)
     }
 
-    mu.rspde <- as.vector(predict(object = op.cov, A = A[idx_obs,], Aprd = A, Y = y, sigma.e = sigma_e)$mean)
-    return(mu.rspde)
+    # Perform prediction using rSPDE:::predict.CBrSPDEobj
+    pred_result <- rSPDE:::predict.CBrSPDEobj(
+        object = op.cov,
+        A = A[idx_obs, ],
+        Aprd = A,
+        Y = y,
+        sigma.e = sigma_e,
+        compute.variances = TRUE,
+        compute_var_method = "loop"
+    )
+
+    # Extract posterior mean and variance
+    mu_rspde <- as.vector(pred_result$mean)
+    var_rspde <- as.vector(pred_result$variance)
+
+    # Return both posterior mean and standard deviation
+    return(list(mean = mu_rspde, variance = var_rspde))
 }
 
 # post_mean_fem <- fem_pred(y, loc_full=loc_full, idx_obs = idx_obs, nu = nu, kappa=kappa, sigma=sigma, sigma_e = 0.1, m = 2,mesh_fem=2)
