@@ -1,6 +1,7 @@
 rm(list=ls())
 source("aux_functions/aux_functions_cov.R")
 source("examples/error.computations.R")
+source("aux_functions/prediction_computations.R")
 library(rSPDE)
 library(foreach)
 library(doParallel)
@@ -8,16 +9,16 @@ library(doSNOW)
 
 cores <- 23
 
-cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
+cl <- makeCluster(cores[1], outfile = "log_rational.out") 
 registerDoSNOW(cl)
 
 
-range <- 1
-n <- 10000
+range <- 2
+n <- 5000
 n.obs <- 5000
 
 sigma = 1
-sigma.e <- 0.1
+sigma.e <- sqrt(0.1)
 
 
 nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
@@ -34,7 +35,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "rational"
 
 fourier_samples <- 100
 
