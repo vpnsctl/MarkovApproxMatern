@@ -1,14 +1,15 @@
 rm(list=ls())
 source("aux_functions/aux_functions_cov.R")
 source("examples/error.computations.R")
+source("aux_functions/prediction_computations.R")
 library(rSPDE)
 library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 14
+cores <- 23
 
-cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
+cl <- makeCluster(cores[1], outfile = "log_rational.out") 
 registerDoSNOW(cl)
 
 
@@ -34,7 +35,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "rational"
 
 fourier_samples <- 100
 
@@ -80,7 +81,4 @@ if(method == "rational"){
         res_pred <- list(nu = nu, err.ss = err.ss)  
     }
 
-saveRDS(res_pred, paste0(
-    "pred_tables/res_", as.character(n), "_", as.character(n.obs), 
-    "_range", range, "_sigmaE", sprintf("%.2f", sigma.e), "_", as.character(method), ".RDS"
-))
+saveRDS(res_pred, paste0("pred_tables/res_",as.character(n),"_",as.character(n.obs),"_range",range,"_",as.character(method),".RDS"))

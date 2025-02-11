@@ -252,7 +252,7 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
             "statespace",
         )
         os.makedirs(partial_save_path, exist_ok=True)
-        partial_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz")
+        partial_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}_statespace_sigmae_{sigma_e:.2f}.npz")
 
         if os.path.exists(partial_file):
             print(f"Using existing partial file for nu = {nu:.2f}")

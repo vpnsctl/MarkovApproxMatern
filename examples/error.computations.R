@@ -773,22 +773,20 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     nu_vec_python <- "nu_vec"
     obs_ind_python <- "obs_ind_result"
 
-    file_path <- sprintf("python_codes/results/simulation_results_n%s_nobs%s_range%s_sigmae%.2f.h5", n, n.obs, range, sigma.e)
+    full_sim_data <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n10000_nobs10000_range",range,".h5"), sim_data_name)
+    full_true_pred <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), true_mean_name)
 
     full_sim_data <- rhdf5::h5read(file_path, sim_data_name)
     full_true_pred <- rhdf5::h5read(file_path, true_mean_name)
     full_true_sigma <- rhdf5::h5read(file_path, true_sigma_name)
 
-    nu_vec_python <- rhdf5::h5read(file_path, nu_vec_python)
-
-    ind_nu <- which.min((nu - nu_vec_python)^2)
+    ind_nu <- which.min((nu-nu_vec_python)^2)
 
     full_sim_data <- full_sim_data[,,ind_nu]
     full_true_pred <- full_true_pred[,,ind_nu]
-    full_true_sigma <- full_true_sigma[,,ind_nu]
 
-    if (n == 10000 && n.obs == 5000) {
-        obs.ind_full <- rhdf5::h5read(file_path, obs_ind_python)
+    if(n == 10000 && n.obs == 5000){
+        obs.ind_full <- rhdf5::h5read(paste0("python_codes/results/simulation_results_n",n,"_nobs",n.obs,"_range",range,".h5"), obs_ind_python)
         obs.ind_full <- obs.ind_full[,,ind_nu]
     } else {
         obs.ind <- 1:n
@@ -842,19 +840,34 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
                 mu_est <- Bp %*% mu_obs
                 Sigma_post <- Bp %*% solve(Q.hat, t(Bp))
 
-            } else if (method == "taper") {
-                mn <- m_taper_fun(m, alpha, n, n.obs)
-                cov_mat <- taper_matern_efficient(mn, loc, nu, kappa, sigma)
-                cov_mat_nugget <- cov_mat[obs.ind, obs.ind] + Diagonal(x = sigma.e^2, n = length(obs.ind))
-                mu_obs <- solve(cov_mat_nugget, Y)
-                mu_est <- cov_mat %*% mu_obs
-                Sigma_post <- cov_mat - cov_mat[, obs.ind] %*% solve(cov_mat_nugget, t(cov_mat[, obs.ind]))
+            } else if(method == "taper"){
 
-            } else if (method == "fem") {
-                mn <- m_fem_fun(m, alpha, n, n.obs)
-                pred <- fem_pred(Y, loc, obs.ind, nu, kappa, sigma, sigma.e, m, mn)
-                mu_est <- pred$mean
-                Sigma_post <- Matrix::Diagonal(x = pred$variance)
+            #########################
+            ## taper prediction
+            ########################
+            mn <- m_taper_fun(m, alpha, n, n.obs)
+            cov_mat = taper_matern_efficient(m = mn, loc = loc, nu = nu, kappa = kappa, sigma = sigma)
+            cov_mat_nugget <-  cov_mat[obs.ind, obs.ind] + Matrix::Diagonal(x=sigma.e^2, n=length(obs.ind))        
+            ov_mat <- cov_mat[,obs.ind]
+            Bp <- get.nn.pred(loc = loc, kappa = kappa, nu = nu, sigma = sigma, n.nbr = mn, S = obs.ind)$B
+            mu.taper <- solve(cov_mat_nugget, Y)
+            mu.taper <- cov_mat%*%mu.taper
+            err.taper[1,j] <- err.taper[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.taper)^2))/n.rep            
+
+                print("taper")
+                print(err.taper[1,j])
+
+            } else if(method == "fem"){
+
+            #########################
+            ## FEM prediction
+            ########################
+            mn <- m_fem_fun(m, alpha, n, n.obs)
+            mu.fem <- fem_pred(y = Y, loc_full = loc, idx_obs = obs.ind, nu = nu, kappa = kappa, sigma = sigma, sigma_e = sigma.e, m = m, mesh_fem = mn)
+            err.fem[1,j] <- err.fem[1,j] + sqrt((loc[2]-loc[1])*sum((mu-mu.fem)^2))/n.rep            
+
+                print("fem")
+                print(err.fem[1,j])
 
             } else if (method == "pca") {
                 mn <- m_pca_fun(m, alpha, n, n.obs)
