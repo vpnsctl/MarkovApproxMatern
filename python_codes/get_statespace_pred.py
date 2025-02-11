@@ -5,6 +5,7 @@ import os
 import h5py
 import time
 import pandas as pd
+import math
 
 def load_hdf5_data(file_path, dataset_name):
     with h5py.File(file_path, 'r') as f:
@@ -148,65 +149,81 @@ def m_ss_fun(m, alpha):
     return mn
 
 def statespace_prediction(kappa, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn):
+    # Generate indices and fine grid
     ind = 100 * tf.range(0, n, dtype=tf.int32)
     h2 = np.linspace(0.0, tf.reduce_max(loc), 100 * (n - 1) + 1, dtype='float64')
     h2 = tf.convert_to_tensor(h2)
 
+    # Spectral coefficients and ACF
     spec_res = spec_coeff(kappa=kappa, alpha=nu + 0.5, n=mn)
     a = spec_res['a']
     b = spec_res['b']
-        
+    
     S1 = ab2spec(a, b, h2, flim=2)
     r1 = S2cov(S1, h2, flim=2)
-        
     acf = tf.gather(r1, ind) * sigma ** 2
-    
+
+    # Full covariance matrix
     cov_mat = tf.linalg.LinearOperatorToeplitz(row=acf, col=acf).to_dense()
-    
+
+    # Adjust ACF for measurement noise
     acf_nugget = tf.identity(acf)
     acf_nugget = tf.tensor_scatter_nd_update(acf_nugget, [[0]], [acf_nugget[0] + sigma_e ** 2])
-    
+
+    # Covariance matrix with nugget
     toeplitz_op_nugget = tf.linalg.LinearOperatorToeplitz(row=acf_nugget, col=acf_nugget)
     cov_mat_nugget = toeplitz_op_nugget.to_dense()
     cov_mat_nugget = tf.gather(cov_mat_nugget, obs_ind, axis=0)
     cov_mat_nugget = tf.gather(cov_mat_nugget, obs_ind, axis=1)
-    
+
+    # Solve for the posterior mean
     d = tf.linalg.solve(cov_mat_nugget, Y)
-    
     cov_mat_obs = tf.gather(cov_mat, obs_ind, axis=1)
     mu_ss = tf.matmul(cov_mat_obs, d)
-    
-    return mu_ss    
+
+    # Posterior covariance
+    cov_mat_nugget_inv = tf.linalg.inv(cov_mat_nugget)
+    Sigma_post = cov_mat - tf.matmul(cov_mat_obs, tf.matmul(cov_mat_nugget_inv, tf.transpose(cov_mat_obs)))
+
+    # Posterior standard deviation
+    sigma_ss = tf.sqrt(tf.linalg.diag_part(Sigma_post))
+
+    return mu_ss, sigma_ss
 
 def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
     sim_data_name = "sim_data_result"
     true_mean_name = "true_mean_result"
+    true_sigma_name = "true_sigma_result"
     nu_vec_python = "nu_vec"
     obs_ind_python = "obs_ind_result"
 
-    sim_file_path = f"python_codes/results/simulation_results_n10000_nobs10000_range{range_val}.h5"
-    true_pred_file_path = f"python_codes/results/simulation_results_n{n}_nobs{n_obs}_range{range_val}.h5"
+    file_path = f"python_codes/results/simulation_results_n{n}_nobs{n_obs}_range{range_val}_sigmae{sigma_e:.2f}.h5"
 
-    full_sim_data = load_hdf5_data(sim_file_path, sim_data_name)
-    full_true_pred = load_hdf5_data(true_pred_file_path, true_mean_name)
-    nu_vec_loaded = load_hdf5_data(sim_file_path, nu_vec_python)
+    full_sim_data = load_hdf5_data(file_path, sim_data_name)
+    full_true_pred = load_hdf5_data(file_path, true_mean_name)
+    full_true_sigma_pred = load_hdf5_data(file_path, true_sigma_name)
+    nu_vec_loaded = load_hdf5_data(file_path, nu_vec_python)
 
     np.random.seed(123)
     all_err_ss = []
 
-    nu_vec = tf.range(2.49, 0.01, -0.01, dtype = tf.float64)
+    nu_vec = tf.range(2.49, 0.01, -0.01, dtype=tf.float64)
 
-    loc = np.linspace(0.0, n / 100.0, n, dtype='float64')
+    loc = np.linspace(0.0, n / 100.0, n, dtype="float64")
     loc = tf.convert_to_tensor(loc)
+    
+    m_vec = np.arange(1, 7)
 
     for nu in nu_vec:
-        ind_nu = np.argmin((nu - nu_vec_loaded)**2)
+        ind_nu = np.argmin((nu - nu_vec_loaded) ** 2)
 
-        full_sim_data_nu = full_sim_data[ind_nu,:, :]
+        full_sim_data_nu = full_sim_data[ind_nu, :, :]
         full_true_pred_nu = full_true_pred[ind_nu, :, :]
-        
+        full_true_sigma_nu = full_true_sigma_pred[ind_nu, :, :]
+
         full_sim_data_nu = tf.convert_to_tensor(full_sim_data_nu)
         full_true_pred_nu = tf.convert_to_tensor(full_true_pred_nu)
+        full_true_sigma_nu = tf.convert_to_tensor(full_true_sigma_nu)
 
         if n == 10000 and n_obs == 5000:
             obs_ind_full = load_hdf5_data(true_pred_file_path, obs_ind_python)[ind_nu, :, :]
@@ -217,37 +234,46 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
         if n == 5000:
             full_sim_data_nu = tf.gather(full_sim_data_nu, obs_ind)
             full_true_pred_nu = tf.gather(full_true_pred_nu, obs_ind)
+            full_true_sigma_nu = tf.gather(full_true_sigma_nu, obs_ind)
 
-        m_vec = np.arange(1, 7)
-        err_ss = np.zeros((1, len(m_vec)))
+        err_ss_mu = np.zeros((1, len(m_vec)))
+        err_ss_sigma = np.zeros((1, len(m_vec)))
 
         alpha = nu + 0.5
-        kappa_val = np.sqrt(8 * nu) / range_val        
-        
+        kappa_val = np.sqrt(8 * nu) / range_val
+
         # Load any existing partial results if they exist
-        partial_save_path = os.path.join(folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "statespace")
+        partial_save_path = os.path.join(
+            folder_to_save,
+            "pred_tables",
+            f"{n}_{n_obs}",
+            f"range_{range_val}",
+            f"sigmae_{sigma_e:.2f}",
+            "statespace",
+        )
         os.makedirs(partial_save_path, exist_ok=True)
-        partial_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz")
+        partial_file = os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}_statespace_sigmae_{sigma_e:.2f}.npz")
 
         if os.path.exists(partial_file):
             print(f"Using existing partial file for nu = {nu:.2f}")
-            err_ss = np.load(partial_file)['errors']
-            all_err_ss.append((nu, err_ss)) 
+            data = np.load(partial_file)
+            err_ss_mu = data['errors_mu']
+            err_ss_sigma = data['errors_sigma']
+            all_err_ss.append((nu, err_ss_mu, err_ss_sigma))
         else:
             print(f"Getting True pred for nu = {nu:.2f}")
 
             time1 = time.time()
             for kk in range(n_rep):
-
                 if n == 10000 and n_obs == 5000:
                     obs_ind = obs_ind_full[kk]
 
                 Y = tf.gather(full_sim_data_nu[kk], obs_ind)
                 Y = tf.reshape(Y, [-1, 1])
-                mu = full_true_pred_nu[kk]
-                mu = tf.reshape(mu, [-1, 1])
+                mu_true = tf.reshape(full_true_pred_nu[kk], [-1, 1])
+                sigma_true = tf.reshape(full_true_sigma_nu[kk], [-1, 1])
 
-                loc_diff = loc[1] - loc[0]            
+                loc_diff = loc[1] - loc[0]
 
                 mn_cache = {}
 
@@ -255,47 +281,56 @@ def get_statespace_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_
                     mn = m_ss_fun(m, alpha).numpy()
 
                     if mn in mn_cache:
-                        # print(f"[{j}] Reusing cached error for mn = {mn}")
-                        err_tmp = mn_cache[mn]
+                        mu_ss, sigma_ss = mn_cache[mn]
                     else:
-                        # print(f"[{j}] Computing error for mn = {mn} (not cached)")
-                        mu_ss = statespace_prediction(kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn)
-                        err_tmp = tf.sqrt(loc_diff * tf.reduce_sum(tf.square(mu - mu_ss))) / n_rep
-                        mn_cache[mn] = err_tmp  # Store the computed error in the cache
+                        mu_ss, sigma_ss = statespace_prediction(
+                            kappa_val, nu, sigma, sigma_e, loc, Y, obs_ind, n, mn
+                        )
+                        mn_cache[mn] = (mu_ss, sigma_ss)
 
-                    # print(f"[{j}] Error contribution for m = {m}: {err_tmp.numpy()}")
-
-                    err_ss[0, j] += err_tmp
-
+                    err_ss_mu[0, j] += (
+                        np.sqrt(loc_diff * tf.reduce_sum(tf.square(mu_true - mu_ss))) / n_rep
+                    )
+                    err_ss_sigma[0, j] += (
+                        np.sqrt(loc_diff * tf.reduce_sum(tf.square(sigma_true - sigma_ss))) / n_rep
+                    )
 
             print(f"Time: {time.time() - time1}")
-            print("Statespace Error :", err_ss[0])
+            print("Statespace Error (Mean):", err_ss_mu[0])
+            print("Statespace Error (Sigma):", err_ss_sigma[0])
 
-            # Save partial results        
-            np.savez(os.path.join(partial_save_path, f"partial_results_nu_{nu:.2f}.npz"), errors=err_ss[0])
-            all_err_ss.append((nu, err_ss[0])) 
+            # Save partial results
+            np.savez(
+                partial_file,
+                errors_mu=err_ss_mu[0],
+                errors_sigma=err_ss_sigma[0],
+            )
+            all_err_ss.append((nu, err_ss_mu[0], err_ss_sigma[0]))
 
     # Save final results
     final_save_path = os.path.join(folder_to_save, "pred_tables")
     os.makedirs(final_save_path, exist_ok=True)
-    
-    final_results = {"nu": [], "errors": []}
-    for nu, errors in all_err_ss:  
+
+    final_results = {"nu": [], "errors_mu": [], "errors_sigma": []}
+    for nu, errors_mu, errors_sigma in all_err_ss:
         final_results["nu"].append(nu)
-        final_results["errors"].append(errors)
+        final_results["errors_mu"].append(errors_mu)
+        final_results["errors_sigma"].append(errors_sigma)
 
     # Convert to DataFrame for saving
     final_df = pd.DataFrame(final_results)
-    final_df.to_pickle(os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_statespace.pkl"))
+    final_df.to_pickle(
+        os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_sigmae_{sigma_e:.2f}_statespace.pkl")
+    )
 
     return final_df
 
 n = 5000
 n = 5000
 n_obs = 5000
-range_val = 0.5
+range_val = 2
 sigma = 1.0
-sigma_e = 0.1
+sigma_e = math.sqrt(0.1)
 folder_to_save = os.getcwd()
 n_rep = 100
 

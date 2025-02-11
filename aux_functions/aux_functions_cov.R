@@ -99,17 +99,7 @@ get.neighbor <- function(i, n.nbr, S = NULL) {
             return(sort(S.i[1:n.nbr]))
         }    
     } else {
-        if(i %in% S) { 
-            S.i <- sort(S[S<i], decreasing = TRUE)
-            if(length(S.i) < n.nbr) {
-                return(sort(S.i))
-            } else {
-                return(sort(S.i[1:n.nbr]))
-            }    
-        } else {
-             dists <- abs(i - S)
-             return(sort(sort(dists, index.return = TRUE)$ix[1:n.nbr]))
-        }
+Y
     }
     
     
@@ -657,19 +647,19 @@ fem_cov <- function(m, mesh_fem, loc, nu, kappa, sigma){
     mesh <- rSPDE::rSPDE.fem1d(loc_mesh)
     A  <- rSPDE::rSPDE.A1d(loc_mesh, loc)
 
-    if(nu < 0.5){
+    # if(nu < 0.5){
         op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
                                     d = 1, m = mr,
                                    parameterization = "matern", 
                                    type_rational_approximation = "brasil",
                                    C = mesh$C, G = mesh$G)
-    } else{
-        op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
-                           d = 1, m = mr,
-                           parameterization = "matern", 
-                           type_rational_approximation = "chebfun",
-                                   C = mesh$C, G = mesh$G)
-    }
+    # } else{
+    #     op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
+    #                        d = 1, m = mr,
+    #                        parameterization = "matern", 
+    #                        type_rational_approximation = "chebfun",
+    #                                C = mesh$C, G = mesh$G)
+    # }
     if((nu + 0.5) %% 1 == 0){
         A_bar <- A
     } else{
