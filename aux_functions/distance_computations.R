@@ -336,31 +336,3 @@ compute_distances_fem <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_fem_f
     return(ret)
 }
 
-
-
-fem_prec <- function(m, mesh_fem, loc, nu, kappa, sigma){
-    if((sum(loc - sort(loc)))^2>1e-10){
-        stop("loc_full must be ordered")
-    }
-
-    range <- sqrt(8*nu)/kappa
-
-    #rspde
-    n <- length(loc)
-    mr <- m
-    extension <- c(seq(from = 0, to = 4*range, length.out = 200)[-1],
-                   seq(from = range, to = 4*range, length.out = 50)[-1])
-    loc_mesh <- seq(0,max(loc),length.out=(mesh_fem+1)*(n-1)+1)
-    loc_mesh <- c(-rev(extension), loc_mesh, max(loc) + extension)
-    
-    mesh <- rSPDE::rSPDE.fem1d(loc_mesh)
-    A  <- rSPDE::rSPDE.A1d(loc_mesh, loc)
-
-        op.cov <- matern.operators(sigma = sigma, range = range, nu = nu,
-                                    d = 1, m = mr,
-                                   parameterization = "matern", 
-                                   C = mesh$C, G = mesh$G,
-                                   type = "operator")
-        inv_Pr <- solve(op.cov$Pr)
-    return( inv_Pr%*%op.cov$Q%*% inv_Pr)    
-}
