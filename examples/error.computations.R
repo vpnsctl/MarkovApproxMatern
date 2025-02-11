@@ -782,7 +782,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
     nu_vec_python <- rhdf5::h5read(file_path, nu_vec_python)
 
-    ind_nu <- 249-nu*100+1
+    ind_nu <- round(249-nu*100+1)
 
     full_sim_data <- full_sim_data[,,ind_nu]
     full_true_pred <- full_true_pred[,,ind_nu]
