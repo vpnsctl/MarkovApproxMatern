@@ -330,7 +330,7 @@ n = 5000
 n_obs = 5000
 range_val = 2
 sigma = 1.0
-sigma_e = 0.1
+sigma_e = math.sqrt(0.1)
 folder_to_save = os.getcwd()
 n_rep = 100
 

@@ -1,14 +1,15 @@
 rm(list=ls())
 source("aux_functions/aux_functions_cov.R")
 source("examples/error.computations.R")
+source("aux_functions/prediction_computations.R")
 library(rSPDE)
 library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 14
+cores <- 27
 
-cl <- makeCluster(cores[1], outfile = "log_rational_nngp.out") 
+cl <- makeCluster(cores[1], outfile = "log_rational.out") 
 registerDoSNOW(cl)
 
 
@@ -34,7 +35,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "rational"
 
 fourier_samples <- 100
 
@@ -78,6 +79,20 @@ if(method == "rational"){
             err.ss <- rbind(err.ss, res[[i]]$err.ss)
         } 
         res_pred <- list(nu = nu, err.ss = err.ss)  
+    } else if(method == "taper"){
+        err.taper <- nu <- NULL
+        for(i in 1:length(res)) {
+            nu <- c(nu, res[[i]]$nu)
+            err.taper <- rbind(err.taper, res[[i]]$err.taper)
+        } 
+        res_pred <- list(nu = nu, err.taper = err.taper)  
+    } else if(method == "fem"){
+        err.fem <- nu <- NULL
+        for(i in 1:length(res)) {
+            nu <- c(nu, res[[i]]$nu)
+            err.fem <- rbind(err.fem, res[[i]]$err.taper)
+        } 
+        res_pred <- list(nu = nu, err.fem = err.fem)  
     }
 
 saveRDS(res_pred, paste0(

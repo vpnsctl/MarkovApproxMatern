@@ -19,7 +19,7 @@ n <- 5000
 n.obs <- 5000
 
 sigma = 1
-sigma.e <- 0.1
+sigma.e <- sqrt(0.1)
 
 
 nu.vec <- seq(from = 1.51, to = 2.37, by = 0.01)

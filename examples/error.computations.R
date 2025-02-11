@@ -773,7 +773,8 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
     nu_vec_python <- "nu_vec"
     obs_ind_python <- "obs_ind_result"
 
-    file_path <- sprintf("python_codes/results/simulation_results_n%s_nobs%s_range%s_sigmae%.2f.h5", n, n.obs, range, sigma.e)
+    file_path <- sprintf("python_codes/results/combined_results_n%s_nobs%s_range%s_sigmae%.2f.h5", 
+                 n, n.obs, range, sigma.e)
 
     full_sim_data <- rhdf5::h5read(file_path, sim_data_name)
     full_true_pred <- rhdf5::h5read(file_path, true_mean_name)
@@ -781,12 +782,12 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
     nu_vec_python <- rhdf5::h5read(file_path, nu_vec_python)
 
-    ind_nu <- which.min((nu - nu_vec_python)^2)
+    ind_nu <- 249-nu*100+1
 
     full_sim_data <- full_sim_data[,,ind_nu]
     full_true_pred <- full_true_pred[,,ind_nu]
     full_true_sigma <- full_true_sigma[,,ind_nu]
-
+    
     if (n == 10000 && n.obs == 5000) {
         obs.ind_full <- rhdf5::h5read(file_path, obs_ind_python)
         obs.ind_full <- obs.ind_full[,,ind_nu]
@@ -844,7 +845,7 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
 
             } else if (method == "taper") {
                 mn <- m_taper_fun(m, alpha, n, n.obs)
-                cov_mat <- taper_matern_efficient(mn, loc, nu, kappa, sigma)
+                cov_mat <- taper_matern_efficient(m = mn, loc = loc, nu = nu, kappa = kappa, sigma = sigma)
                 cov_mat_nugget <- cov_mat[obs.ind, obs.ind] + Diagonal(x = sigma.e^2, n = length(obs.ind))
                 mu_obs <- solve(cov_mat_nugget, Y)
                 mu_est <- cov_mat %*% mu_obs

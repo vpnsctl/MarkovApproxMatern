@@ -187,7 +187,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
 
         # Save partial results
         partial_save_path = os.path.join(
-            folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", f"_sigmae_{sigma_e:.2f}", "pca"
+            folder_to_save, "pred_tables", f"{n}_{n_obs}", f"range_{range_val}", "pca"
         )
         os.makedirs(partial_save_path, exist_ok=True)
 
@@ -210,7 +210,7 @@ def get_pca_errors(n, n_obs, range_val, n_rep, sigma, sigma_e, folder_to_save):
     # Convert to DataFrame for saving
     final_df = pd.DataFrame(final_results)
     final_df.to_pickle(
-        os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_sigmae_{sigma_e:.2f}_pca.RDS")
+        os.path.join(final_save_path, f"res_{n}_{n_obs}_range{range_val}_pca.RDS")
     )
 
     return final_df
