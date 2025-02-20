@@ -35,7 +35,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "taper"
 
 fourier_samples <- 100
 

@@ -38,7 +38,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "nngp"
+method <- "taper"
 
 res = foreach(i = 1:iterations, .options.snow = opts, .packages=c('Matrix', 'rSPDE', 'pracma', 'SuperGauss','rhdf5')) %dopar% {
     res <- error.computations_general(method = method, range = range, sigma = sigma, sigma.e = sigma.e, n = n, n.obs = n.obs, samples.fourier = fourier_samples, loc = loc, nu = nu.vec[i], m.vec = m.vec, n.rep = n.rep, folder_to_save = folder_to_save)
