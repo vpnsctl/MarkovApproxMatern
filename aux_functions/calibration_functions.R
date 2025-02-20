@@ -1260,9 +1260,9 @@ auto_calibration_fem_rat <- function(n, n_obs, nu, range, sigma, sigma_e, sample
     return(ret_m)
 }
 
-# m_tmp <- auto_calibration_fem_rat(n=5000, n_obs=5000, nu=0.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
-# m_tmp2 <- auto_calibration_fem_rat(n=5000, n_obs=5000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
-# m_tmp4 <- auto_calibration_fem_rat(n=5000, n_obs=5000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=10, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
+m_tmp <- auto_calibration_fem_rat(n=1000, n_obs=1000, nu=0.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
+m_tmp2 <- auto_calibration_fem_rat(n=1000, n_obs=1000, nu=1.4, range=0.5, sigma=1, sigma_e=0.1, samples=200, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
+m_tmp4 <- auto_calibration_fem_rat(n=1000, n_obs=1000, nu=2.4, range=0.5, sigma=1, sigma_e=0.1, samples=10, m_rat=1:6, step_size = 1, max_it_per_m = 20, print=TRUE) 
 
 # Calibration: Taper, 
 # nu = 0.4 : 1 1 2 3 3 3

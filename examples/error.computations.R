@@ -832,7 +832,11 @@ error.computations_general <- function(method, range, sigma, sigma.e, n, n.obs, 
                 Q.hat <- t(A_obs) %*% A_obs / sigma.e^2 + Qrat$Q
                 mu_est <- Qrat$A %*% Matrix::solve(Matrix::Cholesky(Q.hat, perm = FALSE), 
                                                    t(A_obs) %*% Y / sigma.e^2, system = "A")
-                Sigma_post <- Qrat$A %*% Matrix::solve(Q.hat, t(Qrat$A))
+                var_tmp <- rep(0, nrow(Qrat$A))
+                for (i in 1:nrow(Qrat$A)) {
+                    var_tmp[i] <- Qrat$A[i, ] %*% Matrix::solve(Q.hat, Qrat$A[i, ])
+                }
+                Sigma_post <- diag(var_tmp)
 
             } else if (method == "nngp") {
                 mn <- m_nngp_fun(m, alpha, n, n.obs)

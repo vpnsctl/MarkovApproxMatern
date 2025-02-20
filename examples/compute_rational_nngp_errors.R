@@ -7,9 +7,9 @@ library(foreach)
 library(doParallel)
 library(doSNOW)
 
-cores <- 23
+cores <- 14
 
-cl <- makeCluster(cores[1], outfile = "log_rational.out") 
+cl <- makeCluster(cores[1], outfile = "log_fem.out") 
 registerDoSNOW(cl)
 
 
@@ -21,7 +21,7 @@ sigma = 1
 sigma.e <- sqrt(0.1)
 
 
-nu.vec <- seq(from = 0.01, to = 2.49, by = 0.01)
+nu.vec <- seq(from = 0.51, to = 1.53, by = 0.01)
 nu.vec <- nu.vec[length(nu.vec):1]
 m.vec <- 1:6
 
@@ -35,7 +35,7 @@ folder_to_save <- getwd()
 n.rep <- 100
 loc <- seq(0,n/100,length.out=n)
 
-method <- "rational"
+method <- "nngp"
 
 fourier_samples <- 100
 

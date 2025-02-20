@@ -1,0 +1,4242 @@
+starting worker for localhost:11508 
+Type: EXEC 
+This is rSPDE 2.4.0.9000
+- See https://davidbolin.github.io/rSPDE for vignettes and manuals.
+
+Anexando pacote: ‘pracma’
+
+Os seguintes objetos são mascarados por ‘package:Matrix’:
+
+    expm, lu, tril, triu
+
+
+Anexando pacote: ‘SuperGauss’
+
+O seguinte objeto é mascarado por ‘package:base’:
+
+    %*%
+
+Type: EXEC 
+1 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.177267e-06
+[1] "sd errors"
+[1] 2.425787e-07
+Processing m = 2 [[1] "fem"
+[1] "mean errors"
+[1] 1.354741e-06
+[1] "sd errors"
+[1] 7.163989e-07
+Processing m = 3[[[1] "fem"
+[1] "mean errors"
+[1] 1.580784e-07
+[1] "sd errors"
+[1] 4.373587e-08
+Processing m = [[1[1] "fem"
+[1] "mean errors"
+[1] 4.773421e-08
+[1] "sd errors"
+[1] 7.868721e-09
+Processing m = [[1[1] "fem"
+[1] "mean errors"
+[1] 2.198428e-08
+[1] "sd errors"
+[1] 7.717483e-09
+Processing m = [[1[1] "fem"
+[1] "mean errors"
+[1] 1.804915e-08
+[1] "sd errors"
+[1] 7.473598e-09
+2 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.200603e-05
+[1] "sd errors"
+[1] 1.449601e-05
+Processing m = [[1[1] "fem"
+[1] "mean errors"
+[1] 1.10946e-06
+[1] "sd errors"
+[1] 1.155045e-06
+Processing m = [[[[1] "fem"
+[1] "mean errors"
+[1] 3.228235e-07
+[1] "sd errors"
+[1] 8.747174e-08
+Processing m = [[1[1] "fem"
+[1] "mean errors"
+[1] 9.41313e-08
+[1] "sd errors"
+[1] 1.573744e-08
+Processing m = 5[[[1] "fem"
+[1] "mean errors"
+[1] 4.056071e-08
+[1] "sd errors"
+[1] 1.543497e-08
+Processing m = [1[[1] "fem"
+[1] "mean errors"
+[1] 3.131814e-08
+[1] "sd errors"
+[1] 1.49472e-08
+3 Processing replicate
+Processing m = 1[[[1] "fem"
+[1] "mean errors"
+[1] 1.880282e-05
+[1] "sd errors"
+[1] 2.174401e-05
+Processing m = 2[[[1] "fem"
+[1] "mean errors"
+[1] 1.705639e-06
+[1] "sd errors"
+[1] 1.732568e-06
+Processing m = 3[1[1] "fem"
+[1] "mean errors"
+[1] 5.074375e-07
+[1] "sd errors"
+[1] 1.312076e-07
+Processing m = 4[1[1] "fem"
+[1] "mean errors"
+[1] 1.462434e-07
+[1] "sd errors"
+[1] 2.360616e-08
+Processing m = 5[1[1] "fem"
+[1] "mean errors"
+[1] 5.822237e-08
+[1] "sd errors"
+[1] 2.315245e-08
+Processing m = 6[1[1] "fem"
+[1] "mean errors"
+[1] 4.213509e-08
+[1] "sd errors"
+[1] 2.242079e-08
+4 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.493791e-05
+[1] "sd errors"
+[1] 2.899201e-05
+Processing m =[[1][1] "fem"
+[1] "mean errors"
+[1] 2.282341e-06
+[1] "sd errors"
+[1] 2.31009e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 6.733339e-07
+[1] "sd errors"
+[1] 1.749435e-07
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 2.108413e-07
+[1] "sd errors"
+[1] 3.147488e-08
+Processing m =[1][[1] "fem"
+[1] "mean errors"
+[1] 1.056089e-07
+[1] "sd errors"
+[1] 3.086993e-08
+Processing m =[1][[1] "fem"
+[1] "mean errors"
+[1] 8.778469e-08
+[1] "sd errors"
+[1] 2.989439e-08
+5 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 3.103253e-05
+[1] "sd errors"
+[1] 3.624002e-05
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 2.858309e-06
+[1] "sd errors"
+[1] 2.887613e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 8.352962e-07
+[1] "sd errors"
+[1] 2.186793e-07
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 2.584035e-07
+[1] "sd errors"
+[1] 3.934361e-08
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 1.257595e-07
+[1] "sd errors"
+[1] 3.858741e-08
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 1.029712e-07
+[1] "sd errors"
+[1] 3.736799e-08
+6 Processing replicate
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 3.742066e-05
+[1] "sd errors"
+[1] 4.348802e-05
+Processing m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 3.441146e-06
+[1] "sd errors"
+[1] 3.465136e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.010187e-06
+[1] "sd errors"
+[1] 2.624152e-07
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 3.068194e-07
+[1] "sd errors"
+[1] 4.721233e-08
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.450909e-07
+[1] "sd errors"
+[1] 4.63049e-08
+Processing m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 1.159482e-07
+[1] "sd errors"
+[1] 4.484159e-08
+7 Processing replicate
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.330392e-05
+[1] "sd errors"
+[1] 5.073602e-05
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.000418e-06
+[1] "sd errors"
+[1] 4.042658e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.163445e-06
+[1] "sd errors"
+[1] 3.061511e-07
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 3.574142e-07
+[1] "sd errors"
+[1] 5.508105e-08
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.746584e-07
+[1] "sd errors"
+[1] 5.402238e-08
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.423971e-07
+[1] "sd errors"
+[1] 5.231518e-08
+8 Processing replicate
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.942149e-05
+[1] "sd errors"
+[1] 5.798403e-05
+Processin[1[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.556511e-06
+[1] "sd errors"
+[1] 4.620181e-06
+Processin[[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 1.326126e-06
+[1] "sd errors"
+[1] 3.49887e-07
+Processing[[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.044887e-07
+[1] "sd errors"
+[1] 6.294977e-08
+Processing[1] "fem"
+[1] "mean errors"
+[1] 1.41824e-06
+[1] "sd errors"
+[1] 8.731686e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.817126e-07
+[1] "sd errors"
+[1] 8.015014e-08
+9 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0004287233
+[1] "sd errors"
+[1] 0.0004776764
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.570724e-05
+[1] "sd errors"
+[1] 4.581045e-05
+Processing m = 3 
+[1] "fem"[1] "fem"
+[1] "mean errors"
+[1] 1.493065e-06
+[1] "sd errors"
+[1] 3.936228e-07
+Processin[1] "fem"[1] "fem"
+[1] "mean errors"
+[1] 4.531234e-07
+[1] "sd errors"
+[1] 7.081849e-08
+Processin[1] "fem"
+[1] "mean errors"
+[1] 1.593209e-06
+[1] "sd errors"
+[1] 9.823147e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 6.505047e-07
+[1] "sd errors"
+[1] 9.01689e-08
+10 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0004765242
+[1] "sd errors"
+[1] 0.0005307516
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 5.08764e-05
+[1] "sd errors"
+[1] 5.09005e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.663548e-05
+[1] "sd errors"
+[1] 3.77596e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.251298e-06
+[1] "sd errors"
+[1] 1.574538e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 1.778614e-06
+[1] "sd errors"
+[1] 1.091461e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 7.336371e-07
+[1] "sd errors"
+[1] 1.001877e-07
+11 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0005228446
+[1] "sd errors"
+[1] 0.0005838268
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 5.581021e-05
+[1] "sd errors"
+[1] 5.599055e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.821351e-05
+[1] "sd errors"
+[1] 4.153555e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.771579e-06
+[1] "sd errors"
+[1] 1.731992e-07
+Processing m = 5 
+[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 4.165433e-07
+[1] "sd errors"
+[1] 7.85738e-08
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 2.451422e-07
+[1] "sd errors"
+[1] 8.509084e-08
+12 Processing replicate
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 0.000147993
+[1] "sd errors"
+[1] 0.0001711241
+Proce[1] "fem"
+[1][1] "fem"
+[1] "mean errors"
+[1] 1.395336e-05
+[1] "sd errors"
+[1] 1.384483e-05
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 4.258943e-06
+[1] "sd errors"
+[1] 9.44891e-07
+Proce[1] "fem"
+[1][1] "fem"
+[1] "mean errors"
+[1] 1.231634e-06
+[1] "sd errors"
+[1] 7.763577e-08
+Proce[1] "fem"
+[1][1] "fem"
+[1] "mean errors"
+[1] 4.535228e-07
+[1] "sd errors"
+[1] 8.571687e-08
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 2.678616e-07
+[1] "sd errors"
+[1] 9.282638e-08
+13 Processing replicate
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 0.0001604987
+[1] "sd errors"
+[1] 0.0001853844
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 1.508279e-05
+[1] "sd errors"
+[1] 1.499857e-05
+Proc[1] "fem"
+[1] [1] "fem"
+[1] "mean errors"
+[1] 4.605882e-06
+[1] "sd errors"
+[1] 1.023632e-06
+Pro[[1] "f[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 1.339645e-06
+[1] "sd errors"
+[1] 8.410541e-08
+Pro[[1] "f[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 4.915922e-07
+[1] "sd errors"
+[1] 9.285995e-08
+Pro[[1] "f[1] "fem"
+[1] "mean errors"
+[1] 7.660286e-07
+[1] "sd errors"
+[1] 1.238749e-07
+14 Processing replicate
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 0.0005804674
+[1] "sd errors"
+[1] 0.0006575595
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 6.096946e-05
+[1] "sd errors"
+[1] 6.126159e-05
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 1.95603e-05
+[1] "sd errors"
+[1] 4.424467e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 6.195306e-06
+[1] "sd errors"
+[1] 1.924234e-07
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 2.047124e-06
+[1] "sd errors"
+[1] 1.299087e-07
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 8.460266e-07
+[1] "sd errors"
+[1] 1.334037e-07
+15 Processing replicate
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 0.0006219694
+[1] "sd errors"
+[1] 0.000704528
+Processing m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 6.52374e-05
+[1] "sd errors"
+[1] 6.563741e-05
+Processing [1[1] "[1] "fem"
+[1] "mean errors"
+[1] 2.096732e-05
+[1] "sd errors"
+[1] 4.7405e-06
+Processing m [1[1][1] "fem"
+[1] "mean errors"
+[1] 6.636736e-06
+[1] "sd errors"
+[1] 2.061679e-07
+Processing m [1[1][1] "fem"
+[1] "mean errors"
+[1] 2.191012e-06
+[1] "sd errors"
+[1] 1.391879e-07
+Processing m [1[1][1] "fem"
+[1] "mean errors"
+[1] 9.079413e-07
+[1] "sd errors"
+[1] 1.429325e-07
+16 Processing replicate
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 0.0006631429
+[1] "sd errors"
+[1] 0.0007514965
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 6.959728e-05
+[1] "sd errors"
+[1] 7.001324e-05
+Processing[1] "[1][1] "fem"
+[1] "mean errors"
+[1] 2.234257e-05
+[1] "sd errors"
+[1] 5.056534e-06
+Processing[1] [1] [1] "fem"
+[1] "mean errors"
+[1] 7.076323e-06
+[1] "sd errors"
+[1] 2.199125e-07
+Processing[1][1] "[1] "fem"
+[1] "mean errors"
+[1] 2.337601e-06
+[1] "sd errors"
+[1] 1.484671e-07
+Processin[1] [1] "[1] "fem"
+[1] "mean errors"
+[1] 9.683752e-07
+[1] "sd errors"
+[1] 1.524614e-07
+17 Processing replicate
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 0.0007048618
+[1] "sd errors"
+[1] 0.0007984651
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 7.404249e-05
+[1] "sd errors"
+[1] 7.438907e-05
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 2.381628e-05
+[1] "sd errors"
+[1] 5.372567e-06
+Processi[1] "[1] "[1] "fem"
+[1] "mean errors"
+[1] 7.50528e-06
+[1] "sd errors"
+[1] 2.33657e-07
+Processin[1] "f[1][1] "fem"
+[1] "mean errors"
+[1] 2.480813e-06
+[1] "sd errors"
+[1] 1.577463e-07
+Processin[1] "f[1][1] "fem"
+[1] "mean errors"
+[1] 1.025143e-06
+[1] "sd errors"
+[1] 1.619902e-07
+18 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0007469297
+[1] "sd errors"
+[1] 0.0008454336
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 7.847918e-05
+[1] "sd errors"
+[1] 7.87649e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 2.529469e-05
+[1] "sd errors"
+[1] 5.6886e-06
+Processing m = 4[1[1] "fem"
+[1] "mean errors"
+[1] 7.944508e-06
+[1] "sd errors"
+[1] 2.474015e-07
+Processin[1] "fe[1[1] "fem"
+[1] "mean errors"
+[1] 2.624363e-06
+[1] "sd errors"
+[1] 1.670255e-07
+Processin[1] "fe[1[1] "fem"
+[1] "mean errors"
+[1] 1.079589e-06
+[1] "sd errors"
+[1] 1.71519e-07
+19 Processing replicate
+Processing m = 1 [[1] "fem"
+[1] "mean errors"
+[1] 0.0007882292
+[1] "sd errors"
+[1] 0.0008924021
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 8.287854e-05
+[1] "sd errors"
+[1] 8.314072e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 2.677211e-05
+[1] "sd errors"
+[1] 6.004634e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 8.365875e-06
+[1] "sd errors"
+[1] 2.611461e-07
+Processi[1] "fe[1][1] "fem"
+[1] "mean errors"
+[1] 2.774141e-06
+[1] "sd errors"
+[1] 1.763047e-07
+Processi[1] "fe[1][1] "fem"
+[1] "mean errors"
+[1] 1.148874e-06
+[1] "sd errors"
+[1] 1.810479e-07
+20 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0008313954
+[1] "sd errors"
+[1] 0.0009393707
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 8.7532e-05
+[1] "sd errors"
+[1] 8.751655e-05
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 2.829908e-05
+[1] "sd errors"
+[1] 6.320667e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 8.81519e-06
+[1] "sd errors"
+[1] 2.748906e-07
+Proces[1] "fem"[1][1] "fem"
+[1] "mean errors"
+[1] 2.923728e-06
+[1] "sd errors"
+[1] 1.855839e-07
+Proces[1] "fem"[1][1] "fem"
+[1] "mean errors"
+[1] 1.216466e-06
+[1] "sd errors"
+[1] 1.905767e-07
+21 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.000874683
+[1] "sd errors"
+[1] 0.0009863392
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 9.184102e-05
+[1] "sd errors"
+[1] 9.189238e-05
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 2.97607e-05
+[1] "sd errors"
+[1] 6.6367e-06
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 9.279474e-06
+[1] "sd errors"
+[1] 2.886351e-07
+Proces[1] "fe[1] "[1] "fem"
+[1] "mean errors"
+[1] 3.075497e-06
+[1] "sd errors"
+[1] 1.948631e-07
+Proces[1] "fe[1] "[1] "fem"
+[1] "mean errors"
+[1] 1.283344e-06
+[1] "sd errors"
+[1] 2.001055e-07
+22 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0009138204
+[1] "sd errors"
+[1] 0.001033308
+Processing m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 9.598525e-05
+[1] "sd errors"
+[1] 9.626821e-05
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 3.114889e-05
+[1] "sd errors"
+[1] 6.952734e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 9.671067e-06
+[1] "sd errors"
+[1] 3.023796e-07
+Proc[1] "fe[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 3.214465e-06
+[1] "sd errors"
+[1] 2.041423e-07
+Proc[1] "fe[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.339363e-06
+[1] "sd errors"
+[1] 2.096344e-07
+23 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0009542787
+[1] "sd errors"
+[1] 0.001080276
+Processin[1] "fem"[1] "fem"
+[1] "mean errors"
+[1] 0.0001002035
+[1] "sd errors"
+[1] 0.000100644
+Processin[1] "fem"[1] "fem"
+[1] "mean errors"
+[1] 3.251349e-05
+[1] "sd errors"
+[1] 7.268767e-06
+Processin[1] "fem"[1] "fem"
+[1] "mean errors"
+[1] 1.010342e-05
+[1] "sd errors"
+[1] 3.161242e-07
+Pr[1] "fe[1] "fem"[1] "fem"
+[1] "mean errors"
+[1] 3.356124e-06
+[1] "sd errors"
+[1] 2.134215e-07
+Pr[1] "f[1] "fem"
+[1] "fem"
+[1] "mean errors"
+[1] 1.396244e-06
+[1] "sd errors"
+[1] 2.191632e-07
+24 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0009950144
+[1] "sd errors"
+[1] 0.001127245
+Process[1] "fem"
+[[1] "fem"
+[1] "mean errors"
+[1] 0.000104513
+[1] "sd errors"
+[1] 0.0001050199
+Processi[1] "fem"
+[1] "fem"
+[1] "mean errors"
+[1] 3.385722e-05
+[1] "sd errors"
+[1] 7.5848e-06
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 1.054112e-05
+[1] "sd errors"
+[1] 3.298687e-07
+P[1] "fem"[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 3.502995e-06
+[1] "sd errors"
+[1] 2.227007e-07
+[1] "fem"
+[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 1.457476e-06
+[1] "sd errors"
+[1] 2.28692e-07
+25 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001038867
+[1] "sd errors"
+[1] 0.001174213
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 0.000109093
+[1] "sd errors"
+[1] 0.0001093957
+Processing m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 3.532537e-05
+[1] "sd errors"
+[1] 7.900834e-06
+Processing m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 1.100689e-05
+[1] "sd errors"
+[1] 3.436132e-07
+P[1] "fem"
+[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 3.656115e-06
+[1] "sd errors"
+[1] 2.319799e-07
+P[1] "fem"[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 1.517908e-06
+[1] "sd errors"
+[1] 2.382209e-07
+26 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001080399
+[1] "sd errors"
+[1] 0.001221182
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 0.0001133995
+[1] "sd errors"
+[1] 0.0001137715
+Processing[1] "fem[1] "fem"
+[1] "mean errors"
+[1] 3.67733e-05
+[1] "sd errors"
+[1] 8.216867e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.144386e-05
+[1] "sd errors"
+[1] 3.573578e-07
+P[1] "fem"
+[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 3.799406e-06
+[1] "sd errors"
+[1] 2.412591e-07
+P[1] "fem"
+[1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.577362e-06
+[1] "sd errors"
+[1] 2.477497e-07
+27 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001120965
+[1] "sd errors"
+[1] 0.00126815
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.000117435
+[1] "sd errors"
+[1] 0.0001181473
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 3.814218e-05
+[1] "sd errors"
+[1] 8.532901e-06
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 1.187259e-05
+[1] "sd errors"
+[1] 3.711023e-07
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 3.939408e-06
+[1] "sd errors"
+[1] 2.505383e-07
+P[1] "fem"
+[1[1] "[1] "fem"
+[1] "mean errors"
+[1] 1.636617e-06
+[1] "sd errors"
+[1] 2.572785e-07
+28 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001162233
+[1] "sd errors"
+[1] 0.001315119
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001216852
+[1] "sd errors"
+[1] 0.0001225232
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 3.951031e-05
+[1] "sd errors"
+[1] 8.848934e-06
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 1.232318e-05
+[1] "sd errors"
+[1] 3.848468e-0[1] "fem"
+[1] [[1] "[1] "fem"
+[1] "mean errors"
+[1] 4.089993e-06
+[1] "sd errors"
+[1] 2.598175e-0[1] "fem"
+[1][1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.711364e-06
+[1] "sd errors"
+[1] 2.668074e-07
+29 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001203636
+[1] "sd errors"
+[1] 0.001362087
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001259505
+[1] "sd errors"
+[1] 0.000126899
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.094764e-05
+[1] "sd errors"
+[1] 9.164967e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.276045e-05
+[1] "sd errors"
+[1] 3.985913e-[1] "fem"
+[1] [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.232265e-06
+[1] "sd errors"
+[1] 2.690967e-[1] "fem"
+[1] [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.767812e-06
+[1] "sd errors"
+[1] 2.763362e-07
+30 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001244806
+[1] "sd errors"
+[1] 0.001409056
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001302437
+[1] "sd errors"
+[1] 0.0001312748
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.235375e-05
+[1] "sd errors"
+[1] 9.481001e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.31963e-05
+[1] "sd errors"
+[1] 4.123359e-[1] "fem"
+[1] "[1] "f[1] "fem"
+[1] "mean errors"
+[1] 4.376518e-06
+[1] "sd errors"
+[1] 2.783759e[1] "fem"
+[1] "m[1] "f[1] "fem"
+[1] "mean errors"
+[1] 1.828561e-06
+[1] "sd errors"
+[1] 2.858651e-07
+31 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.00128668
+[1] "sd errors"
+[1] 0.001456025
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001347226
+[1] "sd errors"
+[1] 0.0001356507
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.382981e-05
+[1] "sd errors"
+[1] 9.797034e-06
+Processing [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 1.363763e-05
+[1] "sd errors"
+[1] 4.260804e-[1] "fem"
+[1] [1] "fe[1] "fem"
+[1] "mean errors"
+[1] 4.523001e-06
+[1] "sd errors"
+[1] 2.876551e[1] "fem"
+[1] "mean errors"
+[1] 2.931943e-06
+[1][1] "fem"
+[1] "mean errors"
+[1] 1.613639e-06
+[1] "sd errors"
+[1] 2.81810[1] "fem"
+[1] "mean errors"
+[1] 0.001857632
+[1] [1] "fem"
+[1] "mean errors"
+[1] 0.001154959
+[1] "sd errors"
+[1] 0.001303137
+Processing m = 2 
+2 
+fem"
+[1] "mean errors"
+[1] 5.744347e-05
+[1] "sd errors"
+[1] 5.607538e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.774196e-05
+[1] "sd errors"
+[1] 3.763522e-06
+Processing m = 4 
+1] "fem"
+[1] "mean errors"
+[1] 3.784046e-06
+[1] "sd errors"
+[1] 1.739125e-06
+Processing m = 5 [[1] "fem"
+[1] "mean errors"
+[1] 2.59889e-06
+[1] "sd errors"
+[1] 1.992733e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 4.770728e-06
+[1] "sd errors"
+[1] 4.39359e-06
+33 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 7.683745e-05
+[1] "sd errors"
+[1] 1.563877e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.174799e-05
+[1] "sd errors"
+[1] 1.607975e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 6.540315e-06
+[1] "sd errors"
+[1] 2.236352e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 3.906864e-06
+[1] "sd errors"
+[1] 1.793473e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.680658e-06
+[1] "sd errors"
+[1] 2.055006e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 4.923648e-06
+[1] "sd errors"
+[1] 4.53089e-06
+34 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 7.908175e-05
+[1] "sd errors"
+[1] 1.611267e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.275063e-05
+[1] "sd errors"
+[1] 1.656701e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 6.729192e-06
+[1] "sd errors"
+[1] 2.30412e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.030527e-06
+[1] "sd errors"
+[1] 1.847821e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.76368e-06
+[1] "sd errors"
+[1] 2.117279e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.073837e-06
+[1] "sd errors"
+[1] 4.66819e-06
+35 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 8.139812e-05
+[1] "sd errors"
+[1] 1.658658e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.379348e-05
+[1] "sd errors"
+[1] 1.705428e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 6.926536e-06
+[1] "sd errors"
+[1] 2.371888e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.15795e-06
+[1] "sd errors"
+[1] 1.902168e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.846983e-06
+[1] "sd errors"
+[1] 2.179551e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.228579e-06
+[1] "sd errors"
+[1] 4.805489e-06
+36 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 8.369251e-05
+[1] "sd errors"
+[1] 1.706048e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.482756e-05
+[1] "sd errors"
+[1] 1.754155e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 7.134537e-06
+[1] "sd errors"
+[1] 2.439656e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.285427e-06
+[1] "sd errors"
+[1] 1.956516e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.934324e-06
+[1] "sd errors"
+[1] 2.241824e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.387809e-06
+[1] "sd errors"
+[1] 4.942789e-06
+37 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 8.612781e-05
+[1] "sd errors"
+[1] 1.753438e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.58149e-05
+[1] "sd errors"
+[1] 1.802881e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 7.335359e-06
+[1] "sd errors"
+[1] 2.507425e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.405973e-06
+[1] "sd errors"
+[1] 2.010863e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.015423e-06
+[1] "sd errors"
+[1] 2.304097e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.538163e-06
+[1] "sd errors"
+[1] 5.080089e-06
+38 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 8.834233e-05
+[1] "sd errors"
+[1] 1.800828e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.677961e-05
+[1] "sd errors"
+[1] 1.851608e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 7.514771e-06
+[1] "sd errors"
+[1] 2.575193e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.524838e-06
+[1] "sd errors"
+[1] 2.065211e-06
+Processing m = 5 [[1] "fem"
+[1] "mean errors"
+[1] 3.091757e-06
+[1] "sd errors"
+[1] 2.36637e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.682068e-06
+[1] "sd errors"
+[1] 5.217388e-06
+39 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 9.028678e-05
+[1] "sd errors"
+[1] 1.848218e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.763205e-05
+[1] "sd errors"
+[1] 1.900334e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 7.69216e-06
+[1] "sd errors"
+[1] 2.642961e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.628308e-06
+[1] "sd errors"
+[1] 2.119559e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.163413e-06
+[1] "sd errors"
+[1] 2.428643e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.815665e-06
+[1] "sd errors"
+[1] 5.354688e-06
+40 Processing replicate
+Processing m = 1 [[1] "fem"
+[1] "mean errors"
+[1] 9.257827e-05
+[1] "sd errors"
+[1] 1.895609e-05
+Processing m = 2[1[1] "fem"
+[1] "mean errors"
+[1] 3.858213e-05
+[1] "sd errors"
+[1] 1.949061e-05
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 7.886596e-06
+[1] "sd errors"
+[1] 2.710729e-06
+Processing m [1] "[1] "fem"
+[1] "mean errors"
+[1] 4.74744e-06
+[1] "sd errors"
+[1] 2.173906e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 3.247376e-06
+[1] "sd errors"
+[1] 2.490916e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 5.965377e-06
+[1] "sd errors"
+[1] 5.491988e-06
+41 Processing replicate
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 9.499673e-05
+[1] "sd errors"
+[1] 1.942999e-05
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 3.958267e-05
+[1] "sd errors"
+[1] 1.997787e-05
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 8.091069e-06
+[1] "sd errors"
+[1] 2.778498e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 4.869206e-06
+[1] "sd errors"
+[1] 2.228254e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 3.329967e-06
+[1] "sd errors"
+[1] 2.553189e-06
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 6.118376e-06
+[1] "sd errors"
+[1] 5.629287e-06
+42 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 9.722141e-05
+[1] "sd errors"
+[1] 1.990389e-05
+Processing m =[1] [1] "fem"
+[1] "mean errors"
+[1] 4.05485e-05
+[1] "sd errors"
+[1] 2.046514e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 8.285627e-06
+[1] "sd errors"
+[1] 2.846266e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 4.98857e-06
+[1] "sd errors"
+[1] 2.282602e-06
+Processing m = 5[1[1] "fem"
+[1] "mean errors"
+[1] 3.410751e-06
+[1] "sd errors"
+[1] 2.615462e-06
+Processing m = 6[1[1] "fem"
+[1] "mean errors"
+[1] 6.267962e-06
+[1] "sd errors"
+[1] 5.766587e-06
+43 Processing replicate
+Processing m = 1[1[1] "fem"
+[1] "mean errors"
+[1] 9.972693e-05
+[1] "sd errors"
+[1] 2.037779e-05
+Processing m = 2[1[1] "fem"
+[1] "mean errors"
+[1] 4.151639e-05
+[1] "sd errors"
+[1] 2.09524e-05
+Processing m = 3 [[1] "fem"
+[1] "mean errors"
+[1] 8.492705e-06
+[1] "sd errors"
+[1] 2.914034e-06
+Processing m = 4 [[1] "fem"
+[1] "mean errors"
+[1] 5.105029e-06
+[1] "sd errors"
+[1] 2.336949e-06
+Processing m = 5 [[1] "fem"
+[1] "mean errors"
+[1] 3.489979e-06
+[1] "sd errors"
+[1] 2.677735e-06
+Processing m = 6 [[1] "fem"
+[1] "mean errors"
+[1] 6.418429e-06
+[1] "sd errors"
+[1] 5.903887e-06
+44 Processing replicate
+Processing m = 1 [[1] "fem"
+[1] "mean errors"
+[1] 0.000101937
+[1] "sd errors"
+[1] 2.085169e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.24676e-05
+[1] "sd errors"
+[1] 2.143967e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 8.680885e-06
+[1] "sd errors"
+[1] 2.981802e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.223404e-06
+[1] "sd errors"
+[1] 2.391297e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.570638e-06
+[1] "sd errors"
+[1] 2.740008e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 6.564264e-06
+[1] "sd errors"
+[1] 6.041186e-06
+45 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.000104254
+[1] "sd errors"
+[1] 2.13256e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.344048e-05
+[1] "sd errors"
+[1] 2.192693e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 8.873538e-06
+[1] "sd errors"
+[1] 3.049571e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.341755e-06
+[1] "sd errors"
+[1] 2.445645e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.64812e-06
+[1] "sd errors"
+[1] 2.80228e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 6.710893e-06
+[1] "sd errors"
+[1] 6.178486e-06
+46 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001064534
+[1] "sd errors"
+[1] 2.17995e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.440148e-05
+[1] "sd errors"
+[1] 2.24142e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 9.060279e-06
+[1] "sd errors"
+[1] 3.117339e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.459365e-06
+[1] "sd errors"
+[1] 2.499992e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.725085e-06
+[1] "sd errors"
+[1] 2.864553e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 6.854945e-06
+[1] "sd errors"
+[1] 6.315786e-06
+47 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001085562
+[1] "sd errors"
+[1] 2.22734e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.538488e-05
+[1] "sd errors"
+[1] 2.290146e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 9.244938e-06
+[1] "sd errors"
+[1] 3.185107e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.580668e-06
+[1] "sd errors"
+[1] 2.55434e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.804901e-06
+[1] "sd errors"
+[1] 2.926826e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 7.002606e-06
+[1] "sd errors"
+[1] 6.453086e-06
+48 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001107244
+[1] "sd errors"
+[1] 2.27473e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.630634e-05
+[1] "sd errors"
+[1] 2.338873e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 9.438038e-06
+[1] "sd errors"
+[1] 3.252875e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.692739e-06
+[1] "sd errors"
+[1] 2.608688e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.884788e-06
+[1] "sd errors"
+[1] 2.989099e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 7.146928e-06
+[1] "sd errors"
+[1] 6.590385e-06
+49 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001133341
+[1] "sd errors"
+[1] 2.322121e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.733868e-05
+[1] "sd errors"
+[1] 2.387599e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 9.651736e-06
+[1] "sd errors"
+[1] 3.320644e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.817982e-06
+[1] "sd errors"
+[1] 2.663035e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 3.970091e-06
+[1] "sd errors"
+[1] 3.051372e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 7.306152e-06
+[1] "sd errors"
+[1] 6.727685e-06
+50 Processing replicate
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 0.0001156083
+[1] "sd errors"
+[1] 2.369511e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 4.822567e-05
+[1] "sd errors"
+[1] 2.436326e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 9.840133e-06
+[1] "sd errors"
+[1] 3.388412e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 5.926138e-06
+[1] "sd errors"
+[1] 2.717383e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 4.044969e-06
+[1] "sd errors"
+[1] 3.113645e-06
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 7.444729e-06
+[1] "sd errors"
+[1] 6.864985e-06
+51 Processing replicate
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 0.0001177502
+[1] "sd errors"
+[1] 2.416901e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 4.915949e-05
+[1] "sd errors"
+[1] 2.485052e-05
+Processing m = [1][1] "fem"
+[1] "mean errors"
+[1] 1.003075e-05
+[1] "sd errors"
+[1] 3.45618e-06
+Processing m = 4[1[1] "fem"
+[1] "mean errors"
+[1] 6.040656e-06
+[1] "sd errors"
+[1] 2.771731e-06
+Processing m = 5[1[1] "fem"
+[1] "mean errors"
+[1] 4.123512e-06
+[1] "sd errors"
+[1] 3.175918e-06
+Processing m = 6[1[1] "fem"
+[1] "mean errors"
+[1] 7.58899e-06
+[1] "sd errors"
+[1] 7.002284e-06
+52 Processing replicate
+Processing m = 1 [[1] "fem"
+[1] "mean errors"
+[1] 0.0001201507
+[1] "sd errors"
+[1] 2.464291e-05
+Processing m = 2 [[1] "fem"
+[1] "mean errors"
+[1] 5.004747e-05
+[1] "sd errors"
+[1] 2.533779e-05
+Processing m = 3 [[1] "fem"
+[1] "mean errors"
+[1] 1.022732e-05
+[1] "sd errors"
+[1] 3.523948e-06
+Processing m = 4 [[1] "fem"
+[1] "mean errors"
+[1] 6.15362e-06
+[1] "sd errors"
+[1] 2.826078e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.204964e-06
+[1] "sd errors"
+[1] 3.238191e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 7.734097e-06
+[1] "sd errors"
+[1] 7.139584e-06
+53 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001225303
+[1] "sd errors"
+[1] 2.511681e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 5.100561e-05
+[1] "sd errors"
+[1] 2.582505e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.042796e-05
+[1] "sd errors"
+[1] 3.591716e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.270606e-06
+[1] "sd errors"
+[1] 2.880426e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.284371e-06
+[1] "sd errors"
+[1] 3.300464e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 7.882489e-06
+[1] "sd errors"
+[1] 7.276884e-06
+54 Processing replicate
+Processing m = 1 [[1] "fem"
+[1] "mean errors"
+[1] 0.0001250299
+[1] "sd errors"
+[1] 2.559072e-05
+Processing m = 2 [[1] "fem"
+[1] "mean errors"
+[1] 5.19875e-05
+[1] "sd errors"
+[1] 2.631232e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.06353e-05
+[1] "sd errors"
+[1] 3.659485e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.389485e-06
+[1] "sd errors"
+[1] 2.934774e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.365069e-06
+[1] "sd errors"
+[1] 3.362737e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 8.034096e-06
+[1] "sd errors"
+[1] 7.414183e-06
+55 Processing replicate
+Processing m = 1 [[1] "fem"
+[1] "mean errors"
+[1] 0.0001273508
+[1] "sd errors"
+[1] 2.606462e-05
+Processing m = 2 [[1] "fem"
+[1] "mean errors"
+[1] 5.295124e-05
+[1] "sd errors"
+[1] 2.679958e-05
+Processing m = 3 [[1] "fem"
+[1] "mean errors"
+[1] 1.083711e-05
+[1] "sd errors"
+[1] 3.727253e-06
+Processing m = 4 [[1] "fem"
+[1] "mean errors"
+[1] 6.50641e-06
+[1] "sd errors"
+[1] 2.989121e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.446456e-06
+[1] "sd errors"
+[1] 3.425009e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 8.183983e-06
+[1] "sd errors"
+[1] 7.551483e-06
+56 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001297688
+[1] "sd errors"
+[1] 2.653852e-05
+Processing m = 2 [[1] "fem"
+[1] "mean errors"
+[1] 5.389146e-05
+[1] "sd errors"
+[1] 2.728685e-05
+Processing m = 3 [1] "fem"
+[1] "mean errors"
+[1] 5.775097e-06
+[1] "sd errors"
+[1] 1.035315e-06
+Processing m = 4 
+ing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 8.082268e-06
+[1] "sd errors"
+[1] 2.797729e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.83e-06
+[1] "sd errors"
+[1] 3.418348e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 8.169037e-06
+[1] "sd errors"
+[1] 7.468819e-06
+57 Processing replicate
+Processing m = 1 
+
+[1] "fem"
+[1] "mean errors"
+[1] 1.422383e-06
+[1] "sd errors"
+[1] 9.587755e-07
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.751676e-06
+[1] "sd errors"
+[1] 1.35572e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.42714e-06
+[1] "sd errors"
+[1] 2.094945e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.006004e-06
+[1] "sd errors"
+[1] 3.701809e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.006004e-06
+[1] "sd errors"
+[1] 3.701809e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 8.717296e-06
+[1] "sd errors"
+[1] 8.304003e-06
+58 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.44464e-06
+[1] "sd errors"
+[1] 9.755961e-07
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.780634e-06
+[1] "sd errors"
+[1] 1.379505e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.469534e-06
+[1] "sd errors"
+[1] 2.131699e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.078907e-06
+[1] "sd errors"
+[1] 3.766753e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.078907e-06
+[1] "sd errors"
+[1] 3.766753e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 8.879337e-06
+[1] "sd errors"
+[1] 8.449688e-06
+59 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.477631e-06
+[1] "sd errors"
+[1] 9.924168e-07
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.817762e-06
+[1] "sd errors"
+[1] 1.40329e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.516347e-06
+[1] "sd errors"
+[1] 2.168452e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.150893e-06
+[1] "sd errors"
+[1] 3.831697e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.150893e-06
+[1] "sd errors"
+[1] 3.831697e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.03106e-06
+[1] "sd errors"
+[1] 8.595372e-06
+60 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.497176e-06
+[1] "sd errors"
+[1] 1.009237e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.844113e-06
+[1] "sd errors"
+[1] 1.427074e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.555864e-06
+[1] "sd errors"
+[1] 2.205206e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.219654e-06
+[1] "sd errors"
+[1] 3.896641e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.219654e-06
+[1] "sd errors"
+[1] 3.896641e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.184397e-06
+[1] "sd errors"
+[1] 8.741056e-06
+61 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.518282e-06
+[1] "sd errors"
+[1] 1.026058e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.871258e-06
+[1] "sd errors"
+[1] 1.450859e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.595259e-06
+[1] "sd errors"
+[1] 2.241959e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.287079e-06
+[1] "sd errors"
+[1] 3.961585e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.287079e-06
+[1] "sd errors"
+[1] 3.961585e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.334017e-06
+[1] "sd errors"
+[1] 8.88674e-06
+62 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.55629e-06
+[1] "sd errors"
+[1] 1.042879e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.913877e-06
+[1] "sd errors"
+[1] 1.474643e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.64845e-06
+[1] "sd errors"
+[1] 2.278713e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.367524e-06
+[1] "sd errors"
+[1] 4.026529e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.367524e-06
+[1] "sd errors"
+[1] 4.026529e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.500819e-06
+[1] "sd errors"
+[1] 9.032425e-06
+63 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.589833e-06
+[1] "sd errors"
+[1] 1.059699e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.951202e-06
+[1] "sd errors"
+[1] 1.498428e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.694506e-06
+[1] "sd errors"
+[1] 2.315466e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.436317e-06
+[1] "sd errors"
+[1] 4.091474e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.436317e-06
+[1] "sd errors"
+[1] 4.091474e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.642285e-06
+[1] "sd errors"
+[1] 9.178109e-06
+64 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.610358e-06
+[1] "sd errors"
+[1] 1.07652e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.977566e-06
+[1] "sd errors"
+[1] 1.522212e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.732765e-06
+[1] "sd errors"
+[1] 2.352219e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.501859e-06
+[1] "sd errors"
+[1] 4.156418e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.501859e-06
+[1] "sd errors"
+[1] 4.156418e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.787913e-06
+[1] "sd errors"
+[1] 9.323793e-06
+65 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.627229e-06
+[1] "sd errors"
+[1] 1.09334e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.001781e-06
+[1] "sd errors"
+[1] 1.545997e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.770535e-06
+[1] "sd errors"
+[1] 2.388973e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.568956e-06
+[1] "sd errors"
+[1] 4.221362e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.568956e-06
+[1] "sd errors"
+[1] 4.221362e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.93884e-06
+[1] "sd errors"
+[1] 9.469477e-06
+66 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.645178e-06
+[1] "sd errors"
+[1] 1.110161e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.02687e-06
+[1] "sd errors"
+[1] 1.569782e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.809059e-06
+[1] "sd errors"
+[1] 2.425726e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.636844e-06
+[1] "sd errors"
+[1] 4.286306e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.636844e-06
+[1] "sd errors"
+[1] 4.286306e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.009103e-05
+[1] "sd errors"
+[1] 9.615162e-06
+67 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.665303e-06
+[1] "sd errors"
+[1] 1.126982e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.053685e-06
+[1] "sd errors"
+[1] 1.593566e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.849016e-06
+[1] "sd errors"
+[1] 2.46248e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.706248e-06
+[1] "sd errors"
+[1] 4.35125e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.706248e-06
+[1] "sd errors"
+[1] 4.35125e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.024592e-05
+[1] "sd errors"
+[1] 9.760846e-06
+68 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.683475e-06
+[1] "sd errors"
+[1] 1.143802e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.078683e-06
+[1] "sd errors"
+[1] 1.617351e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.886998e-06
+[1] "sd errors"
+[1] 2.499233e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.772788e-06
+[1] "sd errors"
+[1] 4.416194e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.772788e-06
+[1] "sd errors"
+[1] 4.416194e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.039468e-05
+[1] "sd errors"
+[1] 9.90653e-06
+69 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.710329e-06
+[1] "sd errors"
+[1] 1.160623e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.110719e-06
+[1] "sd errors"
+[1] 1.641135e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.930227e-06
+[1] "sd errors"
+[1] 2.535987e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.843011e-06
+[1] "sd errors"
+[1] 4.481138e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.843011e-06
+[1] "sd errors"
+[1] 4.481138e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.054646e-05
+[1] "sd errors"
+[1] 1.005221e-05
+70 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.745456e-06
+[1] "sd errors"
+[1] 1.177444e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.150123e-06
+[1] "sd errors"
+[1] 1.66492e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.979375e-06
+[1] "sd errors"
+[1] 2.57274e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.917178e-06
+[1] "sd errors"
+[1] 4.546082e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.917178e-06
+[1] "sd errors"
+[1] 4.546082e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.069979e-05
+[1] "sd errors"
+[1] 1.01979e-05
+71 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.770811e-06
+[1] "sd errors"
+[1] 1.194264e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.181313e-06
+[1] "sd errors"
+[1] 1.688704e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.022857e-06
+[1] "sd errors"
+[1] 2.609493e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.989624e-06
+[1] "sd errors"
+[1] 4.611026e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.989624e-06
+[1] "sd errors"
+[1] 4.611026e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.085851e-05
+[1] "sd errors"
+[1] 1.034358e-05
+72 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.792434e-06
+[1] "sd errors"
+[1] 1.211085e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.209252e-06
+[1] "sd errors"
+[1] 1.712489e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.063538e-06
+[1] "sd errors"
+[1] 2.646247e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.059354e-06
+[1] "sd errors"
+[1] 4.67597e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.059354e-06
+[1] "sd errors"
+[1] 4.67597e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.101329e-05
+[1] "sd errors"
+[1] 1.048927e-05
+73 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.825269e-06
+[1] "sd errors"
+[1] 1.227905e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.246143e-06
+[1] "sd errors"
+[1] 1.736273e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.109715e-06
+[1] "sd errors"
+[1] 2.683e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.129416e-06
+[1] "sd errors"
+[1] 4.740914e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.129416e-06
+[1] "sd errors"
+[1] 4.740914e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.115888e-05
+[1] "sd errors"
+[1] 1.063495e-05
+74 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.842385e-06
+[1] "sd errors"
+[1] 1.244726e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.270347e-06
+[1] "sd errors"
+[1] 1.760058e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.147133e-06
+[1] "sd errors"
+[1] 2.719754e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.195577e-06
+[1] "sd errors"
+[1] 4.805858e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.195577e-06
+[1] "sd errors"
+[1] 4.805858e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.130738e-05
+[1] "sd errors"
+[1] 1.078064e-05
+75 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.879084e-06
+[1] "sd errors"
+[1] 1.261547e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.311016e-06
+[1] "sd errors"
+[1] 1.783843e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.197269e-06
+[1] "sd errors"
+[1] 2.756507e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.2709e-06
+[1] "sd errors"
+[1] 4.870802e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.2709e-06
+[1] "sd errors"
+[1] 4.870802e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.146394e-05
+[1] "sd errors"
+[1] 1.092632e-05
+76 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.919086e-06
+[1] "sd errors"
+[1] 1.278367e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.354495e-06
+[1] "sd errors"
+[1] 1.807627e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.249122e-06
+[1] "sd errors"
+[1] 2.793261e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.345605e-06
+[1] "sd errors"
+[1] 4.935746e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.345605e-06
+[1] "sd errors"
+[1] 4.935746e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.161439e-05
+[1] "sd errors"
+[1] 1.1072e-05
+77 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.941091e-06
+[1] "sd errors"
+[1] 1.295188e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.382158e-06
+[1] "sd errors"
+[1] 1.831412e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.288528e-06
+[1] "sd errors"
+[1] 2.830014e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.412317e-06
+[1] "sd errors"
+[1] 5.00069e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.412317e-06
+[1] "sd errors"
+[1] 5.00069e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.176182e-05
+[1] "sd errors"
+[1] 1.121769e-05
+78 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.960456e-06
+[1] "sd errors"
+[1] 1.312009e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.408177e-06
+[1] "sd errors"
+[1] 1.855196e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.327409e-06
+[1] "sd errors"
+[1] 2.866767e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.479758e-06
+[1] "sd errors"
+[1] 5.065634e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.479758e-06
+[1] "sd errors"
+[1] 5.065634e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.191186e-05
+[1] "sd errors"
+[1] 1.136337e-05
+79 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 1.993352e-06
+[1] "sd errors"
+[1] 1.328829e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.44539e-06
+[1] "sd errors"
+[1] 1.878981e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.374538e-06
+[1] "sd errors"
+[1] 2.903521e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.552314e-06
+[1] "sd errors"
+[1] 5.130578e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.552314e-06
+[1] "sd errors"
+[1] 5.130578e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.20644e-05
+[1] "sd errors"
+[1] 1.150906e-05
+80 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.013167e-06
+[1] "sd errors"
+[1] 1.34565e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.471624e-06
+[1] "sd errors"
+[1] 1.902765e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.413362e-06
+[1] "sd errors"
+[1] 2.940274e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.619348e-06
+[1] "sd errors"
+[1] 5.195522e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.619348e-06
+[1] "sd errors"
+[1] 5.195522e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.221335e-05
+[1] "sd errors"
+[1] 1.165474e-05
+81 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.036242e-06
+[1] "sd errors"
+[1] 1.36247e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.500858e-06
+[1] "sd errors"
+[1] 1.92655e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.455244e-06
+[1] "sd errors"
+[1] 2.977028e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.690431e-06
+[1] "sd errors"
+[1] 5.260466e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.690431e-06
+[1] "sd errors"
+[1] 5.260466e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.237047e-05
+[1] "sd errors"
+[1] 1.180043e-05
+82 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.058661e-06
+[1] "sd errors"
+[1] 1.379291e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.530035e-06
+[1] "sd errors"
+[1] 1.950335e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.497938e-06
+[1] "sd errors"
+[1] 3.013781e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.763783e-06
+[1] "sd errors"
+[1] 5.32541e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.763783e-06
+[1] "sd errors"
+[1] 5.32541e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.253334e-05
+[1] "sd errors"
+[1] 1.194611e-05
+83 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.077372e-06
+[1] "sd errors"
+[1] 1.396112e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.555938e-06
+[1] "sd errors"
+[1] 1.974119e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.537494e-06
+[1] "sd errors"
+[1] 3.050535e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.833323e-06
+[1] "sd errors"
+[1] 5.390354e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.833323e-06
+[1] "sd errors"
+[1] 5.390354e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.268915e-05
+[1] "sd errors"
+[1] 1.209179e-05
+84 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.09655e-06
+[1] "sd errors"
+[1] 1.412932e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.581455e-06
+[1] "sd errors"
+[1] 1.997904e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.575326e-06
+[1] "sd errors"
+[1] 3.087288e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.898606e-06
+[1] "sd errors"
+[1] 5.455298e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.898606e-06
+[1] "sd errors"
+[1] 5.455298e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.283396e-05
+[1] "sd errors"
+[1] 1.223748e-05
+85 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.113102e-06
+[1] "sd errors"
+[1] 1.429753e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.604778e-06
+[1] "sd errors"
+[1] 2.021688e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.611338e-06
+[1] "sd errors"
+[1] 3.124041e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.962287e-06
+[1] "sd errors"
+[1] 5.520242e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.962287e-06
+[1] "sd errors"
+[1] 5.520242e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.2977e-05
+[1] "sd errors"
+[1] 1.238316e-05
+86 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.13656e-06
+[1] "sd errors"
+[1] 1.446574e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.634571e-06
+[1] "sd errors"
+[1] 2.045473e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.653961e-06
+[1] "sd errors"
+[1] 3.160795e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.034313e-06
+[1] "sd errors"
+[1] 5.585186e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.034313e-06
+[1] "sd errors"
+[1] 5.585186e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.313539e-05
+[1] "sd errors"
+[1] 1.252885e-05
+87 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.156582e-06
+[1] "sd errors"
+[1] 1.463394e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.661051e-06
+[1] "sd errors"
+[1] 2.069257e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.693152e-06
+[1] "sd errors"
+[1] 3.197548e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.102042e-06
+[1] "sd errors"
+[1] 5.65013e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.102042e-06
+[1] "sd errors"
+[1] 5.65013e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.328606e-05
+[1] "sd errors"
+[1] 1.267453e-05
+88 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.172806e-06
+[1] "sd errors"
+[1] 1.480215e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.684344e-06
+[1] "sd errors"
+[1] 2.093042e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.729495e-06
+[1] "sd errors"
+[1] 3.234302e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.16662e-06
+[1] "sd errors"
+[1] 5.715074e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.16662e-06
+[1] "sd errors"
+[1] 5.715074e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.343135e-05
+[1] "sd errors"
+[1] 1.282022e-05
+89 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.191215e-06
+[1] "sd errors"
+[1] 1.497035e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.709944e-06
+[1] "sd errors"
+[1] 2.116827e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.768659e-06
+[1] "sd errors"
+[1] 3.271055e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.235471e-06
+[1] "sd errors"
+[1] 5.780018e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.235471e-06
+[1] "sd errors"
+[1] 5.780018e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.358548e-05
+[1] "sd errors"
+[1] 1.29659e-05
+90 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.208767e-06
+[1] "sd errors"
+[1] 1.513856e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.734344e-06
+[1] "sd errors"
+[1] 2.140611e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.806073e-06
+[1] "sd errors"
+[1] 3.307809e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.301484e-06
+[1] "sd errors"
+[1] 5.844962e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.301484e-06
+[1] "sd errors"
+[1] 5.844962e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.373379e-05
+[1] "sd errors"
+[1] 1.311158e-05
+91 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.244552e-06
+[1] "sd errors"
+[1] 1.530677e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.774476e-06
+[1] "sd errors"
+[1] 2.164396e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.856119e-06
+[1] "sd errors"
+[1] 3.344562e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.377015e-06
+[1] "sd errors"
+[1] 5.909906e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.377015e-06
+[1] "sd errors"
+[1] 5.909906e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.389e-05
+[1] "sd errors"
+[1] 1.325727e-05
+92 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.269245e-06
+[1] "sd errors"
+[1] 1.547497e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.804668e-06
+[1] "sd errors"
+[1] 2.18818e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.898193e-06
+[1] "sd errors"
+[1] 3.381315e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.447488e-06
+[1] "sd errors"
+[1] 5.97485e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.447488e-06
+[1] "sd errors"
+[1] 5.97485e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.404555e-05
+[1] "sd errors"
+[1] 1.340295e-05
+93 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.296901e-06
+[1] "sd errors"
+[1] 1.564318e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.837062e-06
+[1] "sd errors"
+[1] 2.211965e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.941086e-06
+[1] "sd errors"
+[1] 3.418069e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.516245e-06
+[1] "sd errors"
+[1] 6.039794e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.516245e-06
+[1] "sd errors"
+[1] 6.039794e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.419342e-05
+[1] "sd errors"
+[1] 1.354864e-05
+94 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.322814e-06
+[1] "sd errors"
+[1] 1.581139e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.868767e-06
+[1] "sd errors"
+[1] 2.235749e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.984942e-06
+[1] "sd errors"
+[1] 3.454822e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.588708e-06
+[1] "sd errors"
+[1] 6.104738e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.588708e-06
+[1] "sd errors"
+[1] 6.104738e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.435115e-05
+[1] "sd errors"
+[1] 1.369432e-05
+95 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.339198e-06
+[1] "sd errors"
+[1] 1.597959e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.892359e-06
+[1] "sd errors"
+[1] 2.259534e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.021808e-06
+[1] "sd errors"
+[1] 3.491576e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.65426e-06
+[1] "sd errors"
+[1] 6.169682e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.65426e-06
+[1] "sd errors"
+[1] 6.169682e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.449865e-05
+[1] "sd errors"
+[1] 1.384001e-05
+96 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.371384e-06
+[1] "sd errors"
+[1] 1.61478e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.928908e-06
+[1] "sd errors"
+[1] 2.283319e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.068369e-06
+[1] "sd errors"
+[1] 3.528329e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.726401e-06
+[1] "sd errors"
+[1] 6.234626e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.726401e-06
+[1] "sd errors"
+[1] 6.234626e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.4651e-05
+[1] "sd errors"
+[1] 1.398569e-05
+97 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.393701e-06
+[1] "sd errors"
+[1] 1.6316e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.957562e-06
+[1] "sd errors"
+[1] 2.307103e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.109907e-06
+[1] "sd errors"
+[1] 3.565083e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.797462e-06
+[1] "sd errors"
+[1] 6.29957e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.797462e-06
+[1] "sd errors"
+[1] 6.29957e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.480869e-05
+[1] "sd errors"
+[1] 1.413137e-05
+98 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.42127e-06
+[1] "sd errors"
+[1] 1.648421e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.990034e-06
+[1] "sd errors"
+[1] 2.330888e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.153086e-06
+[1] "sd errors"
+[1] 3.601836e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.866747e-06
+[1] "sd errors"
+[1] 6.364514e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.866747e-06
+[1] "sd errors"
+[1] 6.364514e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.495742e-05
+[1] "sd errors"
+[1] 1.427706e-05
+99 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.444262e-06
+[1] "sd errors"
+[1] 1.665242e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.019412e-06
+[1] "sd errors"
+[1] 2.354672e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.195418e-06
+[1] "sd errors"
+[1] 3.638589e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.938764e-06
+[1] "sd errors"
+[1] 6.429458e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 6.938764e-06
+[1] "sd errors"
+[1] 6.429458e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.511657e-05
+[1] "sd errors"
+[1] 1.442274e-05
+100 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 2.48571e-06
+[1] "sd errors"
+[1] 1.682062e-06
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.064548e-06
+[1] "sd errors"
+[1] 2.378457e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.249247e-06
+[1] "sd errors"
+[1] 3.675343e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 7.015971e-06
+[1] "sd errors"
+[1] 6.494402e-06
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 7.015971e-06
+[1] "sd errors"
+[1] 6.494402e-06
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.52708e-05
+[1] "sd errors"
+[1] 1.456843e-05
+Type: EXEC 
+1 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 6.236644e-05
+[1] "sd errors"
+[1] 7.06003e-05
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 6.872004e-06
+[1] "sd errors"
+[1] 7.375676e-06
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.261087e-06
+[1] "sd errors"
+[1] 5.952193e-07
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 8.0717e-07
+[1] "sd errors"
+[1] 2.038183e-08
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.688604e-07
+[1] "sd errors"
+[1] 1.7479e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.079297e-07
+[1] "sd errors"
+[1] 1.187048e-08
+2 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001264272
+[1] "sd errors"
+[1] 0.0001412006
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 1.402873e-05
+[1] "sd errors"
+[1] 1.475135e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.703709e-06
+[1] "sd errors"
+[1] 1.190439e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.617826e-06
+[1] "sd errors"
+[1] 4.076365e-08
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.424621e-07
+[1] "sd errors"
+[1] 3.495799e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 2.169556e-07
+[1] "sd errors"
+[1] 2.374096e-08
+3 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001878014
+[1] "sd errors"
+[1] 0.0002118009
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.107471e-05
+[1] "sd errors"
+[1] 2.212703e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 7.034737e-06
+[1] "sd errors"
+[1] 1.785658e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 2.383976e-06
+[1] "sd errors"
+[1] 6.114548e-08
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 8.012338e-07
+[1] "sd errors"
+[1] 5.243699e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 3.246805e-07
+[1] "sd errors"
+[1] 3.561145e-08
+4 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0002539541
+[1] "sd errors"
+[1] 0.0002824012
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 2.83989e-05
+[1] "sd errors"
+[1] 2.95027e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 9.593994e-06
+[1] "sd errors"
+[1] 2.380877e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 3.206365e-06
+[1] "sd errors"
+[1] 8.152731e-08
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 1.083104e-06
+[1] "sd errors"
+[1] 6.991598e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 4.372409e-07
+[1] "sd errors"
+[1] 4.748193e-08
+5 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0003184027
+[1] "sd errors"
+[1] 0.0003530015
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 3.57268e-05
+[1] "sd errors"
+[1] 3.687838e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.205758e-05
+[1] "sd errors"
+[1] 2.976096e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.019483e-06
+[1] "sd errors"
+[1] 1.019091e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 1.353902e-06
+[1] "sd errors"
+[1] 8.739498e-08
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 5.459447e-07
+[1] "sd errors"
+[1] 5.935241e-08
+6 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0003810601
+[1] "sd errors"
+[1] 0.0004236018
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.277963e-05
+[1] "sd errors"
+[1] 4.425406e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.439117e-05
+[1] "sd errors"
+[1] 3.571316e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 4.819576e-06
+[1] "sd errors"
+[1] 1.22291e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 1.617862e-06
+[1] "sd errors"
+[1] 1.04874e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 6.500994e-07
+[1] "sd errors"
+[1] 7.122289e-08
+7 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0004435008
+[1] "sd errors"
+[1] 0.0004942021
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 4.976794e-05
+[1] "sd errors"
+[1] 5.162973e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.677429e-05
+[1] "sd errors"
+[1] 4.166535e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 5.603429e-06
+[1] "sd errors"
+[1] 1.426728e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 1.878241e-06
+[1] "sd errors"
+[1] 1.22353e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 7.544063e-07
+[1] "sd errors"
+[1] 8.309338e-08
+8 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0005049765
+[1] "sd errors"
+[1] 0.0005648024
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 5.708164e-05
+[1] "sd errors"
+[1] 5.900541e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 1.910638e-05
+[1] "sd errors"
+[1] 4.761754e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 6.35845e-06
+[1] "sd errors"
+[1] 1.630546e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.146723e-06
+[1] "sd errors"
+[1] 1.39832e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 8.579186e-07
+[1] "sd errors"
+[1] 9.496386e-08
+9 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0005691846
+[1] "sd errors"
+[1] 0.0006354027
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 6.410564e-05
+[1] "sd errors"
+[1] 6.638108e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.153318e-05
+[1] "sd errors"
+[1] 5.356973e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 7.17347e-06
+[1] "sd errors"
+[1] 1.834364e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.41886e-06
+[1] "sd errors"
+[1] 1.57311e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 9.685093e-07
+[1] "sd errors"
+[1] 1.068343e-07
+10 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0006319068
+[1] "sd errors"
+[1] 0.000706003
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 7.145879e-05
+[1] "sd errors"
+[1] 7.375676e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.405403e-05
+[1] "sd errors"
+[1] 5.952193e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 7.947856e-06
+[1] "sd errors"
+[1] 2.038183e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.672107e-06
+[1] "sd errors"
+[1] 1.7479e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.073108e-06
+[1] "sd errors"
+[1] 1.187048e-07
+11 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.000697526
+[1] "sd errors"
+[1] 0.0007766033
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 7.830892e-05
+[1] "sd errors"
+[1] 8.113244e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.657665e-05
+[1] "sd errors"
+[1] 6.547412e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 8.783429e-06
+[1] "sd errors"
+[1] 2.242001e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 2.935941e-06
+[1] "sd errors"
+[1] 1.922689e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.180265e-06
+[1] "sd errors"
+[1] 1.305753e-07
+12 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0007600449
+[1] "sd errors"
+[1] 0.0008472036
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 8.521519e-05
+[1] "sd errors"
+[1] 8.850811e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 2.897298e-05
+[1] "sd errors"
+[1] 7.142631e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 9.552953e-06
+[1] "sd errors"
+[1] 2.445819e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.201883e-06
+[1] "sd errors"
+[1] 2.097479e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.287987e-06
+[1] "sd errors"
+[1] 1.424458e-07
+13 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0008252471
+[1] "sd errors"
+[1] 0.0009178039
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 9.267025e-05
+[1] "sd errors"
+[1] 9.588379e-05
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.143509e-05
+[1] "sd errors"
+[1] 7.73785e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.037349e-05
+[1] "sd errors"
+[1] 2.649638e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.481714e-06
+[1] "sd errors"
+[1] 2.272269e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.404871e-06
+[1] "sd errors"
+[1] 1.543163e-07
+14 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0008879052
+[1] "sd errors"
+[1] 0.0009884042
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001000867
+[1] "sd errors"
+[1] 0.0001032595
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.38358e-05
+[1] "sd errors"
+[1] 8.33307e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.114702e-05
+[1] "sd errors"
+[1] 2.853456e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 3.756794e-06
+[1] "sd errors"
+[1] 2.447059e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.521303e-06
+[1] "sd errors"
+[1] 1.661868e-07
+15 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.000955545
+[1] "sd errors"
+[1] 0.001059005
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001074908
+[1] "sd errors"
+[1] 0.0001106351
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.637076e-05
+[1] "sd errors"
+[1] 8.928289e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.200272e-05
+[1] "sd errors"
+[1] 3.057274e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.045911e-06
+[1] "sd errors"
+[1] 2.621849e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.629827e-06
+[1] "sd errors"
+[1] 1.780572e-07
+16 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001019521
+[1] "sd errors"
+[1] 0.001129605
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001147736
+[1] "sd errors"
+[1] 0.0001180108
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 3.885378e-05
+[1] "sd errors"
+[1] 9.523508e-06
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.280164e-05
+[1] "sd errors"
+[1] 3.261092e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.316685e-06
+[1] "sd errors"
+[1] 2.796639e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.741602e-06
+[1] "sd errors"
+[1] 1.899277e-07
+17 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001084539
+[1] "sd errors"
+[1] 0.001200205
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001222069
+[1] "sd errors"
+[1] 0.0001253865
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.134528e-05
+[1] "sd errors"
+[1] 1.011873e-05
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.360889e-05
+[1] "sd errors"
+[1] 3.464911e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.593969e-06
+[1] "sd errors"
+[1] 2.971429e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.852871e-06
+[1] "sd errors"
+[1] 2.017982e-07
+18 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.00114572
+[1] "sd errors"
+[1] 0.001270805
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001295221
+[1] "sd errors"
+[1] 0.0001327622
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.362144e-05
+[1] "sd errors"
+[1] 1.071395e-05
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.436735e-05
+[1] "sd errors"
+[1] 3.668729e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 4.866373e-06
+[1] "sd errors"
+[1] 3.146219e-07
+Processing m = 6 
+[1] "fem"
+[1] "mean errors"
+[1] 1.955303e-06
+[1] "sd errors"
+[1] 2.136687e-07
+19 Processing replicate
+Processing m = 1 
+[1] "fem"
+[1] "mean errors"
+[1] 0.001206304
+[1] "sd errors"
+[1] 0.001341406
+Processing m = 2 
+[1] "fem"
+[1] "mean errors"
+[1] 0.0001364645
+[1] "sd errors"
+[1] 0.0001401378
+Processing m = 3 
+[1] "fem"
+[1] "mean errors"
+[1] 4.591462e-05
+[1] "sd errors"
+[1] 1.130917e-05
+Processing m = 4 
+[1] "fem"
+[1] "mean errors"
+[1] 1.512034e-05
+[1] "sd errors"
+[1] 3.872547e-07
+Processing m = 5 
+[1] "fem"
+[1] "mean errors"
+[1] 5.127436e-06
+[1] "sd errors"
+[1] 3.321009e-07
+Processing m = 6 
