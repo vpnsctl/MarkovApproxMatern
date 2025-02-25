@@ -38,51 +38,6 @@ build_matern_rational_cov <- function(loc, kappa, sigma, nu, order){
   # }
 }
 
-build_locations_with_support <- function(n.obs, n.pred, domain_upper_limit = max(n.pred)/100, tol = 1e-4){
-  locs <- lapply(n.pred, function(x) {
-    if(x > 0) {
-      seq(from = 1, to = domain_upper_limit+5, length.out = x) 
-    } else {
-      NULL
-    }
-  })
-  obs_loc <- sort(runif(n.obs, 0, domain_upper_limit))
-  while (min(diff(obs_loc)) < tol) {
-    obs_loc <- sort(runif(n.obs, 0, domain_upper_limit))
-  }
-
-  full_locs <- list()
-  for(i in 1:length(n.pred)){
-        obs.ind <- numeric(n.obs)
-    if(n.pred[[i]] > 0){
-      loc <- c(obs_loc, locs[[i]])
-      tmp <- sort(loc, index.return = TRUE)
-      loc <- tmp$x
-      obs.ind[tmp$ix] <- seq_along(loc)
-      obs.ind <- obs.ind[1:n.obs]
-      if(any(diff(loc) < tol)) {
-        ind_remove <- which(diff(loc) < tol)
-        ind_remove <- unique(c(ind_remove, ind_remove + 1))
-        # Don't remove actual observation points:
-        ind_remove <- setdiff(ind_remove, obs.ind)
-        loc <- loc[-ind_remove]
-        # Re-match obs.ind by closeness
-        tolerance <- 1e-6
-        obs.ind <- sapply(obs_loc, function(x) {
-          which(abs(loc - x) < tolerance)[1]
-        })
-      }      
-    } else {
-      # If n = 0, only observation locations
-      loc     <- obs_loc
-      obs.ind <- seq_len(n.obs)
-    }
-    full_locs[[i]] <- list(loc = loc, obs.ind = obs.ind, domain_upper_limit = domain_upper_limit)
-  }
-  return(full_locs)
-}
-
-
 # KL(Rational, TRUE)
 compute_kl_divergence_rational <- function(loc, m.vec, nu.vec, range, sigma) {
     print("Computing KL divergence for rational approximation")
@@ -192,24 +147,24 @@ compute_kl_divergence_nngp <- function(loc, obs.ind, m.vec, nu.vec, range, sigma
 }
 
 # Example
-locs <- build_locations_with_support(1000, c(0,1,2,4,8,16,32,64,128,512,1024), domain_upper_limit = 50, tol = 1e-4)
+n            <- c(0:10, seq(20,50,by=10), seq(75,250,by=25), seq(300,500, by = 50))
+n            <- rev(n)        # Reverse the vector
+n.obs        <- 1001
+domain_upper_limit <- (n.obs + max(n)-1)/100
+full_mesh <- seq(0, domain_upper_limit, length.out = n.obs+max(n))
+obs_loc <- full_mesh[1:n.obs]
 
-nu.vec <- seq(2.49, 0.01, by = -0.01)
+locs <- lapply(n, function(i) {
+  full_mesh[1:(n.obs + i)]
+})
 
 nu.vec <- 1
 m.vec <- 1:6
 range_val <- 2
 sigma <- 1
 
-n <- 0
-
-loc <- sort(runif(n.obs + n, 0, domain_upper_limit))
-while (min(diff(loc)) < tol) {
-  loc <- sort(runif(n.obs + n, 0, domain_upper_limit))
-}
-
-results_rational <- compute_kl_divergence_rational(loc = loc, m.vec=m.vec, 
-                                        nu.vec=nu.vec, range=range_val, sigma=sigma)
+# results_rational <- compute_kl_divergence_rational(loc = locs[[1]], m.vec=m.vec, 
+#                                         nu.vec=nu.vec, range=range_val, sigma=sigma)
 
 m_nngp_fun <- function(m, alpha, n, n.obs){
             if(alpha<1) {
@@ -247,19 +202,6 @@ m_nngp_fun <- function(m, alpha, n, n.obs){
             return(mn)
 } 
 
-n <- 16
-n.obs <- 1000
-domain_upper_limit <- 50
-tol <- 1e-4
 
-loc <- sort(runif(n.obs + n, 0, domain_upper_limit))
-while (min(diff(loc)) < tol) {
-  loc <- sort(runif(n.obs + n, 0, domain_upper_limit))
-}
-
-nu.vec <- 0.6
-
-ind <- 3
-
-results_nngp <- compute_kl_divergence_nngp(loc = loc, obs.ind = 1:1000, m.vec=m.vec, 
-                                        nu.vec=nu.vec, range=range_val, sigma=sigma)
+# results_nngp <- compute_kl_divergence_nngp(loc = loc, obs.ind = 1:n.obs, m.vec=m.vec, 
+#                                         nu.vec=nu.vec, range=range_val, sigma=sigma)

@@ -890,11 +890,7 @@ taper_pred <- function(y, loc = NULL, loc_pred = NULL, loc_full = NULL, idx_obs 
 
 
 ## Pred FEM
-fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma_e, m, mesh_fem){
-    if((sum(loc_full - sort(loc_full)))^2>1e-10){
-        stop("loc_full must be ordered")
-    }
-
+fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma_e, m, mesh_fem, var_method = "loop", only_mean = FALSE){
     range <- sqrt(8*nu)/kappa
 
     #rspde
@@ -923,19 +919,35 @@ fem_pred <- function(y, loc_full = NULL, idx_obs = NULL, nu, kappa, sigma, sigma
     }
 
     # Perform prediction using rSPDE:::predict.CBrSPDEobj
-    pred_result <- rSPDE:::predict.CBrSPDEobj(
-        object = op.cov,
-        A = A[idx_obs, ],
-        Aprd = A,
-        Y = y,
-        sigma.e = sigma_e,
-        compute.variances = TRUE,
-        compute_var_method = "loop"
-    )
+    if(!only_mean){
+        pred_result <- rSPDE:::predict.CBrSPDEobj(
+            object = op.cov,
+            A = A[idx_obs, ],
+            Aprd = A,
+            Y = y,
+            sigma.e = sigma_e,
+            compute.variances = TRUE,
+            compute_var_method = var_method
+        )
+        # Extract posterior mean and variance
+        mu_rspde <- as.vector(pred_result$mean)
+        var_rspde <- as.vector(pred_result$variance)
+    } else{
+        pred_result <- rSPDE:::predict.CBrSPDEobj(
+            object = op.cov,
+            A = A[idx_obs, ],
+            Aprd = A,
+            Y = y,
+            sigma.e = sigma_e,
+            compute.variances = FALSE
+        )
+        # Extract posterior mean and variance
+        mu_rspde <- as.vector(pred_result$mean)
+        var_rspde <- NULL
+    }
 
-    # Extract posterior mean and variance
-    mu_rspde <- as.vector(pred_result$mean)
-    var_rspde <- as.vector(pred_result$variance)
+
+
 
     # Return both posterior mean and standard deviation
     return(list(mean = mu_rspde, variance = var_rspde))

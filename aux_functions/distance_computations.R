@@ -285,11 +285,6 @@ compute_distances_fem <- function(N, n_obs, m.vec, nu.vec, range, sigma, m_fem_f
     N <- N[[1]]
     n_obs <- n_obs[[1]]
     l2.err <- sup.err <-matrix(0,length(nu.vec),length(m.vec))       
-    tmp_file <- readRDS("distance_tables//raw_tables//partials_fem//res_5000_5000_nu_1.49_range_2.RDS")
-    l2.err <- tmp_file$L2
-    sup.err <- tmp_file$Linf
-    print(l2.err)
-    print(sup.err)
     loc <- seq(0, N/100, length.out = N)
     D <- as.matrix(dist(loc))     
     # range <- range * max(loc)      

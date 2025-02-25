@@ -207,7 +207,6 @@ for (j in seq_len(n.rep)) {
             sigma_e            = sigma.e,
             samples            = samples_calibration,
             m_rat              = m_vec,
-            previous_calibration = previous_calibration_fem,
             max_it_per_m       = max_it_per_m,
             print              = FALSE
           )

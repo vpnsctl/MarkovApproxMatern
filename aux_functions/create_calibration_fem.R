@@ -7,7 +7,7 @@ library(excursions)
 library(mvtnorm)
 
 # Define paths for saving calibration and results
-calibration_file <- "calibration_results/calibrated_m_list_fem.RDS"
+calibration_file <- "calibration_results/calibrated_m_list_fem_regular_mesh.RDS"
 partial_results_folder <- "prob_tables/partial_results"
 
 # Create directories for saving results

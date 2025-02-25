@@ -98,7 +98,7 @@ for (j in 1:n.rep) {
             if(n[i] > 999){
                 print("Calibrating...")
                 previous_calibration <- auto_calibration_fem_rat(n=n[i]+n.obs, n_obs=n.obs, nu=nu, range=range, sigma=sigma, sigma_e=sigma.e, 
-                    samples=samples_calibration, m_rat=m_vec, previous_calibration = previous_calibration, max_it_per_m = max_it_per_m, print=FALSE)
+                    samples=samples_calibration, m_rat=m_vec, max_it_per_m = max_it_per_m, print=FALSE)
                 calibrated_m[[as.character(n[i])]] <-  previous_calibration                   
                 cat("Calibration:", previous_calibration, "\n")
             } else{

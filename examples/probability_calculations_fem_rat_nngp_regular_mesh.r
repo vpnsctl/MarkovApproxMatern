@@ -10,9 +10,9 @@ library(mvtnorm)
 # ------------------------------------------------------------------------------
 # 1) Define paths and create folders if needed
 # ------------------------------------------------------------------------------
-calibration_file_ratnngp <- "calibration_results/calibrated_m_list.RDS"
-calibration_file_fem     <- "calibration_results/calibrated_m_list_fem.RDS"
-partial_results_folder   <- "prob_tables/partial_results"
+calibration_file_ratnngp <- "calibration_results/calibrated_m_list_regular_mesh.RDS"
+calibration_file_fem     <- "calibration_results/calibrated_m_list_fem_regular_mesh.RDS"
+partial_results_folder   <- "prob_tables/partial_results_regular_mesh"
 
 if (!dir.exists("calibration_results")) {
   dir.create("calibration_results")
@@ -27,20 +27,20 @@ if (!dir.exists(partial_results_folder)) {
 # ------------------------------------------------------------------------------
 # 2) Set parameters (adjust as needed)
 # ------------------------------------------------------------------------------
-range        <- 0.5             # or 0.5, or any other
+range        <- 1           # or 0.5, or any other
 sigma        <- 1
-sigma.e      <- sqrt(0.1) # or 0.1
-n            <- c(0, 25, 50, 100, 150, 250, 300, 400, 500,
-                  750, 1000, 1250, 1500)
+sigma.e      <- 0.1 # or 0.1
+n            <- c(0:10, seq(20,50,by=10), seq(75,250,by=25), seq(300,500, by = 50))
 n            <- rev(n)        # Reverse the vector
-n.obs        <- 250
-n.rep        <- 10
+n.obs        <- 1001
+n.rep        <- 1
 samples_calibration <- 50
 max_it_per_m <- 20
 nu           <- 1
 alpha        <- nu + 1/2
 m_vec        <- 1:6
-domain_upper_limit <- 10
+domain_upper_limit <- (n.obs + max(n)-1)/100
+full_mesh <- seq(0, domain_upper_limit, length.out = n.obs+max(n))
 use.excursions <- TRUE
 coverage     <- 0.9
 
@@ -67,12 +67,8 @@ if(file.exists(calibration_file_fem)) {
 # ------------------------------------------------------------------------------
 # 5) Prepare location sets for each n
 # ------------------------------------------------------------------------------
-locs <- lapply(n, function(x) {
-  if(x > 0) {
-    seq(from = 1, to = domain_upper_limit, length.out = x)
-  } else {
-    NULL
-  }
+locs <- lapply(n, function(i) {
+  full_mesh[1:(n.obs + i)]
 })
 
 # ------------------------------------------------------------------------------
@@ -94,11 +90,8 @@ for (j in seq_len(n.rep)) {
   cat("============================\n")
   
   # 7.1 Generate observation locations and data
-  obs_loc <- sort(runif(n.obs, 0, domain_upper_limit))
-  while (min(diff(obs_loc)) < 1e-3) {
-    obs_loc <- sort(runif(n.obs, 0, domain_upper_limit))
-  }
-  
+  obs_loc <- full_mesh[1:n.obs]
+ 
   # Simulate data from the true covariance
   z <- matrix(rnorm(n.obs), ncol = n.obs)
   L <- chol(get_cov_mat(obs_loc, NULL, "true", nu, kappa, sigma, NULL, NULL))
@@ -135,39 +128,12 @@ for (j in seq_len(n.rep)) {
       next
     }
     
-    # 7.3 Build combined location vector and fix ordering
-    if(n[i] > 0) {
-      loc <- c(obs_loc, locs[[i]])
-      obs.ind <- seq_along(loc)
-      
-      # Sort everything so loc is in ascending order
-      tmp <- sort(loc, index.return = TRUE)
-      loc <- tmp$x
-      obs.ind[tmp$ix] <- seq_along(loc)
-      obs.ind <- obs.ind[1:n.obs]
-      
-      # If any duplicates (or extremely close points), remove them carefully
-      if(any(diff(loc) < 1e-3)) {
-        ind_remove <- which(diff(loc) < 1e-3)
-        ind_remove <- unique(c(ind_remove, ind_remove + 1))
-        # Don't remove actual observation points:
-        ind_remove <- setdiff(ind_remove, obs.ind)
-        loc <- loc[-ind_remove]
-        # Re-match obs.ind by closeness
-        tolerance <- 1e-6
-        obs.ind <- sapply(obs_loc, function(x) {
-          which(abs(loc - x) < tolerance)[1]
-        })
-      }
-    } else {
-      # If n = 0, only observation locations
-      loc     <- obs_loc
-      obs.ind <- seq_len(n.obs)
-    }
+    # 7.3 Build combined location vector 
+    loc <- locs[[i]]
+    obs.ind <- seq_len(n.obs)
     
     # 7.4 Possibly calibrate RAT/NNGP if needed
     if(is.null(calibrated_m_ratnngp[[as.character(n[i])]])) {
-      if(n[i] > 999) {
         cat("Calibrating RAT/NNGP for n =", n[i], "...\n")
         previous_calibration_ratnngp <-
           auto_calibration_nngp_rat(
@@ -186,16 +152,10 @@ for (j in seq_len(n.rep)) {
         calibrated_m_ratnngp[[as.character(n[i])]] <-
           previous_calibration_ratnngp
         cat("RAT/NNGP calibration:", previous_calibration_ratnngp, "\n")
-      } else {
-        # If not large n, use calibration from n=1000 (or nearest big)
-        calibrated_m_ratnngp[[as.character(n[i])]] <-
-          calibrated_m_ratnngp[["1000"]]
-      }
     }
     
     # 7.5 Possibly calibrate FEM if needed
     if(is.null(calibrated_m_fem[[as.character(n[i])]])) {
-      if(n[i] > 999) {
         cat("Calibrating FEM for n =", n[i], "...\n")
         previous_calibration_fem <-
           auto_calibration_fem_rat(
@@ -207,16 +167,11 @@ for (j in seq_len(n.rep)) {
             sigma_e            = sigma.e,
             samples            = samples_calibration,
             m_rat              = m_vec,
-            previous_calibration = previous_calibration_fem,
             max_it_per_m       = max_it_per_m,
             print              = FALSE
           )
         calibrated_m_fem[[as.character(n[i])]] <- previous_calibration_fem
         cat("FEM calibration:", previous_calibration_fem, "\n")
-      } else {
-        # If not large n, use calibration from n=1000 (or nearest big)
-        calibrated_m_fem[[as.character(n[i])]] <- calibrated_m_fem[["1000"]]
-      }
     }
     
     # 7.6 Compute the "truth"
@@ -247,7 +202,7 @@ for (j in seq_len(n.rep)) {
     lb_prob <- conf$a
     ub_prob <- conf$b
     
-    if(use.excursions && n[i] > 999) {
+    if(use.excursions) {
       prob_true <- gaussint(
         a     = lb_prob,
         b     = ub_prob,
@@ -290,7 +245,7 @@ for (j in seq_len(n.rep)) {
       mu_rat    <- as.vector(Qrat$A %*% mu_xgiveny)
       Sigma_rat <- as.matrix(Qrat$A %*% solve(Q_xgiveny, t(Qrat$A)))
       
-      if(use.excursions && n[i] > 999) {
+      if(use.excursions) {
         prob_rat <- gaussint(
           a     = lb_prob,
           b     = ub_prob,
@@ -338,7 +293,7 @@ for (j in seq_len(n.rep)) {
       mu_nngp    <- as.vector(post_nngp_obj$post_mean)
       Sigma_nngp <- as.matrix(post_nngp_obj$post_cov)
       
-      if(use.excursions && n[i] > 999) {
+      if(use.excursions) {
         prob_nngp <- gaussint(
           a     = lb_prob,
           b     = ub_prob,
@@ -375,7 +330,7 @@ for (j in seq_len(n.rep)) {
       mu_fem    <- post_fem_mat$mu.fem
       Sigma_fem <- post_fem_mat$Sigma.fem
       
-      if(use.excursions && n[i] > 999) {
+      if(use.excursions) {
         prob_fem <- gaussint(
           a     = lb_prob,
           b     = ub_prob,
@@ -432,7 +387,7 @@ res_list <- list(
 final_filename <- paste0(
   "prob_tables/rat_nngp_fem_range", range,
   "_sigmaE", sigma.e,
-  "_nu", nu, ".RDS"
+  "_nu", nu, "_regular_mesh.RDS"
 )
 saveRDS(res_list, file = final_filename)
 
